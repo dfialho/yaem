@@ -1,8 +1,11 @@
 val kotlinVersion: String by project
 val logbackVersion: String by project
+val loggingVersion: String by project
+val assertkVersion: String by project
+val mockkVersion: String by project
 
 plugins {
-    kotlin("jvm") version "1.3.11" apply false
+    kotlin("jvm") version "1.3.21" apply false
 }
 
 subprojects {
@@ -15,5 +18,14 @@ subprojects {
         mavenLocal()
         mavenCentral()
         jcenter()
+    }
+
+    dependencies {
+        "implementation"(kotlin("stdlib-jdk8"))
+        "implementation"("ch.qos.logback:logback-classic:$logbackVersion")
+        "implementation"("io.github.microutils:kotlin-logging:$loggingVersion")
+
+        "testImplementation"("com.willowtreeapps.assertk:assertk-jvm:$assertkVersion")
+        "testImplementation"("io.mockk:mockk:$mockkVersion")
     }
 }

@@ -1,11 +1,25 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+buildscript {
+    val kotlinVersion: String by project
+    repositories { jcenter() }
+
+    dependencies {
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+        classpath("org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion")
+    }
+}
+
+apply(plugin = "kotlinx-serialization")
+
 plugins {
     application
 }
 
 val ktorVersion: String by project
-val logbackVersion: String by project
+val exposedVersion: String by project
+val h2Version: String by project
+val serializationVersion: String by project
 
 application {
     mainClassName = "io.ktor.server.netty.EngineMain"
@@ -13,18 +27,20 @@ application {
 
 repositories {
     maven { url = uri("https://kotlin.bintray.com/ktor") }
-}
-
-dependencies {
-    implementation(kotlin("stdlib-jdk8"))
-    implementation("ch.qos.logback:logback-classic:$logbackVersion")
+    maven { url = uri("https://dl.bintray.com/kotlin/exposed") }
+    maven { url = uri("https://kotlin.bintray.com/kotlinx") }
 }
 
 dependencies {
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-server-core:$ktorVersion")
-    implementation("io.ktor:ktor-jackson:$ktorVersion")
     testImplementation("io.ktor:ktor-server-tests:$ktorVersion")
+}
+
+dependencies {
+    implementation("org.jetbrains.exposed:exposed:$exposedVersion")
+    implementation("com.h2database:h2:$h2Version")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationVersion")
 }
 
 tasks.withType<KotlinCompile> {
