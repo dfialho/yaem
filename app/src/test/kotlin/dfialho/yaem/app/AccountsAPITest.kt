@@ -8,6 +8,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import io.ktor.server.testing.TestApplicationRequest
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
@@ -15,17 +16,7 @@ import kotlinx.serialization.json.Json
 import java.time.Instant
 import kotlin.test.Test
 
-class ApplicationTest {
-
-    @Test
-    fun testRoot(): Unit = withTestApplication({ module(testing = true) }) {
-        handleRequest(HttpMethod.Get, "/").apply {
-            assertAll {
-                assertThat(response.status()).isEqualTo(HttpStatusCode.OK)
-                assertThat(response.content).isEqualTo("HELLO WORLD!")
-            }
-        }
-    }
+class AccountsAPITest {
 
     @Test
     fun listAccountOnEmptyList(): Unit = withTestApplication({ module(testing = true) }) {
@@ -73,7 +64,7 @@ class ApplicationTest {
 
         handleRequest(HttpMethod.Post, "/api/accounts") {
             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(Json.stringify(Account.serializer(), account))
+            setBodyAsAccount(account)
         }.apply {
             assertAll {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.Accepted)
@@ -109,7 +100,7 @@ class ApplicationTest {
 
         handleRequest(HttpMethod.Post, "/api/accounts") {
             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(Json.stringify(Account.serializer(), account))
+            setBodyAsAccount(account)
         }.apply {
             assertAll {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
@@ -179,14 +170,14 @@ class ApplicationTest {
 
         handleRequest(HttpMethod.Post, "/api/accounts") {
             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(Json.stringify(Account.serializer(), account1))
+            setBodyAsAccount(account1)
         }.apply {
             assertThat(response.status()).isEqualTo(HttpStatusCode.Accepted)
         }
 
         handleRequest(HttpMethod.Post, "/api/accounts") {
             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(Json.stringify(Account.serializer(), account2))
+            setBodyAsAccount(account2)
         }.apply {
             assertThat(response.status()).isEqualTo(HttpStatusCode.Conflict)
         }
@@ -205,4 +196,8 @@ class ApplicationTest {
             }
         }
     }
+}
+
+fun TestApplicationRequest.setBodyAsAccount(account: Account) {
+    setBody(Json.stringify(Account.serializer(), account))
 }

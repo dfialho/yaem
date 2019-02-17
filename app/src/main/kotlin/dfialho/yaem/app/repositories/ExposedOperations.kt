@@ -19,18 +19,20 @@ import java.sql.SQLException
  * need to support other SQL databases.
  */
 fun <T : Table> T.insertUnique(body: T.(InsertStatement<Number>) -> Unit): DatabaseResult {
-    return try {
+    try {
         insert(body)
-        DatabaseResult.Success
+        return DatabaseResult.Success
 
     } catch (e: ExposedSQLException) {
         val sqlException = e.cause as SQLException
 
-        // WARNING: This is an hack that works only for H2
-        if (sqlException.errorCode == ErrorCode.DUPLICATE_KEY_1) {
-            DatabaseResult.DuplicateKey
-        } else {
-            DatabaseResult.Failure(e)
+        // WARNING: Error codes are implementation specific
+        // These codes only apply to the H2 driver
+
+        return when (sqlException.errorCode) {
+            ErrorCode.DUPLICATE_KEY_1 -> DatabaseResult.DuplicateKey
+            ErrorCode.REFERENTIAL_INTEGRITY_VIOLATED_PARENT_MISSING_1 -> DatabaseResult.ParentMissing
+            else -> DatabaseResult.Failure(e)
         }
     }
 }

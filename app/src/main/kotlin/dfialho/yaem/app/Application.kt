@@ -3,12 +3,13 @@ package dfialho.yaem.app
 import dfialho.yaem.app.exceptions.FoundException
 import dfialho.yaem.app.managers.AccountManager
 import dfialho.yaem.app.managers.AccountManagerImpl
+import dfialho.yaem.app.managers.LedgerManager
+import dfialho.yaem.app.managers.LedgerManagerImpl
 import dfialho.yaem.app.repositories.AccountRepository
-import dfialho.yaem.app.repositories.ExposedAccountRepository
-import dfialho.yaem.app.validators.AccountValidator
-import dfialho.yaem.app.validators.IDValidator
-import dfialho.yaem.app.validators.ValidationError
-import dfialho.yaem.app.validators.ValidationErrorException
+import dfialho.yaem.app.repositories.DatabaseConfig
+import dfialho.yaem.app.repositories.ExposedRepositoryManager
+import dfialho.yaem.app.repositories.LedgerRepository
+import dfialho.yaem.app.validators.*
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
@@ -34,11 +35,11 @@ fun Application.module(testing: Boolean = false) {
 
     val dbName = if (testing) UUID.randomUUID().toString() else "prod"
 
-    val accountRepository: AccountRepository = ExposedAccountRepository(
-        url = "jdbc:h2:mem:$dbName;MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
-        driver = "org.h2.Driver"
-    )
+    val repositoryManager = ExposedRepositoryManager(DatabaseConfig(url = "jdbc:h2:mem:$dbName;MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE", driver = "org.h2.Driver"))
+    val accountRepository: AccountRepository = repositoryManager.getAccountRepository()
     val accountManager: AccountManager = AccountManagerImpl(accountRepository, AccountValidator(IDValidator()))
+    val ledgerRepository: LedgerRepository = repositoryManager.getLedgerRepository()
+    val ledgerManager: LedgerManager = LedgerManagerImpl(ledgerRepository, TransactionValidator(IDValidator()))
 
     install(CallLogging) {
         level = Level.INFO
@@ -62,6 +63,7 @@ fun Application.module(testing: Boolean = false) {
 
         route("api") {
             accounts(accountManager, log)
+            ledger(ledgerManager, log)
         }
     }
 }

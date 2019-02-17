@@ -4,10 +4,15 @@ sealed class DatabaseResult {
     object Success : DatabaseResult()
     class Failure(val exception: Exception) : DatabaseResult()
     object DuplicateKey : DatabaseResult()
+    object ParentMissing : DatabaseResult()
 }
 
-fun DatabaseResult.onDuplicateKey(action: () -> Unit): DatabaseResult {
-    if (this == DatabaseResult.DuplicateKey) {
+fun DatabaseResult.applyOnDuplicateKey(action: () -> Unit) = applyOnExpectedResult(DatabaseResult.DuplicateKey, action)
+
+fun DatabaseResult.applyOnParentMissing(action: () -> Unit) = applyOnExpectedResult(DatabaseResult.ParentMissing, action)
+
+private fun DatabaseResult.applyOnExpectedResult(expected: DatabaseResult, action: () -> Unit): DatabaseResult {
+    if (this == expected) {
         action()
     }
 

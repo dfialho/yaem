@@ -10,4 +10,6 @@ interface AccountRepository {
     fun get(accountID: ID): Account?
 
     fun list(): List<Account>
+
+    fun exists(accountID: ID): Boolean
 }

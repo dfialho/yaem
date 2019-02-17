@@ -10,7 +10,6 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.post
-import io.ktor.util.error
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
 import org.slf4j.Logger
@@ -47,14 +46,5 @@ fun Route.accounts(manager: AccountManager, log: Logger) {
         } else {
             call.respond(HttpStatusCode.NotFound, "Account with ID '$receivedID' was not found")
         }
-    }
-}
-
-private inline fun <R> logOnError(log: Logger, action: () -> R): R {
-    try {
-        return action()
-    } catch (e: Exception) {
-        log.error(e)
-        throw e
     }
 }

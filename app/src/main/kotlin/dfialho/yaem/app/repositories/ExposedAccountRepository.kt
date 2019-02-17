@@ -6,24 +6,24 @@ import dfialho.yaem.app.ID
 import dfialho.yaem.app.exceptions.FoundException
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.joda.time.DateTime
-import java.time.Instant
-import java.util.*
 
-class ExposedAccountRepository(url: String, driver: String) : AccountRepository {
+class ExposedAccountRepository : AccountRepository, ExposedRepository {
 
-    init {
-        Database.connect(url, driver)
-        transaction {
-            SchemaUtils.create(Accounts)
-        }
-    }
-
-    object Accounts : Table() {
+    private object Accounts : Table() {
         val id = uuid("ID").primaryKey()
         val name = varchar("NAME", length = ACCOUNT_NAME_MAX_LENGTH)
         val initialBalance = double("INITIAL_BALANCE")
         val startTimestamp = datetime("START_TIMESTAMP")
+    }
+
+    companion object {
+        val accountIDColumn get() = Accounts.id
+    }
+
+    override fun createTablesIfMissing() {
+        transaction {
+            SchemaUtils.create(Accounts)
+        }
     }
 
     override fun create(account: Account): Account = transaction {
@@ -32,17 +32,17 @@ class ExposedAccountRepository(url: String, driver: String) : AccountRepository 
             it[name] = account.name
             it[initialBalance] = account.initialBalance
             it[startTimestamp] = account.startTimestamp.toDateTime()
-        }.onDuplicateKey {
+        }.applyOnDuplicateKey {
             throw FoundException("Duplicate key: account with id '${account.id}' already exists")
         }.onFailureThrowException()
 
-        account
+        return@transaction account
     }
 
     override fun get(accountID: ID): Account? = transaction {
         val accountUUID = accountID.toUUID()
 
-        Accounts.select { Accounts.id eq accountUUID }
+        return@transaction Accounts.select { Accounts.id eq accountUUID }
             .limit(1)
             .mapToAccount()
             .firstOrNull()
@@ -51,21 +51,19 @@ class ExposedAccountRepository(url: String, driver: String) : AccountRepository 
     override fun list(): List<Account> = transaction {
         Accounts.selectAll().mapToAccount()
     }
+
+    override fun exists(accountID: ID): Boolean = transaction {
+        return@transaction get(accountID) != null
+    }
+
+    private fun Query.mapToAccount(): List<Account> {
+        return this.map {
+            Account(
+                id = it[Accounts.id].toID(),
+                name = it[Accounts.name],
+                initialBalance = it[Accounts.initialBalance],
+                startTimestamp = it[Accounts.startTimestamp].toJavaInstant()
+            )
+        }
+    }
 }
-
-private fun Query.mapToAccount(): List<Account> = this.map {
-    Account(
-        id = it[ExposedAccountRepository.Accounts.id].toID(),
-        name = it[ExposedAccountRepository.Accounts.name],
-        initialBalance = it[ExposedAccountRepository.Accounts.initialBalance],
-        startTimestamp = it[ExposedAccountRepository.Accounts.startTimestamp].toJavaInstant()
-    )
-}
-
-private fun ID.toUUID(): UUID = UUID.fromString(this)
-
-private fun UUID.toID(): ID = this.toString()
-
-private fun Instant?.toDateTime(): DateTime = DateTime(this?.toEpochMilli() ?: Instant.now())
-
-private fun DateTime.toJavaInstant(): Instant = this.toDate().toInstant()
