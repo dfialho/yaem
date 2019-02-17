@@ -1,8 +1,8 @@
 package dfialho.yaem.app.managers
 
 import dfialho.yaem.app.Account
+import dfialho.yaem.app.DeleteResult
 import dfialho.yaem.app.ID
-import dfialho.yaem.app.Result
 import dfialho.yaem.app.repositories.AccountRepository
 import dfialho.yaem.app.validators.AccountValidator
 import dfialho.yaem.app.validators.throwIfValidationError
@@ -26,7 +26,7 @@ class AccountManagerImpl(
         return repository.list()
     }
 
-    override fun delete(accountID: String): Result {
+    override fun delete(accountID: String): DeleteResult {
         throwIfValidationError(validator.idValidator.validate(accountID))
         return repository.delete(accountID)
     }

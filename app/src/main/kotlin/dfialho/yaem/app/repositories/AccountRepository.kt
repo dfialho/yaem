@@ -1,8 +1,8 @@
 package dfialho.yaem.app.repositories
 
 import dfialho.yaem.app.Account
+import dfialho.yaem.app.DeleteResult
 import dfialho.yaem.app.ID
-import dfialho.yaem.app.Result
 
 interface AccountRepository {
 
@@ -14,5 +14,5 @@ interface AccountRepository {
 
     fun exists(accountID: ID): Boolean
 
-    fun delete(accountID: String): Result
+    fun delete(accountID: String): DeleteResult
 }

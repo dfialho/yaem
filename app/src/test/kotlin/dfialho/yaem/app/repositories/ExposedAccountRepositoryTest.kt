@@ -5,7 +5,7 @@ import assertk.assertThat
 import assertk.assertions.*
 import dfialho.yaem.app.ACCOUNT_NAME_MAX_LENGTH
 import dfialho.yaem.app.Account
-import dfialho.yaem.app.Result
+import dfialho.yaem.app.DeleteResult
 import dfialho.yaem.app.exceptions.FoundException
 import dfialho.yaem.app.randomID
 import org.junit.Test
@@ -158,7 +158,7 @@ class ExposedAccountRepositoryTest {
 
         val result = repository.delete(nonExistingID)
 
-        assertThat(result).isEqualTo(Result.Failure)
+        assertThat(result).isEqualTo(DeleteResult.NotFound)
     }
 
     @Test
@@ -169,7 +169,7 @@ class ExposedAccountRepositoryTest {
 
         val result = repository.delete(account.id)
 
-        assertThat(result).isEqualTo(Result.Success)
+        assertThat(result).isEqualTo(DeleteResult.Success)
     }
 
     @Test
@@ -183,7 +183,7 @@ class ExposedAccountRepositoryTest {
         val result = repository.delete(deletedAccount.id)
 
         assertAll {
-            assertThat(result).isEqualTo(Result.Success)
+            assertThat(result).isEqualTo(DeleteResult.Success)
             assertThat(repository.exists(deletedAccount.id)).isFalse()
             assertThat(repository.list()).containsOnly(*otherAccounts.toTypedArray())
         }

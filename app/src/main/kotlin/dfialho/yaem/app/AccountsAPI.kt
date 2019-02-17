@@ -55,8 +55,9 @@ fun Route.accounts(manager: AccountManager, log: Logger) {
         val result = manager.delete(receivedID)
 
         when(result) {
-            is Result.Success -> call.respond(HttpStatusCode.Accepted, "Account with id '$receivedID' was deleted")
-            is Result.Failure -> call.respond(HttpStatusCode.NotFound, "Account with id '$receivedID' not found")
+            is DeleteResult.Success -> call.respond(HttpStatusCode.Accepted, "Account with id '$receivedID' was deleted")
+            is DeleteResult.NotFound -> call.respond(HttpStatusCode.NotFound, "Account with id '$receivedID' not found")
+            is DeleteResult.ChildExists -> call.respond(HttpStatusCode.Conflict, "Account cannot be deleted because it has transactions associated with it")
         }
     }
 }

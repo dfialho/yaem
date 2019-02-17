@@ -5,6 +5,7 @@ sealed class DatabaseResult {
     class Failure(val exception: Exception) : DatabaseResult()
     object DuplicateKey : DatabaseResult()
     object ParentMissing : DatabaseResult()
+    object ChildExists : DatabaseResult()
 }
 
 fun DatabaseResult.applyOnDuplicateKey(action: () -> Unit) = applyOnExpectedResult(DatabaseResult.DuplicateKey, action)

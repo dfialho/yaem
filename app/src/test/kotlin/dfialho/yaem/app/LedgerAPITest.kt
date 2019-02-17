@@ -6,16 +6,15 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEmpty
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
+import assertk.fail
 import dfialho.yaem.app.validators.ValidationError
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.testing.TestApplicationRequest
-import io.ktor.server.testing.handleRequest
-import io.ktor.server.testing.setBody
-import io.ktor.server.testing.withTestApplication
+import io.ktor.server.testing.*
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.list
 import org.junit.Test
 import java.time.Instant
 
@@ -50,18 +49,7 @@ class LedgerAPITest {
     fun `creating a new transaction should respond with created`() {
         withTestApplication({ module(testing = true) }) {
 
-            val account = Account(
-                name = "My New Account",
-                initialBalance = 10.0,
-                startTimestamp = Instant.ofEpochMilli(1550250740735),
-                id = "c1929c11-3caa-400c-bee4-fdad5f023759"
-            )
-
-            handleRequest(HttpMethod.Post, "/api/accounts") {
-                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                setBodyAsAccount(account)
-            }
-
+            val account = createAccount(Account(id = "c1929c11-3caa-400c-bee4-fdad5f023759", name = "My New Account"))
             val transaction = Transaction(
                 amount = 10.5,
                 description = "bananas",
@@ -85,41 +73,12 @@ class LedgerAPITest {
     fun `creating a transaction with an existing ID should respond with conflict`() {
 
         withTestApplication({ module(testing = true) }) {
-
-            val account = Account(
-                name = "My New Account",
-                initialBalance = 10.0,
-                startTimestamp = Instant.ofEpochMilli(1550250740735),
-                id = "c1929c11-3caa-400c-bee4-fdad5f023759"
-            )
-
-            handleRequest(HttpMethod.Post, "/api/accounts") {
-                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                setBodyAsAccount(account)
-            }
-
-            val transactionID = randomID()
-            val transaction1 = Transaction(
-                id = transactionID,
-                amount = 10.5,
-                description = "bananas",
-                incomingAccount = account.id
-            )
-            val transaction2 = Transaction(
-                id = transactionID,
-                amount = 11.5,
-                description = "strawberries",
-                incomingAccount = account.id
-            )
+            val account = createAccount(Account(id = "c1929c11-3caa-400c-bee4-fdad5f023759", name = "My New Account"))
+            val transaction = createTransaction(Transaction(10.5, "bananas", account.id, id = randomID()))
 
             handleRequest(HttpMethod.Post, "/api/ledger") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                setBodyAsTransaction(transaction1)
-            }
-
-            handleRequest(HttpMethod.Post, "/api/ledger") {
-                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                setBodyAsTransaction(transaction2)
+                setBodyAsTransaction(Transaction(11.5, "strawberries", account.id, id = transaction.id))
             }.apply {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.Conflict)
             }
@@ -156,17 +115,7 @@ class LedgerAPITest {
     @Test
     fun `create transaction with optional fields not set should generate those fields`() {
         withTestApplication({ module(testing = true) }) {
-
-            val account = Account(
-                name = "My New Account",
-                initialBalance = 10.0,
-                startTimestamp = Instant.ofEpochMilli(1550250740735),
-                id = "c1929c11-3caa-400c-bee4-fdad5f023759"
-            )
-            handleRequest(HttpMethod.Post, "/api/accounts") {
-                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                setBodyAsAccount(account)
-            }
+            val account = createAccount(Account("My New Account"))
 
             handleRequest(HttpMethod.Post, "/api/ledger") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
@@ -199,4 +148,38 @@ class LedgerAPITest {
 
 fun TestApplicationRequest.setBodyAsTransaction(transaction: Transaction) {
     setBody(Json.stringify(Transaction.serializer(), transaction))
+}
+
+fun TestApplicationEngine.createTransaction(transaction: Transaction): Transaction {
+    handleRequest(HttpMethod.Post, "/api/ledger") {
+        addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+        setBodyAsTransaction(transaction)
+    }
+
+    return transaction
+}
+
+fun TestApplicationEngine.createTransaction(
+    incomingAccount: ID,
+    id: ID = randomID(),
+    amount: Double = 10.5,
+    description: String = "",
+    sendingAccount: ID? = null,
+    timestamp: Instant = Instant.now()
+): Transaction {
+    return createTransaction(Transaction(amount, description, incomingAccount, sendingAccount, timestamp, id))
+}
+
+fun TestApplicationEngine.listTransactions(): List<Transaction> {
+
+    return handleRequest(HttpMethod.Get, "/api/ledger").run {
+        assertThat(response.status()).isEqualTo(HttpStatusCode.OK)
+        val responseBody = response.content
+
+        if (responseBody != null) {
+            Json.parse(Transaction.serializer().list, responseBody)
+        } else {
+            fail("Response is null, but was expected to contain a json list")
+        }
+    }
 }

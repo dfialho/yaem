@@ -36,3 +36,22 @@ fun <T : Table> T.insertUnique(body: T.(InsertStatement<Number>) -> Unit): Datab
         }
     }
 }
+
+fun <T : Table, R> T.translateSQLExceptions(block: T.() -> R): R {
+
+    try {
+        return block()
+    } catch (e: ExposedSQLException) {
+        val sqlException = e.cause as SQLException
+
+        // WARNING: Error codes are implementation specific
+        // These codes only apply to the H2 driver
+
+        when (sqlException.errorCode) {
+            ErrorCode.DUPLICATE_KEY_1 -> throw DuplicateKeyException(sqlException)
+            ErrorCode.REFERENTIAL_INTEGRITY_VIOLATED_PARENT_MISSING_1 -> throw ParentMissingException(sqlException)
+            ErrorCode.REFERENTIAL_INTEGRITY_VIOLATED_CHILD_EXISTS_1 -> throw ChildExistsException(sqlException)
+            else -> throw UnknownDatabaseException(sqlException)
+        }
+    }
+}

@@ -2,8 +2,8 @@ package dfialho.yaem.app.repositories
 
 import dfialho.yaem.app.ACCOUNT_NAME_MAX_LENGTH
 import dfialho.yaem.app.Account
+import dfialho.yaem.app.DeleteResult
 import dfialho.yaem.app.ID
-import dfialho.yaem.app.Result
 import dfialho.yaem.app.exceptions.FoundException
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -50,18 +50,25 @@ class ExposedAccountRepository : AccountRepository, ExposedRepository {
     }
 
     override fun list(): List<Account> = transaction {
-        Accounts.selectAll().mapToAccount()
+        return@transaction Accounts.selectAll().mapToAccount()
     }
 
     override fun exists(accountID: ID): Boolean = transaction {
         return@transaction get(accountID) != null
     }
 
-    override fun delete(accountID: String): Result = transaction {
+    override fun delete(accountID: String): DeleteResult = transaction {
         val accountUUID = accountID.toUUID()
-        val deleteCount = Accounts.deleteWhere { Accounts.id eq accountUUID }
 
-        return@transaction if (deleteCount > 0) Result.Success else Result.Failure
+        val deleteCount = try {
+            Accounts.translateSQLExceptions {
+                deleteWhere { id eq accountUUID }
+            }
+        } catch (e: ChildExistsException) {
+            return@transaction DeleteResult.ChildExists
+        }
+
+        return@transaction if (deleteCount > 0) DeleteResult.Success else DeleteResult.NotFound
     }
 
     private fun Query.mapToAccount(): List<Account> {
