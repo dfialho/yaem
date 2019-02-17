@@ -47,7 +47,7 @@ class LedgerAPITest {
     }
 
     @Test
-    fun `creating a new transaction should respond with accepted`() {
+    fun `creating a new transaction should respond with created`() {
         withTestApplication({ module(testing = true) }) {
 
             val account = Account(
@@ -74,7 +74,7 @@ class LedgerAPITest {
                 setBodyAsTransaction(transaction)
             }.apply {
                 assertAll {
-                    assertThat(response.status()).isEqualTo(HttpStatusCode.Accepted)
+                    assertThat(response.status()).isEqualTo(HttpStatusCode.Created)
                     assertThat(response.content).isJsonEqualTo(Transaction.serializer(), transaction)
                 }
             }
@@ -182,7 +182,7 @@ class LedgerAPITest {
             }.apply {
                 val transaction = Json.parse(Transaction.serializer(), response.content ?: "")
                 assertAll {
-                    assertThat(response.status()).isEqualTo(HttpStatusCode.Accepted)
+                    assertThat(response.status()).isEqualTo(HttpStatusCode.Created)
                     assertThat(transaction.amount).isEqualTo(10.5)
                     assertThat(transaction.description).isEqualTo("bananas")
                     assertThat(transaction.incomingAccount).isEqualTo(account.id)

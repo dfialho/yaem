@@ -29,7 +29,7 @@ fun Route.ledger(manager: LedgerManager, log: Logger) {
             manager.create(transaction)
         }
 
-        call.respond(HttpStatusCode.Accepted, Json.stringify(Transaction.serializer(), createdTransaction))
+        call.respond(HttpStatusCode.Created, Json.stringify(Transaction.serializer(), createdTransaction))
     }
 
     get("ledger") {

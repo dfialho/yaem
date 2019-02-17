@@ -8,13 +8,10 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.testing.TestApplicationRequest
-import io.ktor.server.testing.handleRequest
-import io.ktor.server.testing.setBody
-import io.ktor.server.testing.withTestApplication
+import io.ktor.server.testing.*
 import kotlinx.serialization.json.Json
+import org.junit.Test
 import java.time.Instant
-import kotlin.test.Test
 
 class AccountsAPITest {
 
@@ -47,7 +44,12 @@ class AccountsAPITest {
         handleRequest(HttpMethod.Get, "/api/accounts/$accountID").apply {
             assertAll {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
-                assertThat(response.content).errorListContainsAll(ValidationError("BASE-01", "Invalid ID string: $accountID"))
+                assertThat(response.content).errorListContainsAll(
+                    ValidationError(
+                        "BASE-01",
+                        "Invalid ID string: $accountID"
+                    )
+                )
             }
         }
     }
@@ -67,7 +69,7 @@ class AccountsAPITest {
             setBodyAsAccount(account)
         }.apply {
             assertAll {
-                assertThat(response.status()).isEqualTo(HttpStatusCode.Accepted)
+                assertThat(response.status()).isEqualTo(HttpStatusCode.Created)
                 assertThat(response.content).isJsonEqualTo(Account.serializer(), account)
             }
         }
@@ -104,7 +106,12 @@ class AccountsAPITest {
         }.apply {
             assertAll {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
-                assertThat(response.content).errorListContainsAll(ValidationError("BASE-01", "Invalid ID string: $accountID"))
+                assertThat(response.content).errorListContainsAll(
+                    ValidationError(
+                        "BASE-01",
+                        "Invalid ID string: $accountID"
+                    )
+                )
             }
         }
     }
@@ -114,18 +121,25 @@ class AccountsAPITest {
 
         handleRequest(HttpMethod.Post, "/api/accounts") {
             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody("""
+            setBody(
+                """
                 {
                   "name": "My Account",
                   "initialBalance": 10.0,
                   "startTimestamp": "timestamp",
                   "id": "a1929c11-3caa-400c-bee4-fdad5f023759"
                 }
-            """.trimIndent())
+            """.trimIndent()
+            )
         }.apply {
             assertAll {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
-                assertThat(response.content).errorListContainsAll(ValidationError("BASE-02", "Failed to parse 'Account' from json"))
+                assertThat(response.content).errorListContainsAll(
+                    ValidationError(
+                        "BASE-02",
+                        "Failed to parse 'Account' from json"
+                    )
+                )
             }
         }
     }
@@ -135,18 +149,28 @@ class AccountsAPITest {
 
         handleRequest(HttpMethod.Post, "/api/accounts") {
             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody("""
+            setBody(
+                """
                 {
                   "name": "My Account",
                   "initialBalance": 10,
                   "startTimestamp": 1550250740735,
                   "id": "a1929c11-3caa-400c-bee4-fdad5f023759"
                 }
-            """.trimIndent())
+            """.trimIndent()
+            )
         }.apply {
             assertAll {
-                assertThat(response.status()).isEqualTo(HttpStatusCode.Accepted)
-                assertThat(response.content).isJsonEqualTo(Account.serializer(), Account("My Account", 10.0, Instant.ofEpochMilli(1550250740735), "a1929c11-3caa-400c-bee4-fdad5f023759"))
+                assertThat(response.status()).isEqualTo(HttpStatusCode.Created)
+                assertThat(response.content).isJsonEqualTo(
+                    Account.serializer(),
+                    Account(
+                        "My Account",
+                        10.0,
+                        Instant.ofEpochMilli(1550250740735),
+                        "a1929c11-3caa-400c-bee4-fdad5f023759"
+                    )
+                )
             }
         }
     }
@@ -172,7 +196,7 @@ class AccountsAPITest {
             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
             setBodyAsAccount(account1)
         }.apply {
-            assertThat(response.status()).isEqualTo(HttpStatusCode.Accepted)
+            assertThat(response.status()).isEqualTo(HttpStatusCode.Created)
         }
 
         handleRequest(HttpMethod.Post, "/api/accounts") {
@@ -196,8 +220,70 @@ class AccountsAPITest {
             }
         }
     }
+
+    @Test
+    fun `delete an existing account that account is not longer listed`() {
+        withTestApplication({ module(testing = true) }) {
+
+            val account = Account(
+                name = "My New Account",
+                initialBalance = 10.0,
+                startTimestamp = Instant.ofEpochMilli(1550250740735),
+                id = "c1929c11-3caa-400c-bee4-fdad5f023759"
+            )
+            val others = listOf(Account("Acc-1"), Account("Acc-2"))
+
+            createAccount(account)
+            others.forEach { createAccount(it) }
+
+            handleRequest(HttpMethod.Delete, "/api/accounts/${account.id}").apply {
+                assertThat(response.status()).isEqualTo(HttpStatusCode.Accepted)
+            }
+
+            handleRequest(HttpMethod.Get, "/api/accounts").apply {
+                assertAll {
+                    assertThat(response.status()).isEqualTo(HttpStatusCode.OK)
+                    assertThat(response.content).jsonListContainsAll(Account.serializer(), *others.toTypedArray())
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `delete a non-existing account no other accounts are affected`() {
+        withTestApplication({ module(testing = true) }) {
+
+            val account = Account(
+                name = "My New Account",
+                initialBalance = 10.0,
+                startTimestamp = Instant.ofEpochMilli(1550250740735),
+                id = "c1929c11-3caa-400c-bee4-fdad5f023759"
+            )
+            val others = listOf(Account("Acc-1"), Account("Acc-2"))
+
+            others.forEach { createAccount(it) }
+
+            handleRequest(HttpMethod.Delete, "/api/accounts/${account.id}").apply {
+                assertThat(response.status()).isEqualTo(HttpStatusCode.NotFound)
+            }
+
+            handleRequest(HttpMethod.Get, "/api/accounts").apply {
+                assertAll {
+                    assertThat(response.status()).isEqualTo(HttpStatusCode.OK)
+                    assertThat(response.content).jsonListContainsAll(Account.serializer(), *others.toTypedArray())
+                }
+            }
+        }
+    }
 }
 
 fun TestApplicationRequest.setBodyAsAccount(account: Account) {
     setBody(Json.stringify(Account.serializer(), account))
+}
+
+private fun TestApplicationEngine.createAccount(account: Account) {
+    handleRequest(HttpMethod.Post, "/api/accounts") {
+        addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+        setBodyAsAccount(account)
+    }
 }

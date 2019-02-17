@@ -5,6 +5,7 @@ import assertk.assertThat
 import assertk.assertions.*
 import dfialho.yaem.app.ACCOUNT_NAME_MAX_LENGTH
 import dfialho.yaem.app.Account
+import dfialho.yaem.app.Result
 import dfialho.yaem.app.exceptions.FoundException
 import dfialho.yaem.app.randomID
 import org.junit.Test
@@ -82,7 +83,7 @@ class ExposedAccountRepositoryTest {
         repository.create(account)
         val nonExistingAccountID = randomID()
 
-        val obtainedAccount= repository.get(nonExistingAccountID)
+        val obtainedAccount = repository.get(nonExistingAccountID)
 
         assertThat(obtainedAccount).isNull()
     }
@@ -148,5 +149,43 @@ class ExposedAccountRepositoryTest {
         repository.create(Account("Account 4"))
 
         assertThat(repository.exists(nonExistingID)).isFalse()
+    }
+
+    @Test
+    fun `deleting a non-existing account returns failure`() {
+        val repository: AccountRepository = uniqueRepositoryManager().getAccountRepository()
+        val nonExistingID = randomID()
+
+        val result = repository.delete(nonExistingID)
+
+        assertThat(result).isEqualTo(Result.Failure)
+    }
+
+    @Test
+    fun `deleting an existing account returns success`() {
+        val repository: AccountRepository = uniqueRepositoryManager().getAccountRepository()
+        val account = Account("My account")
+        repository.create(account)
+
+        val result = repository.delete(account.id)
+
+        assertThat(result).isEqualTo(Result.Success)
+    }
+
+    @Test
+    fun `after deleting an existing account the account is no longer listed`() {
+        val repository: AccountRepository = uniqueRepositoryManager().getAccountRepository()
+        val deletedAccount = Account("My account")
+        val otherAccounts = listOf(Account("Acc-1"), Account("Acc-2"), Account("Acc-3"))
+        val allAccounts = otherAccounts + deletedAccount
+        allAccounts.forEach { repository.create(it) }
+
+        val result = repository.delete(deletedAccount.id)
+
+        assertAll {
+            assertThat(result).isEqualTo(Result.Success)
+            assertThat(repository.exists(deletedAccount.id)).isFalse()
+            assertThat(repository.list()).containsOnly(*otherAccounts.toTypedArray())
+        }
     }
 }

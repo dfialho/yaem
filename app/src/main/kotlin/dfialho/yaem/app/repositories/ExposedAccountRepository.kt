@@ -3,6 +3,7 @@ package dfialho.yaem.app.repositories
 import dfialho.yaem.app.ACCOUNT_NAME_MAX_LENGTH
 import dfialho.yaem.app.Account
 import dfialho.yaem.app.ID
+import dfialho.yaem.app.Result
 import dfialho.yaem.app.exceptions.FoundException
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -54,6 +55,13 @@ class ExposedAccountRepository : AccountRepository, ExposedRepository {
 
     override fun exists(accountID: ID): Boolean = transaction {
         return@transaction get(accountID) != null
+    }
+
+    override fun delete(accountID: String): Result = transaction {
+        val accountUUID = accountID.toUUID()
+        val deleteCount = Accounts.deleteWhere { Accounts.id eq accountUUID }
+
+        return@transaction if (deleteCount > 0) Result.Success else Result.Failure
     }
 
     private fun Query.mapToAccount(): List<Account> {

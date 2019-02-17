@@ -8,6 +8,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.request.receiveText
 import io.ktor.response.respond
 import io.ktor.routing.Route
+import io.ktor.routing.delete
 import io.ktor.routing.get
 import io.ktor.routing.post
 import kotlinx.serialization.json.Json
@@ -29,7 +30,7 @@ fun Route.accounts(manager: AccountManager, log: Logger) {
             manager.create(account)
         }
 
-        call.respond(HttpStatusCode.Accepted, Json.stringify(Account.serializer(), createdAccount))
+        call.respond(HttpStatusCode.Created, Json.stringify(Account.serializer(), createdAccount))
     }
 
     get("accounts") {
@@ -37,7 +38,7 @@ fun Route.accounts(manager: AccountManager, log: Logger) {
     }
 
     get("accounts/{id}") {
-        val receivedID = call.parameters["id"] ?: throw IllegalArgumentException("Account ID is required")
+        val receivedID = call.parameters["id"] ?: throw IllegalArgumentException("ID parameter is required")
 
         val account = manager.get(receivedID)
 
@@ -45,6 +46,17 @@ fun Route.accounts(manager: AccountManager, log: Logger) {
             call.respond(HttpStatusCode.OK, Json.stringify(Account.serializer(), account))
         } else {
             call.respond(HttpStatusCode.NotFound, "Account with ID '$receivedID' was not found")
+        }
+    }
+
+    delete("accounts/{id}") {
+        val receivedID = call.parameters["id"] ?: throw IllegalArgumentException("ID parameter is required")
+
+        val result = manager.delete(receivedID)
+
+        when(result) {
+            is Result.Success -> call.respond(HttpStatusCode.Accepted, "Account with id '$receivedID' was deleted")
+            is Result.Failure -> call.respond(HttpStatusCode.NotFound, "Account with id '$receivedID' not found")
         }
     }
 }
