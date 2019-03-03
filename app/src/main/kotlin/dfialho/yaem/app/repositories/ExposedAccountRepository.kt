@@ -2,13 +2,11 @@ package dfialho.yaem.app.repositories
 
 import dfialho.yaem.app.ACCOUNT_NAME_MAX_LENGTH
 import dfialho.yaem.app.Account
-import dfialho.yaem.app.DeleteResult
 import dfialho.yaem.app.ID
-import dfialho.yaem.app.exceptions.FoundException
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.transaction
 
-class ExposedAccountRepository : AccountRepository, ExposedRepository {
+class ExposedAccountRepository(private val exceptionTranslator: SQLExceptionTranslator) : AccountRepository,
+    ExposedRepository {
 
     private object Accounts : Table() {
         val id = uuid("ID").primaryKey()
@@ -22,53 +20,47 @@ class ExposedAccountRepository : AccountRepository, ExposedRepository {
     }
 
     override fun createTablesIfMissing() {
-        transaction {
+        repositoryTransaction(exceptionTranslator) {
             SchemaUtils.create(Accounts)
         }
     }
 
-    override fun create(account: Account): Account = transaction {
-        Accounts.insertUnique {
+    override fun create(account: Account): Account = repositoryTransaction(exceptionTranslator) {
+
+        Accounts.insert {
             it[id] = account.id.toUUID()
             it[name] = account.name
             it[initialBalance] = account.initialBalance
             it[startTimestamp] = account.startTimestamp.toDateTime()
-        }.applyOnDuplicateKey {
-            throw FoundException("Duplicate key: account with id '${account.id}' already exists")
-        }.onFailureThrowException()
+        }
 
-        return@transaction account
+        return@repositoryTransaction account
     }
 
-    override fun get(accountID: ID): Account? = transaction {
+    override fun get(accountID: ID): Account? = repositoryTransaction(exceptionTranslator) {
         val accountUUID = accountID.toUUID()
 
-        return@transaction Accounts.select { Accounts.id eq accountUUID }
+        return@repositoryTransaction Accounts.select { Accounts.id eq accountUUID }
             .limit(1)
             .mapToAccount()
             .firstOrNull()
     }
 
-    override fun list(): List<Account> = transaction {
-        return@transaction Accounts.selectAll().mapToAccount()
+    override fun list(): List<Account> = repositoryTransaction(exceptionTranslator) {
+        return@repositoryTransaction Accounts.selectAll().mapToAccount()
     }
 
-    override fun exists(accountID: ID): Boolean = transaction {
-        return@transaction get(accountID) != null
+    override fun exists(accountID: ID): Boolean = repositoryTransaction(exceptionTranslator) {
+        return@repositoryTransaction get(accountID) != null
     }
 
-    override fun delete(accountID: String): DeleteResult = transaction {
+    override fun delete(accountID: String): Unit = repositoryTransaction(exceptionTranslator) {
         val accountUUID = accountID.toUUID()
+        val deleteCount = Accounts.deleteWhere { Accounts.id eq accountUUID }
 
-        val deleteCount = try {
-            Accounts.translateSQLExceptions {
-                deleteWhere { id eq accountUUID }
-            }
-        } catch (e: ChildExistsException) {
-            return@transaction DeleteResult.ChildExists
+        if (deleteCount == 0) {
+            throw NotFoundException("Account with ID '$accountID' was not found")
         }
-
-        return@transaction if (deleteCount > 0) DeleteResult.Success else DeleteResult.NotFound
     }
 
     private fun Query.mapToAccount(): List<Account> {

@@ -39,7 +39,7 @@ class LedgerAPITest {
             }.apply {
                 assertAll {
                     assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
-                    assertThat(response.content).errorListContainsAll(ValidationError.LedgerMissingAccount(accountID))
+                    assertThat(response.content).errorListContainsAll(ValidationError.LedgerMissingAccount())
                 }
             }
         }

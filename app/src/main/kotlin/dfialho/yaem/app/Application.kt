@@ -1,14 +1,10 @@
 package dfialho.yaem.app
 
-import dfialho.yaem.app.exceptions.FoundException
 import dfialho.yaem.app.managers.AccountManager
 import dfialho.yaem.app.managers.AccountManagerImpl
 import dfialho.yaem.app.managers.LedgerManager
 import dfialho.yaem.app.managers.LedgerManagerImpl
-import dfialho.yaem.app.repositories.AccountRepository
-import dfialho.yaem.app.repositories.DatabaseConfig
-import dfialho.yaem.app.repositories.ExposedRepositoryManager
-import dfialho.yaem.app.repositories.LedgerRepository
+import dfialho.yaem.app.repositories.*
 import dfialho.yaem.app.validators.*
 import io.ktor.application.Application
 import io.ktor.application.call
@@ -51,7 +47,7 @@ fun Application.module(testing: Boolean = false) {
             call.respond(HttpStatusCode.BadRequest, Json.stringify(ValidationError.serializer().list, cause.errors))
         }
 
-        exception<FoundException> { cause ->
+        exception<DuplicateKeyException> { cause ->
             call.respond(HttpStatusCode.Conflict, cause.message.orEmpty())
         }
     }

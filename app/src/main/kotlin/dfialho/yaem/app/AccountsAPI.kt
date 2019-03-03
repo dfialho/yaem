@@ -1,6 +1,8 @@
 package dfialho.yaem.app
 
 import dfialho.yaem.app.managers.AccountManager
+import dfialho.yaem.app.repositories.ChildExistsException
+import dfialho.yaem.app.repositories.NotFoundException
 import dfialho.yaem.app.validators.ValidationError
 import dfialho.yaem.app.validators.ValidationErrorException
 import io.ktor.application.call
@@ -52,12 +54,16 @@ fun Route.accounts(manager: AccountManager, log: Logger) {
     delete("accounts/{id}") {
         val receivedID = call.parameters["id"] ?: throw IllegalArgumentException("ID parameter is required")
 
-        val result = manager.delete(receivedID)
-
-        when(result) {
-            is DeleteResult.Success -> call.respond(HttpStatusCode.Accepted, "Account with id '$receivedID' was deleted")
-            is DeleteResult.NotFound -> call.respond(HttpStatusCode.NotFound, "Account with id '$receivedID' not found")
-            is DeleteResult.ChildExists -> call.respond(HttpStatusCode.Conflict, "Account cannot be deleted because it has transactions associated with it")
+        try {
+            manager.delete(receivedID)
+            call.respond(HttpStatusCode.Accepted, "Account with id '$receivedID' was deleted")
+        } catch (e: NotFoundException) {
+            call.respond(HttpStatusCode.NotFound, "Account with id '$receivedID' not found")
+        } catch (e: ChildExistsException) {
+            call.respond(
+                HttpStatusCode.Conflict,
+                "Account cannot be deleted because it has transactions associated with it"
+            )
         }
     }
 }

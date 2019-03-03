@@ -5,15 +5,16 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isInstanceOf
 import dfialho.yaem.app.Transaction
-import dfialho.yaem.app.exceptions.ParentMissingException
 import dfialho.yaem.app.randomID
 import dfialho.yaem.app.repositories.LedgerRepository
+import dfialho.yaem.app.repositories.ParentMissingException
 import dfialho.yaem.app.validators.IDValidator
 import dfialho.yaem.app.validators.TransactionValidator
 import dfialho.yaem.app.validators.ValidationError
 import dfialho.yaem.app.validators.ValidationErrorException
 import io.mockk.*
 import org.junit.Test
+import java.sql.SQLException
 
 class LedgerManagerImplTest {
 
@@ -57,13 +58,13 @@ class LedgerManagerImplTest {
         val nonExistingAccount = randomID()
         val transaction = Transaction(amount = 10.5, description = "bananas", incomingAccount = nonExistingAccount)
 
-        every { repository.create(any()) } throws ParentMissingException(nonExistingAccount)
+        every { repository.create(any()) } throws ParentMissingException(SQLException())
 
         assertThat {
             manager.create(transaction)
         }.thrownError {
             isInstanceOf(ValidationErrorException::class)
-            containsError(ValidationError.LedgerMissingAccount(nonExistingAccount))
+            containsError(ValidationError.LedgerMissingAccount())
         }
 
         verify { repository.create(any()) wasNot Called }

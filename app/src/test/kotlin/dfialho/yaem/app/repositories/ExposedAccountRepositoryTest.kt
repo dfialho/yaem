@@ -5,8 +5,6 @@ import assertk.assertThat
 import assertk.assertions.*
 import dfialho.yaem.app.ACCOUNT_NAME_MAX_LENGTH
 import dfialho.yaem.app.Account
-import dfialho.yaem.app.DeleteResult
-import dfialho.yaem.app.exceptions.FoundException
 import dfialho.yaem.app.randomID
 import org.junit.Test
 
@@ -50,7 +48,7 @@ class ExposedAccountRepositoryTest {
         assertThat {
             repository.create(account)
         }.thrownError {
-            isInstanceOf(FoundException::class)
+            isInstanceOf(DuplicateKeyException::class)
         }
     }
 
@@ -156,20 +154,11 @@ class ExposedAccountRepositoryTest {
         val repository: AccountRepository = uniqueRepositoryManager().getAccountRepository()
         val nonExistingID = randomID()
 
-        val result = repository.delete(nonExistingID)
-
-        assertThat(result).isEqualTo(DeleteResult.NotFound)
-    }
-
-    @Test
-    fun `deleting an existing account returns success`() {
-        val repository: AccountRepository = uniqueRepositoryManager().getAccountRepository()
-        val account = Account("My account")
-        repository.create(account)
-
-        val result = repository.delete(account.id)
-
-        assertThat(result).isEqualTo(DeleteResult.Success)
+        assertThat {
+            repository.delete(nonExistingID)
+        }.thrownError {
+            isInstanceOf(NotFoundException::class)
+        }
     }
 
     @Test
@@ -180,12 +169,13 @@ class ExposedAccountRepositoryTest {
         val allAccounts = otherAccounts + deletedAccount
         allAccounts.forEach { repository.create(it) }
 
-        val result = repository.delete(deletedAccount.id)
+        repository.delete(deletedAccount.id)
 
         assertAll {
-            assertThat(result).isEqualTo(DeleteResult.Success)
             assertThat(repository.exists(deletedAccount.id)).isFalse()
             assertThat(repository.list()).containsOnly(*otherAccounts.toTypedArray())
         }
     }
+
+    // TODO deleting account when trasnactions exists for it
 }

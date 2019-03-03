@@ -21,7 +21,7 @@ open class ValidationError internal constructor(val code: String, val message: S
         message = "Name is too long (max=$max): $name"
     )
 
-    class LedgerMissingAccount(accountID: ID?) : ValidationError(
+    class LedgerMissingAccount(accountID: ID? = null) : ValidationError(
         code = "LEDGER-01",
         message = "Transaction depends on account ${(if (accountID == null) "" else "with id '$accountID' ")}which does not exist"
     )

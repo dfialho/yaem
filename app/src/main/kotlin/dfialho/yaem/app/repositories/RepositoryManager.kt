@@ -2,14 +2,14 @@ package dfialho.yaem.app.repositories
 
 import org.jetbrains.exposed.sql.Database
 
-class ExposedRepositoryManager(dbConfig: DatabaseConfig) {
+class ExposedRepositoryManager(dbConfig: DatabaseConfig, translator: SQLExceptionTranslator = H2SQLExceptionTranslator()) {
 
     init {
         Database.connect(dbConfig.url, dbConfig.driver)
     }
 
-    private val accounts: ExposedAccountRepository by lazy { ExposedAccountRepository().apply { createTablesIfMissing() } }
-    private val ledger: ExposedLedgerRepository by lazy { ExposedLedgerRepository(accounts).apply {
+    private val accounts: ExposedAccountRepository by lazy { ExposedAccountRepository(translator).apply { createTablesIfMissing() } }
+    private val ledger: ExposedLedgerRepository by lazy { ExposedLedgerRepository(translator).apply {
         accounts.createTablesIfMissing()
         createTablesIfMissing()
     } }

@@ -2,8 +2,8 @@ package dfialho.yaem.app.managers
 
 import dfialho.yaem.app.ID
 import dfialho.yaem.app.Transaction
-import dfialho.yaem.app.exceptions.ParentMissingException
 import dfialho.yaem.app.repositories.LedgerRepository
+import dfialho.yaem.app.repositories.ParentMissingException
 import dfialho.yaem.app.validators.TransactionValidator
 import dfialho.yaem.app.validators.ValidationError
 import dfialho.yaem.app.validators.ValidationErrorException
@@ -20,7 +20,7 @@ class LedgerManagerImpl(
         try {
             return repository.create(transaction)
         } catch (e: ParentMissingException) {
-            throw ValidationErrorException(ValidationError.LedgerMissingAccount(e.parentID))
+            throw ValidationErrorException(ValidationError.LedgerMissingAccount())
         }
     }
 

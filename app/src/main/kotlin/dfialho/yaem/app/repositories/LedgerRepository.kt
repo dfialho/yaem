@@ -10,4 +10,6 @@ interface LedgerRepository {
     fun get(transactionID: ID): Transaction?
 
     fun list(): List<Transaction>
+
+    fun exists(transactionID: ID): Boolean
 }

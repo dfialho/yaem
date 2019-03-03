@@ -5,7 +5,6 @@ import assertk.assertThat
 import assertk.assertions.*
 import dfialho.yaem.app.Account
 import dfialho.yaem.app.Transaction
-import dfialho.yaem.app.exceptions.ParentMissingException
 import dfialho.yaem.app.randomID
 import org.junit.Test
 import java.time.Instant

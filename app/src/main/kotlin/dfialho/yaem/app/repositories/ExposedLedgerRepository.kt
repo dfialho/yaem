@@ -2,12 +2,10 @@ package dfialho.yaem.app.repositories
 
 import dfialho.yaem.app.ID
 import dfialho.yaem.app.Transaction
-import dfialho.yaem.app.exceptions.FoundException
-import dfialho.yaem.app.exceptions.ParentMissingException
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.transaction
 
-class ExposedLedgerRepository(private val accountRepository: AccountRepository) : LedgerRepository, ExposedRepository {
+class ExposedLedgerRepository(private val exceptionTranslator: SQLExceptionTranslator) : LedgerRepository,
+    ExposedRepository {
 
     private object Transactions : Table() {
         val id = uuid("ID").primaryKey()
@@ -19,48 +17,40 @@ class ExposedLedgerRepository(private val accountRepository: AccountRepository) 
     }
 
     override fun createTablesIfMissing() {
-        transaction {
+        repositoryTransaction(exceptionTranslator) {
             SchemaUtils.create(Transactions)
         }
     }
 
-    override fun create(transaction: Transaction): Transaction = transaction {
+    override fun create(transaction: Transaction): Transaction = repositoryTransaction(exceptionTranslator) {
 
-        Transactions.insertUnique {
+        Transactions.insert {
             it[id] = transaction.id.toUUID()
             it[timestamp] = transaction.timestamp.toDateTime()
             it[amount] = transaction.amount
             it[description] = transaction.description
             it[incomingAccount] = transaction.incomingAccount.toUUID()
             it[sendingAccount] = transaction.sendingAccount?.toUUID()
-        }.applyOnDuplicateKey {
-            throw FoundException("Duplicate key: transaction with id '${transaction.id}' already exists")
-        }.applyOnParentMissing {
+        }
 
-            if (!accountRepository.exists(transaction.incomingAccount)) {
-                throw ParentMissingException(transaction.incomingAccount)
-            } else if (transaction.sendingAccount != null && !accountRepository.exists(transaction.sendingAccount)) {
-                throw ParentMissingException(transaction.sendingAccount)
-            } else {
-                throw ParentMissingException()
-            }
-
-        }.onFailureThrowException()
-
-        return@transaction transaction
+        return@repositoryTransaction transaction
     }
 
-    override fun get(transactionID: ID): Transaction? = transaction {
+    override fun get(transactionID: ID): Transaction? = repositoryTransaction(exceptionTranslator) {
         val transactionUUID = transactionID.toUUID()
 
-        return@transaction Transactions.select { Transactions.id eq transactionUUID }
+        return@repositoryTransaction Transactions.select { Transactions.id eq transactionUUID }
             .limit(1)
             .mapToTransaction()
             .firstOrNull()
     }
 
-    override fun list(): List<Transaction> = transaction {
-        return@transaction Transactions.selectAll().mapToTransaction()
+    override fun list(): List<Transaction> = repositoryTransaction(exceptionTranslator) {
+        return@repositoryTransaction Transactions.selectAll().mapToTransaction()
+    }
+
+    override fun exists(transactionID: ID): Boolean = repositoryTransaction(exceptionTranslator) {
+        return@repositoryTransaction get(transactionID) != null
     }
 
     private fun Query.mapToTransaction(): List<Transaction> {

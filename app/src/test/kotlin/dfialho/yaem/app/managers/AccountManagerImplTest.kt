@@ -57,7 +57,7 @@ class AccountManagerImplTest {
             isInstanceOf(ValidationErrorException::class)
         }
 
-        verify { repository.delete(accountID) wasNot Called }
+        verify { repository.delete(any()) wasNot Called }
     }
 
     @Test

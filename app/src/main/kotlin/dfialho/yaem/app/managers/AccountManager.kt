@@ -1,7 +1,6 @@
 package dfialho.yaem.app.managers
 
 import dfialho.yaem.app.Account
-import dfialho.yaem.app.DeleteResult
 import dfialho.yaem.app.ID
 
 interface AccountManager {
@@ -12,5 +11,5 @@ interface AccountManager {
 
     fun list(): List<Account>
 
-    fun delete(accountID: String): DeleteResult
+    fun delete(accountID: String)
 }
