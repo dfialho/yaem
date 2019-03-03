@@ -4,7 +4,10 @@ import assertk.assertThat
 import assertk.assertions.isInstanceOf
 import dfialho.yaem.app.Account
 import dfialho.yaem.app.randomID
+import dfialho.yaem.app.randomTransaction
 import dfialho.yaem.app.repositories.AccountRepository
+import dfialho.yaem.app.repositories.LedgerRepository
+import dfialho.yaem.app.repositories.uniqueRepositoryManager
 import dfialho.yaem.app.validators.AccountValidator
 import dfialho.yaem.app.validators.IDValidator
 import dfialho.yaem.app.validators.ValidationError
@@ -73,5 +76,47 @@ class AccountManagerImplTest {
         manager.delete(accountID)
 
         verifyAll { repository.delete(accountID) }
+    }
+
+    @Test
+    fun `deleting an account which is incoming account of at least one transaction returns a validation error`() {
+        val repositoryManager = uniqueRepositoryManager()
+        val accountRepository: AccountRepository = repositoryManager.getAccountRepository()
+        val ledgerRepository: LedgerRepository = repositoryManager.getLedgerRepository()
+        val manager: AccountManager = AccountManagerImpl(accountRepository, AccountValidator(IDValidator()))
+
+        val incomingAccount = Account("Incoming")
+        val sendingAccount = Account("Sending")
+        accountRepository.create(incomingAccount)
+        accountRepository.create(sendingAccount)
+        ledgerRepository.create(randomTransaction(incomingAccount.id, sendingAccount.id))
+
+        assertThat {
+            manager.delete(incomingAccount.id)
+        }.thrownError {
+            isInstanceOf(ValidationErrorException::class)
+            containsError(ValidationError.AccountReferences(incomingAccount.id))
+        }
+    }
+
+    @Test
+    fun `deleting an account which is sending account of at least one transaction returns a validation error`() {
+        val repositoryManager = uniqueRepositoryManager()
+        val accountRepository: AccountRepository = repositoryManager.getAccountRepository()
+        val ledgerRepository: LedgerRepository = repositoryManager.getLedgerRepository()
+        val manager: AccountManager = AccountManagerImpl(accountRepository, AccountValidator(IDValidator()))
+
+        val incomingAccount = Account("Incoming")
+        val sendingAccount = Account("Sending")
+        accountRepository.create(incomingAccount)
+        accountRepository.create(sendingAccount)
+        ledgerRepository.create(randomTransaction(incomingAccount.id, sendingAccount.id))
+
+        assertThat {
+            manager.delete(sendingAccount.id)
+        }.thrownError {
+            isInstanceOf(ValidationErrorException::class)
+            containsError(ValidationError.AccountReferences(sendingAccount.id))
+        }
     }
 }

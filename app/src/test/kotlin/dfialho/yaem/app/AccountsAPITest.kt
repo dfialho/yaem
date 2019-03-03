@@ -30,10 +30,7 @@ class AccountsAPITest {
 
         val accountID = "c1929c11-3caa-400c-bee4-fdad5f023759"
         handleGetAccountRequest(accountID).apply {
-            assertAll {
-                assertThat(response.status()).isEqualTo(HttpStatusCode.NotFound)
-                assertThat(response.content).isEqualTo("Account with ID '$accountID' was not found")
-            }
+            assertThat(response.status()).isEqualTo(HttpStatusCode.NotFound)
         }
     }
 
@@ -223,7 +220,7 @@ class AccountsAPITest {
     }
 
     @Test
-    fun `delete a non-existing account no other accounts are affected`() {
+    fun `deleting a non-existing account does not affect other accounts`() {
         withTestApplication({ module(testing = true) }) {
 
             val account = Account(
@@ -240,7 +237,7 @@ class AccountsAPITest {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.NotFound)
             }
 
-            handleRequest(HttpMethod.Get, "/api/accounts").apply {
+            handleListAccountsRequest().apply {
                 assertAll {
                     assertThat(response.status()).isEqualTo(HttpStatusCode.OK)
                     assertThat(response.content).jsonListContainsAll(Account.serializer(), *others.toTypedArray())

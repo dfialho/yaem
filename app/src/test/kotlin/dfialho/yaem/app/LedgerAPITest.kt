@@ -78,10 +78,7 @@ class LedgerAPITest {
 
             val nonExistingID = "c1929c11-3caa-400c-bee4-fdad5f023759"
             handleGetTransactionRequest(nonExistingID).apply {
-                assertAll {
-                    assertThat(response.status()).isEqualTo(HttpStatusCode.NotFound)
-                    assertThat(response.content).isEqualTo("Transaction with ID '$nonExistingID' was not found")
-                }
+                assertThat(response.status()).isEqualTo(HttpStatusCode.NotFound)
             }
         }
     }

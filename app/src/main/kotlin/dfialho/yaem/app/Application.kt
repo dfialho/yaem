@@ -31,7 +31,12 @@ fun Application.module(testing: Boolean = false) {
 
     val dbName = if (testing) UUID.randomUUID().toString() else "prod"
 
-    val repositoryManager = ExposedRepositoryManager(DatabaseConfig(url = "jdbc:h2:mem:$dbName;MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE", driver = "org.h2.Driver"))
+    val repositoryManager = ExposedRepositoryManager(
+        DatabaseConfig(
+            url = "jdbc:h2:mem:$dbName;MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
+            driver = "org.h2.Driver"
+        )
+    )
     val accountRepository: AccountRepository = repositoryManager.getAccountRepository()
     val accountManager: AccountManager = AccountManagerImpl(accountRepository, AccountValidator(IDValidator()))
     val ledgerRepository: LedgerRepository = repositoryManager.getLedgerRepository()
@@ -44,7 +49,18 @@ fun Application.module(testing: Boolean = false) {
 
     install(StatusPages) {
         exception<ValidationErrorException> { cause ->
-            call.respond(HttpStatusCode.BadRequest, Json.stringify(ValidationError.serializer().list, cause.errors))
+            val errors = cause.errors
+
+            val statusCode = when {
+                errors.size == 1 -> when (errors[0]) {
+                    is ValidationError.NotFound -> HttpStatusCode.NotFound
+                    is ValidationError.AccountReferences -> HttpStatusCode.Conflict
+                    else -> HttpStatusCode.BadRequest
+                }
+                else -> HttpStatusCode.BadRequest
+            }
+
+            call.respond(statusCode, Json.stringify(ValidationError.serializer().list, errors))
         }
 
         exception<DuplicateKeyException> { cause ->

@@ -6,6 +6,8 @@ import assertk.assertions.containsExactly
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.support.fail
+import dfialho.yaem.app.validators.ValidationError
+import dfialho.yaem.app.validators.toBaseError
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
@@ -40,4 +42,9 @@ inline fun <reified T> Assert<String?>.isJsonEqualTo(serializer: KSerializer<T>,
         assertThat(deserializedActual).isEqualTo(expected)
 
     } ?: fail(emptyList<T>(), actual)
+}
+
+fun Assert<String?>.errorListContainsAll(vararg errors: ValidationError) {
+    val normalizedErrors = errors.map { it.toBaseError() }.toTypedArray()
+    jsonListContainsAll(ValidationError.serializer(), *normalizedErrors)
 }

@@ -21,6 +21,16 @@ open class ValidationError internal constructor(val code: String, val message: S
         message = "Name is too long (max=$max): $name"
     )
 
+    class NotFound(resourceID: ID) : ValidationError(
+        code = "BASE-04",
+        message = "Resource with ID '$resourceID' was not found"
+    )
+
+    class AccountReferences(accountID: ID) : ValidationError(
+        code = "ACCOUNT-01",
+        message = "Account '$accountID' is still being referenced by at least one transaction"
+    )
+
     class LedgerMissingAccount(accountID: ID? = null) : ValidationError(
         code = "LEDGER-01",
         message = "Transaction depends on account ${(if (accountID == null) "" else "with id '$accountID' ")}which does not exist"

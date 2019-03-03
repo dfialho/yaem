@@ -24,9 +24,9 @@ class LedgerManagerImpl(
         }
     }
 
-    override fun get(transactionID: ID): Transaction? {
+    override fun get(transactionID: ID): Transaction {
         throwIfValidationError(validator.idValidator.validate(transactionID))
-        return repository.get(transactionID)
+        return repository.get(transactionID) ?: throw ValidationErrorException(ValidationError.NotFound(transactionID))
     }
 
     override fun list(): List<Transaction> {

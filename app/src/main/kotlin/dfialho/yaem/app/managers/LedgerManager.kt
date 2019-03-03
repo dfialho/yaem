@@ -7,7 +7,7 @@ interface LedgerManager {
 
     fun create(transaction: Transaction)
 
-    fun get(transactionID: ID): Transaction?
+    fun get(transactionID: ID): Transaction
 
     fun list(): List<Transaction>
 }

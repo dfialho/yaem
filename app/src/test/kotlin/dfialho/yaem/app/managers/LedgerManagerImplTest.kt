@@ -1,8 +1,6 @@
 package dfialho.yaem.app.managers
 
-import assertk.Assert
 import assertk.assertThat
-import assertk.assertions.contains
 import assertk.assertions.isInstanceOf
 import dfialho.yaem.app.Transaction
 import dfialho.yaem.app.randomID
@@ -70,9 +68,4 @@ class LedgerManagerImplTest {
     }
 
     // TODO validate no concurrency issues occur between creating a transaction for an account and deleting the account
-
-    private fun <T : Throwable> Assert<T>.containsError(error: ValidationError) = given { actual ->
-        actual as ValidationErrorException
-        assertThat(actual.errors).contains(error)
-    }
 }

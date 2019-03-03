@@ -3,7 +3,11 @@ package dfialho.yaem.app.managers
 import dfialho.yaem.app.Account
 import dfialho.yaem.app.ID
 import dfialho.yaem.app.repositories.AccountRepository
+import dfialho.yaem.app.repositories.ChildExistsException
+import dfialho.yaem.app.repositories.NotFoundException
 import dfialho.yaem.app.validators.AccountValidator
+import dfialho.yaem.app.validators.ValidationError
+import dfialho.yaem.app.validators.ValidationErrorException
 import dfialho.yaem.app.validators.throwIfValidationError
 
 class AccountManagerImpl(
@@ -16,9 +20,9 @@ class AccountManagerImpl(
         repository.create(account)
     }
 
-    override fun get(accountID: ID): Account? {
+    override fun get(accountID: ID): Account {
         throwIfValidationError(validator.idValidator.validate(accountID))
-        return repository.get(accountID)
+        return repository.get(accountID) ?: throw ValidationErrorException(ValidationError.NotFound(accountID))
     }
 
     override fun list(): List<Account> {
@@ -27,6 +31,13 @@ class AccountManagerImpl(
 
     override fun delete(accountID: String) {
         throwIfValidationError(validator.idValidator.validate(accountID))
-        repository.delete(accountID)
+
+        try {
+            repository.delete(accountID)
+        } catch (e: NotFoundException) {
+            throw ValidationErrorException(ValidationError.NotFound(accountID))
+        } catch (e: ChildExistsException) {
+            throw ValidationErrorException(ValidationError.AccountReferences(accountID))
+        }
     }
 }

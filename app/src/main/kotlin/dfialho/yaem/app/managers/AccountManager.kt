@@ -7,7 +7,7 @@ interface AccountManager {
 
     fun create(account: Account)
 
-    fun get(accountID: ID): Account?
+    fun get(accountID: ID): Account
 
     fun list(): List<Account>
 
