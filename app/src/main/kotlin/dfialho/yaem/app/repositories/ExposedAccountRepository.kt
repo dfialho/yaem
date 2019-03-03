@@ -25,7 +25,7 @@ class ExposedAccountRepository(private val exceptionTranslator: SQLExceptionTran
         }
     }
 
-    override fun create(account: Account): Account = repositoryTransaction(exceptionTranslator) {
+    override fun create(account: Account): Unit = repositoryTransaction(exceptionTranslator) {
 
         Accounts.insert {
             it[id] = account.id.toUUID()
@@ -33,8 +33,6 @@ class ExposedAccountRepository(private val exceptionTranslator: SQLExceptionTran
             it[initialBalance] = account.initialBalance
             it[startTimestamp] = account.startTimestamp.toDateTime()
         }
-
-        return@repositoryTransaction account
     }
 
     override fun get(accountID: ID): Account? = repositoryTransaction(exceptionTranslator) {

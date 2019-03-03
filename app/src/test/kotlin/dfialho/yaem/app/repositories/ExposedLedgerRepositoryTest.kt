@@ -25,12 +25,12 @@ class ExposedLedgerRepositoryTest {
             id = randomID()
         )
 
-        val createdTransaction = repository.create(transaction)
+        repository.create(transaction)
 
         assertAll {
-            assertThat(createdTransaction).isEqualTo(transaction)
             assertThat(repository.get(transaction.id)).isEqualTo(transaction)
             assertThat(repository.list()).containsOnly(transaction)
+            assertThat(repository.exists(transaction.id)).isTrue()
         }
     }
 
@@ -106,6 +106,7 @@ class ExposedLedgerRepositoryTest {
     private fun createAnAccount(repositoryManager: ExposedRepositoryManager): Account {
         val accountRepository = repositoryManager.getAccountRepository()
         val account = Account("account-${UUID.randomUUID().toString().substring(0, 5)}")
-        return accountRepository.create(account)
+        accountRepository.create(account)
+        return account
     }
 }

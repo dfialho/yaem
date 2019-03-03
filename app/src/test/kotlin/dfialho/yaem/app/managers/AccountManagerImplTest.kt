@@ -22,6 +22,7 @@ class AccountManagerImplTest {
         val account = Account("Invalid Account")
 
         every { validator.validate(account) } returns listOf(ValidationError.InvalidID(account.id))
+        every { repository.create(any()) } just Runs
 
         assertThat {
             manager.create(account)
@@ -29,7 +30,7 @@ class AccountManagerImplTest {
             isInstanceOf(ValidationErrorException::class)
         }
 
-        verify { repository.create(any()) wasNot Called }
+        verify(exactly = 0) { repository.create(any()) }
     }
 
     @Test
@@ -51,13 +52,15 @@ class AccountManagerImplTest {
         val manager: AccountManager = AccountManagerImpl(repository, validator)
         val accountID = "invalid id"
 
+        every { repository.delete(accountID) } just Runs
+
         assertThat {
             manager.delete(accountID)
         }.thrownError {
             isInstanceOf(ValidationErrorException::class)
         }
 
-        verify { repository.delete(any()) wasNot Called }
+        verify(exactly = 0) { repository.delete(any()) }
     }
 
     @Test

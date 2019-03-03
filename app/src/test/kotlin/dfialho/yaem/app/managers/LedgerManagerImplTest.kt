@@ -26,6 +26,7 @@ class LedgerManagerImplTest {
         val transaction = Transaction(amount = 10.5, description = "bananas", incomingAccount = randomID())
 
         every { validator.validate(transaction) } returns listOf(ValidationError.InvalidID(transaction.id))
+        every { repository.create(any()) } just Runs
 
         assertThat {
             manager.create(transaction)
@@ -33,7 +34,7 @@ class LedgerManagerImplTest {
             isInstanceOf(ValidationErrorException::class)
         }
 
-        verify { repository.create(any()) wasNot Called }
+        verify(exactly = 0) { repository.create(any()) }
     }
 
     @Test
@@ -43,7 +44,7 @@ class LedgerManagerImplTest {
         val manager: LedgerManager = LedgerManagerImpl(repository, validator)
         val transaction = Transaction(amount = 10.5, description = "bananas", incomingAccount = randomID())
 
-        every { repository.create(transaction) } returns transaction
+        every { repository.create(any()) } just Runs
 
         manager.create(transaction)
 
@@ -66,13 +67,11 @@ class LedgerManagerImplTest {
             isInstanceOf(ValidationErrorException::class)
             containsError(ValidationError.LedgerMissingAccount())
         }
-
-        verify { repository.create(any()) wasNot Called }
     }
 
     // TODO validate no concurrency issues occur between creating a transaction for an account and deleting the account
 
-    fun <T : Throwable> Assert<T>.containsError(error: ValidationError) = given { actual ->
+    private fun <T : Throwable> Assert<T>.containsError(error: ValidationError) = given { actual ->
         actual as ValidationErrorException
         assertThat(actual.errors).contains(error)
     }

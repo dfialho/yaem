@@ -15,10 +15,9 @@ class ExposedAccountRepositoryTest {
         val repository: AccountRepository = uniqueRepositoryManager().getAccountRepository()
         val account = Account("My Account")
 
-        val createdAccount = repository.create(account)
+        repository.create(account)
 
         assertAll {
-            assertThat(createdAccount).isEqualTo(account)
             assertThat(repository.get(account.id)).isEqualTo(account)
             assertThat(repository.exists(account.id)).isTrue()
             assertThat(repository.list()).containsOnly(account)
@@ -32,11 +31,11 @@ class ExposedAccountRepositoryTest {
         val account2 = Account("Account 2")
         val account3 = Account("Account 3")
 
-        val createdAccount1 = repository.create(account1)
-        val createdAccount2 = repository.create(account2)
-        val createdAccount3 = repository.create(account3)
+        repository.create(account1)
+        repository.create(account2)
+        repository.create(account3)
 
-        assertThat(repository.list()).containsOnly(createdAccount1, createdAccount2, createdAccount3)
+        assertThat(repository.list()).containsOnly(account1, account2, account3)
     }
 
     @Test

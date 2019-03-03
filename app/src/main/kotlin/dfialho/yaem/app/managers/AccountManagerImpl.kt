@@ -11,9 +11,9 @@ class AccountManagerImpl(
     private val validator: AccountValidator
 ) : AccountManager {
 
-    override fun create(account: Account): Account {
+    override fun create(account: Account) {
         throwIfValidationError(validator.validate(account))
-        return repository.create(account)
+        repository.create(account)
     }
 
     override fun get(accountID: ID): Account? {

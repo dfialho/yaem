@@ -28,11 +28,11 @@ fun Route.accounts(manager: AccountManager, log: Logger) {
             throw ValidationErrorException(error)
         }
 
-        val createdAccount = logOnError(log) {
+        logOnError(log) {
             manager.create(account)
         }
 
-        call.respond(HttpStatusCode.Created, Json.stringify(Account.serializer(), createdAccount))
+        call.respond(HttpStatusCode.Created, Json.stringify(Account.serializer(), account))
     }
 
     get("accounts") {

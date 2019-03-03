@@ -5,7 +5,7 @@ import dfialho.yaem.app.Transaction
 
 interface LedgerManager {
 
-    fun create(transaction: Transaction): Transaction
+    fun create(transaction: Transaction)
 
     fun get(transactionID: ID): Transaction?
 

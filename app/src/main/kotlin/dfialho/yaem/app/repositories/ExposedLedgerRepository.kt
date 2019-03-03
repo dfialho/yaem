@@ -22,7 +22,7 @@ class ExposedLedgerRepository(private val exceptionTranslator: SQLExceptionTrans
         }
     }
 
-    override fun create(transaction: Transaction): Transaction = repositoryTransaction(exceptionTranslator) {
+    override fun create(transaction: Transaction): Unit = repositoryTransaction(exceptionTranslator) {
 
         Transactions.insert {
             it[id] = transaction.id.toUUID()
@@ -32,8 +32,6 @@ class ExposedLedgerRepository(private val exceptionTranslator: SQLExceptionTrans
             it[incomingAccount] = transaction.incomingAccount.toUUID()
             it[sendingAccount] = transaction.sendingAccount?.toUUID()
         }
-
-        return@repositoryTransaction transaction
     }
 
     override fun get(transactionID: ID): Transaction? = repositoryTransaction(exceptionTranslator) {

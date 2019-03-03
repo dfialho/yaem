@@ -5,7 +5,7 @@ import dfialho.yaem.app.ID
 
 interface AccountRepository {
 
-    fun create(account: Account): Account
+    fun create(account: Account)
 
     fun get(accountID: ID): Account?
 

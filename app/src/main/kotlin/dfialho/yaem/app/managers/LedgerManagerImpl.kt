@@ -14,11 +14,11 @@ class LedgerManagerImpl(
     private val validator: TransactionValidator
 ) : LedgerManager {
 
-    override fun create(transaction: Transaction): Transaction {
+    override fun create(transaction: Transaction) {
         throwIfValidationError(validator.validate(transaction))
 
         try {
-            return repository.create(transaction)
+            repository.create(transaction)
         } catch (e: ParentMissingException) {
             throw ValidationErrorException(ValidationError.LedgerMissingAccount())
         }

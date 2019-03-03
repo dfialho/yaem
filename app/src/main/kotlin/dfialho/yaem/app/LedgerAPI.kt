@@ -25,11 +25,11 @@ fun Route.ledger(manager: LedgerManager, log: Logger) {
             throw ValidationErrorException(error)
         }
 
-        val createdTransaction = logOnError(log) {
+        logOnError(log) {
             manager.create(transaction)
         }
 
-        call.respond(HttpStatusCode.Created, Json.stringify(Transaction.serializer(), createdTransaction))
+        call.respond(HttpStatusCode.Created, Json.stringify(Transaction.serializer(), transaction))
     }
 
     get("ledger") {
