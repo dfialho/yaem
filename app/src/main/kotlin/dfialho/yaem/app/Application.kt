@@ -9,7 +9,6 @@ import dfialho.yaem.app.validators.*
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
-import io.ktor.application.log
 import io.ktor.features.CallLogging
 import io.ktor.features.StatusPages
 import io.ktor.http.ContentType
@@ -68,14 +67,18 @@ fun Application.module(testing: Boolean = false) {
         }
     }
 
+    // Must be installed after StatusPages
+    // StatusPages absorbs the exceptions this feature requires to log the errors
+    install(ErrorLogging)
+
     install(Routing) {
         get {
             call.respondText("HELLO WORLD!", contentType = ContentType.Text.Plain)
         }
 
         route("api") {
-            accounts(accountManager, log)
-            ledger(ledgerManager, log)
+            accounts(accountManager)
+            ledger(ledgerManager)
         }
     }
 }

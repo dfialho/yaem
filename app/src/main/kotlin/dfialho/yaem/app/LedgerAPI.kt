@@ -10,16 +10,13 @@ import io.ktor.routing.get
 import io.ktor.routing.post
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
-import org.slf4j.Logger
 
-fun Route.ledger(manager: LedgerManager, log: Logger) {
+fun Route.ledger(manager: LedgerManager) {
 
     post("ledger") {
         val transaction = Json.validatedParse(Transaction.serializer(), call.receiveText())
 
-        logOnError(log) {
-            manager.create(transaction)
-        }
+        manager.create(transaction)
 
         call.respond(HttpStatusCode.Created, Json.stringify(Transaction.serializer(), transaction))
     }

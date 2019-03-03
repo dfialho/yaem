@@ -11,16 +11,13 @@ import io.ktor.routing.get
 import io.ktor.routing.post
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
-import org.slf4j.Logger
 
-fun Route.accounts(manager: AccountManager, log: Logger) {
+fun Route.accounts(manager: AccountManager) {
 
     post("accounts") {
         val account = Json.validatedParse(Account.serializer(), call.receiveText())
 
-        logOnError(log) {
-            manager.create(account)
-        }
+        manager.create(account)
 
         call.respond(HttpStatusCode.Created, Json.stringify(Account.serializer(), account))
     }
