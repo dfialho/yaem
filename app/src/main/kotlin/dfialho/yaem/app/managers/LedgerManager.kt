@@ -10,4 +10,6 @@ interface LedgerManager {
     fun get(transactionID: ID): Transaction
 
     fun list(): List<Transaction>
+
+    fun delete(transactionID: String)
 }

@@ -1,12 +1,6 @@
 package dfialho.yaem.app
 
-import assertk.assertThat
-import assertk.assertions.isEqualTo
-import assertk.fail
-import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.handleRequest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
 import java.time.Instant
@@ -45,16 +39,6 @@ fun TestApplicationEngine.createTransaction(
 }
 
 
-fun TestApplicationEngine.listTransactions(): List<Transaction> {
-
-    return handleRequest(HttpMethod.Get, "/api/ledger").run {
-        assertThat(response.status()).isEqualTo(HttpStatusCode.OK)
-        val responseBody = response.content
-
-        if (responseBody != null) {
-            Json.parse(Transaction.serializer().list, responseBody)
-        } else {
-            fail("Response is null, but was expected to contain a json list")
-        }
-    }
+fun TestApplicationEngine.listTransactions(): List<Transaction> = handleListTransactionsRequest().run {
+    Json.parse(Transaction.serializer().list, response.content ?: "")
 }

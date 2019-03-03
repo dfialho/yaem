@@ -12,4 +12,6 @@ interface LedgerRepository {
     fun list(): List<Transaction>
 
     fun exists(transactionID: ID): Boolean
+
+    fun delete(transactionID: String)
 }

@@ -3,6 +3,7 @@ package dfialho.yaem.app.managers
 import dfialho.yaem.app.ID
 import dfialho.yaem.app.Transaction
 import dfialho.yaem.app.repositories.LedgerRepository
+import dfialho.yaem.app.repositories.NotFoundException
 import dfialho.yaem.app.repositories.ParentMissingException
 import dfialho.yaem.app.validators.TransactionValidator
 import dfialho.yaem.app.validators.ValidationError
@@ -31,5 +32,15 @@ class LedgerManagerImpl(
 
     override fun list(): List<Transaction> {
         return repository.list()
+    }
+
+    override fun delete(transactionID: String) {
+        throwIfValidationError(validator.idValidator.validate(transactionID))
+
+        try {
+            repository.delete(transactionID)
+        } catch (e: NotFoundException) {
+            throwError { ValidationError.NotFound(transactionID) }
+        }
     }
 }

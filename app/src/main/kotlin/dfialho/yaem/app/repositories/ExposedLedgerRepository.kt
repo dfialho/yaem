@@ -51,6 +51,15 @@ class ExposedLedgerRepository(private val exceptionTranslator: SQLExceptionTrans
         return@repositoryTransaction get(transactionID) != null
     }
 
+    override fun delete(transactionID: String): Unit = repositoryTransaction(exceptionTranslator) {
+        val transactionUUID = transactionID.toUUID()
+        val deleteCount = Transactions.deleteWhere { Transactions.id eq transactionUUID }
+
+        if (deleteCount == 0) {
+            throw NotFoundException("Transaction with ID '$transactionID' was not found")
+        }
+    }
+
     private fun Query.mapToTransaction(): List<Transaction> {
         return this.map {
             Transaction(

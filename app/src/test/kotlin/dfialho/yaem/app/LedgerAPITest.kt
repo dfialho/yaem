@@ -2,10 +2,7 @@ package dfialho.yaem.app
 
 import assertk.assertAll
 import assertk.assertThat
-import assertk.assertions.isEqualTo
-import assertk.assertions.isNotEmpty
-import assertk.assertions.isNotNull
-import assertk.assertions.isNull
+import assertk.assertions.*
 import dfialho.yaem.app.validators.ValidationError
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.withTestApplication
@@ -143,6 +140,42 @@ class LedgerAPITest {
             """.trimIndent()
         ).apply {
             assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
+        }
+    }
+
+    @Test
+    fun `after deleting a transaction it is no longer available`() {
+        withTestApplication({ module(testing = true) }) {
+
+            val account = createAccount(Account("My account"))
+            val transaction = createTransaction(randomTransaction(incomingAccount = account.id))
+            createTransaction(randomTransaction(incomingAccount = account.id))
+            createTransaction(randomTransaction(incomingAccount = account.id))
+
+            handleDeleteTransactionRequest(transaction.id).apply {
+                assertAll {
+                    assertThat(response.status()).isEqualTo(HttpStatusCode.Accepted)
+                }
+            }
+
+            assertThat(listTransactions()).doesNotContain(transaction)
+        }
+    }
+
+    @Test
+    fun `deleting a non-existing transaction responds with not found`() {
+        withTestApplication({ module(testing = true) }) {
+
+            val account = createAccount(Account("My account"))
+            val transaction = randomTransaction(incomingAccount = account.id)
+            val nonDeletedTransaction1 = createTransaction(randomTransaction(incomingAccount = account.id))
+            val nonDeletedTransaction2 = createTransaction(randomTransaction(incomingAccount = account.id))
+
+            handleDeleteTransactionRequest(transaction.id).apply {
+                assertThat(response.status()).isEqualTo(HttpStatusCode.NotFound)
+            }
+
+            assertThat(listTransactions()).containsOnly(nonDeletedTransaction1, nonDeletedTransaction2)
         }
     }
 }

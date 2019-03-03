@@ -51,3 +51,4 @@ fun TestApplicationEngine.handleListTransactionsRequest() = handleRequest(HttpMe
 
 fun TestApplicationEngine.handleGetTransactionRequest(nonExistingID: String) = handleRequest(HttpMethod.Get, "/api/ledger/$nonExistingID")
 
+fun TestApplicationEngine.handleDeleteTransactionRequest(transactionID: ID) = handleRequest(HttpMethod.Delete, "/api/ledger/$transactionID")
