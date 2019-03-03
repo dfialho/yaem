@@ -2,7 +2,7 @@ package dfialho.yaem.app
 
 import dfialho.yaem.app.managers.LedgerManager
 import dfialho.yaem.app.validators.ValidationError
-import dfialho.yaem.app.validators.ValidationErrorException
+import dfialho.yaem.app.validators.throwError
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receiveText
@@ -22,7 +22,7 @@ fun Route.ledger(manager: LedgerManager, log: Logger) {
         } catch (e: Exception) {
             val error = ValidationError.InvalidJson("Transaction")
             log.info(error.message, e)
-            throw ValidationErrorException(error)
+            throwError { error }
         }
 
         logOnError(log) {
@@ -40,11 +40,6 @@ fun Route.ledger(manager: LedgerManager, log: Logger) {
         val receivedID = call.parameters["id"] ?: throw IllegalArgumentException("Transaction ID is required")
 
         val transaction = manager.get(receivedID)
-
-        if (transaction != null) {
-            call.respond(HttpStatusCode.OK, Json.stringify(Transaction.serializer(), transaction))
-        } else {
-            call.respond(HttpStatusCode.NotFound, "Transaction with ID '$receivedID' was not found")
-        }
+        call.respond(HttpStatusCode.OK, Json.stringify(Transaction.serializer(), transaction))
     }
 }

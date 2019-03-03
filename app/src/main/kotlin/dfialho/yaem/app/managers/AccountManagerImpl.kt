@@ -7,7 +7,7 @@ import dfialho.yaem.app.repositories.ChildExistsException
 import dfialho.yaem.app.repositories.NotFoundException
 import dfialho.yaem.app.validators.AccountValidator
 import dfialho.yaem.app.validators.ValidationError
-import dfialho.yaem.app.validators.ValidationErrorException
+import dfialho.yaem.app.validators.throwError
 import dfialho.yaem.app.validators.throwIfValidationError
 
 class AccountManagerImpl(
@@ -22,7 +22,7 @@ class AccountManagerImpl(
 
     override fun get(accountID: ID): Account {
         throwIfValidationError(validator.idValidator.validate(accountID))
-        return repository.get(accountID) ?: throw ValidationErrorException(ValidationError.NotFound(accountID))
+        return repository.get(accountID) ?: throwError { ValidationError.NotFound(accountID) }
     }
 
     override fun list(): List<Account> {
@@ -35,9 +35,9 @@ class AccountManagerImpl(
         try {
             repository.delete(accountID)
         } catch (e: NotFoundException) {
-            throw ValidationErrorException(ValidationError.NotFound(accountID))
+            throwError { ValidationError.NotFound(accountID) }
         } catch (e: ChildExistsException) {
-            throw ValidationErrorException(ValidationError.AccountReferences(accountID))
+            throwError { ValidationError.AccountReferences(accountID) }
         }
     }
 }

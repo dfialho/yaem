@@ -64,12 +64,6 @@ open class ValidationError internal constructor(val code: String, val message: S
     }
 }
 
-fun throwIfValidationError(errors: List<ValidationError>) {
-    if (errors.isNotEmpty()) {
-        throw ValidationErrorException(errors)
-    }
-}
-
 fun ValidationError.toBaseError(): ValidationError {
     return ValidationError(this.code, this.message)
 }

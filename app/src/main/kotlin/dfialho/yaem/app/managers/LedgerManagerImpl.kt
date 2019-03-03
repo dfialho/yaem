@@ -6,7 +6,7 @@ import dfialho.yaem.app.repositories.LedgerRepository
 import dfialho.yaem.app.repositories.ParentMissingException
 import dfialho.yaem.app.validators.TransactionValidator
 import dfialho.yaem.app.validators.ValidationError
-import dfialho.yaem.app.validators.ValidationErrorException
+import dfialho.yaem.app.validators.throwError
 import dfialho.yaem.app.validators.throwIfValidationError
 
 class LedgerManagerImpl(
@@ -20,13 +20,13 @@ class LedgerManagerImpl(
         try {
             repository.create(transaction)
         } catch (e: ParentMissingException) {
-            throw ValidationErrorException(ValidationError.LedgerMissingAccount())
+            throwError { ValidationError.LedgerMissingAccount() }
         }
     }
 
     override fun get(transactionID: ID): Transaction {
         throwIfValidationError(validator.idValidator.validate(transactionID))
-        return repository.get(transactionID) ?: throw ValidationErrorException(ValidationError.NotFound(transactionID))
+        return repository.get(transactionID) ?: throwError { ValidationError.NotFound(transactionID) }
     }
 
     override fun list(): List<Transaction> {

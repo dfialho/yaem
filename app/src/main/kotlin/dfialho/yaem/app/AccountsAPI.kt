@@ -2,7 +2,7 @@ package dfialho.yaem.app
 
 import dfialho.yaem.app.managers.AccountManager
 import dfialho.yaem.app.validators.ValidationError
-import dfialho.yaem.app.validators.ValidationErrorException
+import dfialho.yaem.app.validators.throwError
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receiveText
@@ -23,7 +23,7 @@ fun Route.accounts(manager: AccountManager, log: Logger) {
         } catch (e: Exception) {
             val error = ValidationError.InvalidJson("Account")
             log.info(error.message, e)
-            throw ValidationErrorException(error)
+            throwError { error }
         }
 
         logOnError(log) {
