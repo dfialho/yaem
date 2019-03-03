@@ -1,8 +1,6 @@
 package dfialho.yaem.app
 
 import dfialho.yaem.app.managers.LedgerManager
-import dfialho.yaem.app.validators.ValidationError
-import dfialho.yaem.app.validators.throwError
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receiveText
@@ -17,13 +15,7 @@ import org.slf4j.Logger
 fun Route.ledger(manager: LedgerManager, log: Logger) {
 
     post("ledger") {
-        val transaction = try {
-            Json.parse(Transaction.serializer(), call.receiveText())
-        } catch (e: Exception) {
-            val error = ValidationError.InvalidJson("Transaction")
-            log.info(error.message, e)
-            throwError { error }
-        }
+        val transaction = Json.validatedParse(Transaction.serializer(), call.receiveText())
 
         logOnError(log) {
             manager.create(transaction)

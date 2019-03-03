@@ -102,6 +102,28 @@ class AccountsAPITest {
     }
 
     @Test
+    fun `create an account with invalid json`(): Unit = withTestApplication({ module(testing = true) }) {
+        handleCreateAccountRequest("{ invalid json }").apply {
+            assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
+        }
+    }
+
+    @Test
+    fun `create an account missing required name field`(): Unit = withTestApplication({ module(testing = true) }) {
+        handleCreateAccountRequest(
+            body = """
+                {
+                  "initialBalance": 10.0,
+                  "startTimestamp": "timestamp",
+                  "id": "a1929c11-3caa-400c-bee4-fdad5f023759"
+                }
+            """.trimIndent()
+        ).apply {
+            assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
+        }
+    }
+
+    @Test
     fun createAccountWithStringTimestamp(): Unit = withTestApplication({ module(testing = true) }) {
 
         handleCreateAccountRequest(

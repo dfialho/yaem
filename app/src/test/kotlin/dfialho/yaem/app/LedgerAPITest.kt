@@ -125,5 +125,24 @@ class LedgerAPITest {
         }
     }
 
-    // TODO optional fields
+    @Test
+    fun `create transaction with invalid json`(): Unit = withTestApplication({ module(testing = true) }) {
+        handleCreateAccountRequest("{ invalid json }").apply {
+            assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
+        }
+    }
+
+    @Test
+    fun `create transaction missing required name field`(): Unit = withTestApplication({ module(testing = true) }) {
+        handleCreateAccountRequest(
+            body = """
+                {
+                  "amount": 10.5,
+                  "description": "bananas"
+                }
+            """.trimIndent()
+        ).apply {
+            assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
+        }
+    }
 }

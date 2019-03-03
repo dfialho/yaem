@@ -1,8 +1,6 @@
 package dfialho.yaem.app
 
 import dfialho.yaem.app.managers.AccountManager
-import dfialho.yaem.app.validators.ValidationError
-import dfialho.yaem.app.validators.throwError
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receiveText
@@ -18,13 +16,7 @@ import org.slf4j.Logger
 fun Route.accounts(manager: AccountManager, log: Logger) {
 
     post("accounts") {
-        val account = try {
-            Json.parse(Account.serializer(), call.receiveText())
-        } catch (e: Exception) {
-            val error = ValidationError.InvalidJson("Account")
-            log.info(error.message, e)
-            throwError { error }
-        }
+        val account = Json.validatedParse(Account.serializer(), call.receiveText())
 
         logOnError(log) {
             manager.create(account)
