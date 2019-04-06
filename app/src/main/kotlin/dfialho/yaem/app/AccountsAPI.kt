@@ -5,10 +5,7 @@ import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receiveText
 import io.ktor.response.respond
-import io.ktor.routing.Route
-import io.ktor.routing.delete
-import io.ktor.routing.get
-import io.ktor.routing.post
+import io.ktor.routing.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
 
@@ -31,6 +28,16 @@ fun Route.accounts(manager: AccountManager) {
 
         val account = manager.get(receivedID)
         call.respond(HttpStatusCode.OK, Json.stringify(Account.serializer(), account))
+    }
+
+    put("accounts/{id}") {
+        val accountID = call.parameters["id"] ?: throw IllegalArgumentException("ID parameter is required")
+        val account = Json.validatedParse(Account.serializer(), call.receiveText())
+
+        manager.update(accountID, account)
+        val updatedAccount = account.copy(id = accountID)
+
+        call.respond(HttpStatusCode.Accepted, Json.stringify(Account.serializer(), updatedAccount))
     }
 
     delete("accounts/{id}") {

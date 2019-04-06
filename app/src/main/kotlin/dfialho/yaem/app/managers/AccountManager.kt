@@ -11,5 +11,7 @@ interface AccountManager {
 
     fun list(): List<Account>
 
+    fun update(accountID: String, account: Account)
+
     fun delete(accountID: String)
 }

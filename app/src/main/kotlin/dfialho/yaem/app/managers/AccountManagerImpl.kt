@@ -14,7 +14,6 @@ class AccountManagerImpl(
     private val repository: AccountRepository,
     private val validator: AccountValidator
 ) : AccountManager {
-
     override fun create(account: Account) {
         throwIfValidationError(validator.validate(account))
         repository.create(account)
@@ -27,6 +26,17 @@ class AccountManagerImpl(
 
     override fun list(): List<Account> {
         return repository.list()
+    }
+
+    override fun update(accountID: String, account: Account) {
+        throwIfValidationError(validator.idValidator.validate(accountID))
+        throwIfValidationError(validator.validate(account))
+
+        try {
+            repository.update(accountID, account)
+        } catch (e: NotFoundException) {
+            throwError { ValidationError.NotFound(accountID) }
+        }
     }
 
     override fun delete(accountID: String) {

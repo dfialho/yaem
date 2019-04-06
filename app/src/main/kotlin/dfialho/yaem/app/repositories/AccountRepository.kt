@@ -13,5 +13,7 @@ interface AccountRepository {
 
     fun exists(accountID: ID): Boolean
 
+    fun update(accountID: String, account: Account)
+
     fun delete(accountID: String)
 }

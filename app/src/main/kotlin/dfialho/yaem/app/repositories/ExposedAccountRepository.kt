@@ -7,18 +7,17 @@ import org.jetbrains.exposed.sql.*
 
 class ExposedAccountRepository(private val exceptionTranslator: SQLExceptionTranslator) : AccountRepository,
     ExposedRepository {
-
     private object Accounts : Table() {
+
         val id = uuid("ID").primaryKey()
         val name = varchar("NAME", length = ACCOUNT_NAME_MAX_LENGTH)
         val initialBalance = double("INITIAL_BALANCE")
         val startTimestamp = datetime("START_TIMESTAMP")
     }
-
     companion object {
+
         val accountIDColumn get() = Accounts.id
     }
-
     override fun createTablesIfMissing() {
         repositoryTransaction(exceptionTranslator) {
             SchemaUtils.create(Accounts)
@@ -50,6 +49,19 @@ class ExposedAccountRepository(private val exceptionTranslator: SQLExceptionTran
 
     override fun exists(accountID: ID): Boolean = repositoryTransaction(exceptionTranslator) {
         return@repositoryTransaction get(accountID) != null
+    }
+
+    override fun update(accountID: String, account: Account): Unit = repositoryTransaction(exceptionTranslator)  {
+
+        val updatedCount = Accounts.update({ Accounts.id eq accountID.toUUID()}) {
+            it[name] = account.name
+            it[initialBalance] = account.initialBalance
+            it[startTimestamp] = account.startTimestamp.toDateTime()
+        }
+
+        if (updatedCount == 0) {
+            throw NotFoundException("Account with ID '$accountID' was not found")
+        }
     }
 
     override fun delete(accountID: String): Unit = repositoryTransaction(exceptionTranslator) {

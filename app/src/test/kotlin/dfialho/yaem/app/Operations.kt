@@ -13,6 +13,10 @@ fun TestApplicationEngine.createAccount(account: Account): Account = handleCreat
     Json.parse(Account.serializer(), response.content ?: "")
 }
 
+fun TestApplicationEngine.getAccount(accountID: ID): Account = handleGetAccountRequest(accountID).run {
+    Json.parse(Account.serializer(), response.content ?: "")
+}
+
 fun TestApplicationEngine.listAccounts(): List<Account> = handleListAccountsRequest().run {
     Json.parse(Account.serializer().list, response.content ?: "")
 }

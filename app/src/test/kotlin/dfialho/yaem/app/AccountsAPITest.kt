@@ -10,8 +10,10 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.withTestApplication
+import org.joda.time.Days
 import org.junit.Test
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 class AccountsAPITest {
 
@@ -302,6 +304,62 @@ class AccountsAPITest {
                 assertThat(listTransactions()).containsAll(otherTransaction)
                 assertThat(listAccounts()).containsOnly(otherAccount)
             }
+        }
+    }
+
+    @Test
+    fun `after updating an account the response to getting includes the updated version`() {
+        withTestApplication({ module(testing = true) }) {
+            val account = createAccount(
+                Account(
+                    name = "My Account",
+                    initialBalance = 10.5,
+                    startTimestamp = Instant.parse("2011-12-03T10:15:30Z")
+                )
+            )
+
+            val newVersion = Account(
+                name = "New Account Name",
+                initialBalance = account.initialBalance + 11.8,
+                startTimestamp = account.startTimestamp.plus(1, ChronoUnit.DAYS)
+            )
+
+            val newVersionWithOriginalID = newVersion.copy(id = account.id)
+
+            handleUpdateAccountRequest(account.id, newVersion).apply {
+                assertThat(response.status()).isEqualTo(HttpStatusCode.Accepted)
+                assertThat(response.content).isJsonEqualTo(Account.serializer(), newVersionWithOriginalID)
+            }
+
+            assertThat(getAccount(account.id)).isEqualTo(newVersionWithOriginalID)
+        }
+    }
+
+    @Test
+    fun `trying to update an account that does not exist responds with not found`() {
+        withTestApplication({ module(testing = true) }) {
+            val account = createAccount(
+                Account(
+                    name = "My Account",
+                    initialBalance = 10.5,
+                    startTimestamp = Instant.parse("2011-12-03T10:15:30Z")
+                )
+            )
+
+            val newVersion = Account(
+                name = "New Account Name",
+                initialBalance = account.initialBalance + 11.8,
+                startTimestamp = account.startTimestamp.plus(1, ChronoUnit.DAYS),
+                id = account.id
+            )
+
+            val nonExistingID = randomID()
+
+            handleUpdateAccountRequest(nonExistingID, newVersion).apply {
+                assertThat(response.status()).isEqualTo(HttpStatusCode.NotFound)
+            }
+
+            assertThat(getAccount(account.id)).isEqualTo(account)
         }
     }
 }
