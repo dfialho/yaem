@@ -3,6 +3,7 @@ package dfialho.yaem.app
 import io.ktor.server.testing.TestApplicationEngine
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
+import java.lang.IllegalStateException
 import java.time.Instant
 
 //
@@ -25,21 +26,27 @@ fun TestApplicationEngine.listAccounts(): List<Account> = handleListAccountsRequ
 // Transactions
 //
 
-fun TestApplicationEngine.createTransaction(transaction: Transaction): Transaction {
-    return handleCreateTransactionRequest(transaction).run {
-        Json.parse(Transaction.serializer(), response.content ?: "")
+inline fun <reified T : Transaction>TestApplicationEngine.createTransaction(transaction: T): T {
+
+    handleCreateTransactionRequest(transaction).run {
+        val trx = Json.parse(Transaction.serializer(), response.content ?: "")
+
+        if (trx !is T) {
+            throw IllegalStateException("Parsed transaction of type ${trx::class.simpleName}, but expected ${T::class.simpleName}")
+        }
+
+        return trx
     }
 }
 
-fun TestApplicationEngine.createTransaction(
-    incomingAccount: ID,
+fun TestApplicationEngine.createOneWayTransaction(
+    account: ID,
     id: ID = randomID(),
     amount: Double = 10.5,
     description: String = "",
-    sendingAccount: ID? = null,
     timestamp: Instant = Instant.now()
 ): Transaction {
-    return createTransaction(Transaction(amount, description, incomingAccount, sendingAccount, timestamp, id))
+    return createTransaction(OneWayTransaction(account, amount, description, timestamp, id))
 }
 
 fun TestApplicationEngine.getTransaction(trxID: ID): Transaction = handleGetTransactionRequest(trxID).run {

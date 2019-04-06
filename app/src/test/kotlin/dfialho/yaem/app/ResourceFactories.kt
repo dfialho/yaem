@@ -2,11 +2,19 @@ package dfialho.yaem.app
 
 import java.time.Instant
 
-fun randomTransaction(incomingAccount: ID, sendingAccount: ID? = null) = Transaction(
+fun randomOneWayTransaction(account: ID) = OneWayTransaction(
+    account = account,
     amount = Math.random(),
     description = "random-trx-${randomID()}",
-    incomingAccount = incomingAccount,
     timestamp = Instant.now(),
-    sendingAccount = sendingAccount,
+    id = randomID()
+)
+
+fun randomTransfer(incomingAccount: ID, outgoingAccount: ID) = Transfer(
+    outgoingAccount = outgoingAccount,
+    incomingAccount = incomingAccount,
+    amount = Math.random(),
+    description = "random-trx-${randomID()}",
+    timestamp = Instant.now(),
     id = randomID()
 )

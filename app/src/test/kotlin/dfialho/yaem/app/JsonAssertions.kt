@@ -1,10 +1,7 @@
 package dfialho.yaem.app
 
 import assertk.Assert
-import assertk.assertions.containsAll
-import assertk.assertions.containsExactly
-import assertk.assertions.isEmpty
-import assertk.assertions.isEqualTo
+import assertk.assertions.*
 import assertk.assertions.support.fail
 import dfialho.yaem.app.validators.ValidationError
 import dfialho.yaem.app.validators.toBaseError
@@ -32,6 +29,14 @@ inline fun <reified T> Assert<String?>.jsonListContainsAll(serializer: KSerializ
     actual?.let {
         val deserializedActual: List<T> = Json.parse(serializer.list, actual)
         assertThat(deserializedActual).containsAll(*expectedItems)
+
+    } ?: fail(emptyList<T>(), actual)
+}
+
+inline fun <reified T> Assert<String?>.jsonListContainsOnly(serializer: KSerializer<T>, vararg expectedItems: T) = given { actual ->
+    actual?.let {
+        val deserializedActual: List<T> = Json.parse(serializer.list, actual)
+        assertThat(deserializedActual).containsOnly(*expectedItems)
 
     } ?: fail(emptyList<T>(), actual)
 }

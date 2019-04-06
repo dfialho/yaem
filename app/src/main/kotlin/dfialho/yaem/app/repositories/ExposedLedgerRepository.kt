@@ -1,19 +1,25 @@
 package dfialho.yaem.app.repositories
 
 import dfialho.yaem.app.ID
+import dfialho.yaem.app.OneWayTransaction
 import dfialho.yaem.app.Transaction
+import dfialho.yaem.app.Transfer
 import org.jetbrains.exposed.sql.*
 
-class ExposedLedgerRepository(private val exceptionTranslator: SQLExceptionTranslator) : LedgerRepository,
-    ExposedRepository {
+class ExposedLedgerRepository(private val exceptionTranslator: SQLExceptionTranslator) : LedgerRepository, ExposedRepository {
+
+    private enum class TransactionType {
+        ONE_WAY, TRANSFER
+    }
 
     private object Transactions : Table() {
         val id = uuid("ID").primaryKey()
         val timestamp = datetime("TIMESTAMP")
         val amount = double("AMOUNT")
+        val type = enumeration("TYPE", TransactionType::class)
         val description = text("DESCRIPTION")
         val incomingAccount = uuid("INCOMING_ACCOUNT") references ExposedAccountRepository.accountIDColumn
-        val sendingAccount = (uuid("SENDING_ACCOUNT") references ExposedAccountRepository.accountIDColumn).nullable()
+        val outgoingAccount = (uuid("OUTGOING_ACCOUNT") references ExposedAccountRepository.accountIDColumn).nullable()
     }
 
     override fun createTablesIfMissing() {
@@ -29,8 +35,19 @@ class ExposedLedgerRepository(private val exceptionTranslator: SQLExceptionTrans
             it[timestamp] = transaction.timestamp.toDateTime()
             it[amount] = transaction.amount
             it[description] = transaction.description
-            it[incomingAccount] = transaction.incomingAccount.toUUID()
-            it[sendingAccount] = transaction.sendingAccount?.toUUID()
+
+            when (transaction) {
+                is OneWayTransaction -> {
+                    it[type] = TransactionType.ONE_WAY
+                    it[incomingAccount] = transaction.account.toUUID()
+                    it[outgoingAccount] = null
+                }
+                is Transfer -> {
+                    it[type] = TransactionType.TRANSFER
+                    it[incomingAccount] = transaction.incomingAccount.toUUID()
+                    it[outgoingAccount] = transaction.outgoingAccount.toUUID()
+                }
+            }
         }
     }
 
@@ -57,8 +74,19 @@ class ExposedLedgerRepository(private val exceptionTranslator: SQLExceptionTrans
             it[timestamp] = trx.timestamp.toDateTime()
             it[amount] = trx.amount
             it[description] = trx.description
-            it[incomingAccount] = trx.incomingAccount.toUUID()
-            it[sendingAccount] = trx.sendingAccount?.toUUID()
+
+            when (trx) {
+                is OneWayTransaction -> {
+                    it[type] = TransactionType.ONE_WAY
+                    it[incomingAccount] = trx.account.toUUID()
+                    it[outgoingAccount] = null
+                }
+                is Transfer -> {
+                    it[type] = TransactionType.TRANSFER
+                    it[incomingAccount] = trx.incomingAccount.toUUID()
+                    it[outgoingAccount] = trx.outgoingAccount.toUUID()
+                }
+            }
         }
 
         if (updatedCount == 0) {
@@ -77,14 +105,24 @@ class ExposedLedgerRepository(private val exceptionTranslator: SQLExceptionTrans
 
     private fun Query.mapToTransaction(): List<Transaction> {
         return this.map {
-            Transaction(
-                id = it[Transactions.id].toID(),
-                timestamp = it[Transactions.timestamp].toJavaInstant(),
-                amount = it[Transactions.amount],
-                description = it[Transactions.description],
-                incomingAccount = it[Transactions.incomingAccount].toID(),
-                sendingAccount = it[Transactions.sendingAccount]?.toID()
-            )
+
+            when (it[Transactions.type]) {
+                TransactionType.ONE_WAY -> OneWayTransaction(
+                    account = it[Transactions.incomingAccount].toID(),
+                    amount = it[Transactions.amount],
+                    description = it[Transactions.description],
+                    timestamp = it[Transactions.timestamp].toJavaInstant(),
+                    id = it[Transactions.id].toID()
+                )
+                TransactionType.TRANSFER -> Transfer(
+                    outgoingAccount = it[Transactions.outgoingAccount]?.toID() ?: throw IllegalStateException("Outgoing account cannot be null"),
+                    incomingAccount = it[Transactions.incomingAccount].toID(),
+                    amount = it[Transactions.amount],
+                    description = it[Transactions.description],
+                    timestamp = it[Transactions.timestamp].toJavaInstant(),
+                    id = it[Transactions.id].toID()
+                )
+            }
         }
     }
 }

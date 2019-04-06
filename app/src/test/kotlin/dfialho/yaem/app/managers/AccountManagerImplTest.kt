@@ -4,7 +4,7 @@ import assertk.assertThat
 import assertk.assertions.isInstanceOf
 import dfialho.yaem.app.Account
 import dfialho.yaem.app.randomID
-import dfialho.yaem.app.randomTransaction
+import dfialho.yaem.app.randomTransfer
 import dfialho.yaem.app.repositories.AccountRepository
 import dfialho.yaem.app.repositories.LedgerRepository
 import dfialho.yaem.app.repositories.uniqueRepositoryManager
@@ -86,10 +86,10 @@ class AccountManagerImplTest {
         val manager: AccountManager = AccountManagerImpl(accountRepository, AccountValidator(IDValidator()))
 
         val incomingAccount = Account("Incoming")
-        val sendingAccount = Account("Sending")
+        val outgoingAccount = Account("Sending")
         accountRepository.create(incomingAccount)
-        accountRepository.create(sendingAccount)
-        ledgerRepository.create(randomTransaction(incomingAccount.id, sendingAccount.id))
+        accountRepository.create(outgoingAccount)
+        ledgerRepository.create(randomTransfer(incomingAccount.id, outgoingAccount.id))
 
         assertThat {
             manager.delete(incomingAccount.id)
@@ -107,16 +107,16 @@ class AccountManagerImplTest {
         val manager: AccountManager = AccountManagerImpl(accountRepository, AccountValidator(IDValidator()))
 
         val incomingAccount = Account("Incoming")
-        val sendingAccount = Account("Sending")
+        val outgoingAccount = Account("Sending")
         accountRepository.create(incomingAccount)
-        accountRepository.create(sendingAccount)
-        ledgerRepository.create(randomTransaction(incomingAccount.id, sendingAccount.id))
+        accountRepository.create(outgoingAccount)
+        ledgerRepository.create(randomTransfer(incomingAccount.id, outgoingAccount.id))
 
         assertThat {
-            manager.delete(sendingAccount.id)
+            manager.delete(outgoingAccount.id)
         }.thrownError {
             isInstanceOf(ValidationErrorException::class)
-            containsError(ValidationError.AccountReferences(sendingAccount.id))
+            containsError(ValidationError.AccountReferences(outgoingAccount.id))
         }
     }
 }

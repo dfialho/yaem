@@ -38,7 +38,7 @@ open class ValidationError internal constructor(val code: String, val message: S
 
     class LedgerCommonAccounts(accountID: ID) : ValidationError(
         code = "LEDGER-02",
-        message = "Transaction's incoming and sending accounts cannot have the same id: $accountID"
+        message = "Transaction's incoming and outgoing accounts cannot have the same id: $accountID"
     )
 
     override fun equals(other: Any?): Boolean {

@@ -2,7 +2,7 @@ package dfialho.yaem.app.managers
 
 import assertk.assertThat
 import assertk.assertions.isInstanceOf
-import dfialho.yaem.app.Transaction
+import dfialho.yaem.app.OneWayTransaction
 import dfialho.yaem.app.randomID
 import dfialho.yaem.app.repositories.LedgerRepository
 import dfialho.yaem.app.repositories.ParentMissingException
@@ -21,7 +21,7 @@ class LedgerManagerImplTest {
         val validator = mockk<TransactionValidator>()
         val repository = mockk<LedgerRepository>()
         val manager: LedgerManager = LedgerManagerImpl(repository, validator)
-        val transaction = Transaction(amount = 10.5, description = "bananas", incomingAccount = randomID())
+        val transaction = OneWayTransaction(account= randomID(), amount = 10.5)
 
         every { validator.validate(transaction) } returns listOf(ValidationError.InvalidID(transaction.id))
         every { repository.create(any()) } just Runs
@@ -40,7 +40,7 @@ class LedgerManagerImplTest {
         val validator = spyk(TransactionValidator(IDValidator()))
         val repository = mockk<LedgerRepository>()
         val manager: LedgerManager = LedgerManagerImpl(repository, validator)
-        val transaction = Transaction(amount = 10.5, description = "bananas", incomingAccount = randomID())
+        val transaction = OneWayTransaction(account= randomID(), amount = 10.5)
 
         every { repository.create(any()) } just Runs
 
@@ -55,7 +55,7 @@ class LedgerManagerImplTest {
         val repository = mockk<LedgerRepository>()
         val manager: LedgerManager = LedgerManagerImpl(repository, validator)
         val nonExistingAccount = randomID()
-        val transaction = Transaction(amount = 10.5, description = "bananas", incomingAccount = nonExistingAccount)
+        val transaction = OneWayTransaction(account= nonExistingAccount, amount = 10.5)
 
         every { repository.create(any()) } throws ParentMissingException(SQLException())
 

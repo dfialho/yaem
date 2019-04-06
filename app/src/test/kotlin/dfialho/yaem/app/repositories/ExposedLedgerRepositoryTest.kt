@@ -4,7 +4,8 @@ import assertk.assertAll
 import assertk.assertThat
 import assertk.assertions.*
 import dfialho.yaem.app.Account
-import dfialho.yaem.app.Transaction
+import dfialho.yaem.app.OneWayTransaction
+import dfialho.yaem.app.Transfer
 import dfialho.yaem.app.randomID
 import org.junit.Test
 import java.time.Instant
@@ -17,10 +18,10 @@ class ExposedLedgerRepositoryTest {
         val repositoryManager = uniqueRepositoryManager()
         val account = createAnAccount(repositoryManager)
         val repository = repositoryManager.getLedgerRepository()
-        val transaction = Transaction(
+        val transaction = OneWayTransaction(
+            account = account.id,
             amount = 10.5,
             description = "bananas",
-            incomingAccount = account.id,
             timestamp = Instant.ofEpochMilli(1550395065330),
             id = randomID()
         )
@@ -57,7 +58,7 @@ class ExposedLedgerRepositoryTest {
         val repositoryManager = uniqueRepositoryManager()
         val account = createAnAccount(repositoryManager)
         val repository = repositoryManager.getLedgerRepository()
-        repository.create(Transaction(amount = 10.5, description = "bananas", incomingAccount = account.id))
+        repository.create(OneWayTransaction(account = account.id, amount = 10.5, description = "bananas"))
 
         val transaction = repository.get(randomID())
 
@@ -65,16 +66,30 @@ class ExposedLedgerRepositoryTest {
     }
 
     @Test
-    fun `creating a transaction for non-existing incoming account should throw ParentMissingException`() {
+    fun `creating a one-way transaction for non-existing account should throw ParentMissingException`() {
         val repository: LedgerRepository = uniqueRepositoryManager().getLedgerRepository()
         val nonExistingAccountID = randomID()
 
         assertThat {
+            repository.create(OneWayTransaction(nonExistingAccountID, amount = 10.5))
+        }.thrownError {
+            isInstanceOf(ParentMissingException::class)
+        }
+    }
+
+    @Test
+    fun `creating a tow-way transaction for non-existing incoming account should throw ParentMissingException`() {
+        val repositoryManager = uniqueRepositoryManager()
+        val account = createAnAccount(repositoryManager)
+        val repository = repositoryManager.getLedgerRepository()
+        val nonExistingAccountID = randomID()
+
+        assertThat {
             repository.create(
-                Transaction(
+                Transfer(
+                    outgoingAccount = account.id,
                     incomingAccount = nonExistingAccountID,
-                    amount = 10.5,
-                    description = "bananas"
+                    amount = 10.5
                 )
             )
         }.thrownError {
@@ -83,7 +98,7 @@ class ExposedLedgerRepositoryTest {
     }
 
     @Test
-    fun `creating a transaction for non-existing sending account should throw ParentMissingException`() {
+    fun `creating a tow-way transaction for non-existing account should throw ParentMissingException`() {
         val repositoryManager = uniqueRepositoryManager()
         val account = createAnAccount(repositoryManager)
         val repository = repositoryManager.getLedgerRepository()
@@ -91,11 +106,10 @@ class ExposedLedgerRepositoryTest {
 
         assertThat {
             repository.create(
-                Transaction(
-                    sendingAccount = nonExistingAccountID,
+                Transfer(
+                    outgoingAccount = nonExistingAccountID,
                     incomingAccount = account.id,
-                    amount = 10.5,
-                    description = "bananas"
+                    amount = 10.5
                 )
             )
         }.thrownError {

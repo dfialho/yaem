@@ -10,7 +10,6 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.withTestApplication
-import org.joda.time.Days
 import org.junit.Test
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -275,8 +274,8 @@ class AccountsAPITest {
         withTestApplication({ module(testing = true) }) {
             val account = createAccount(Account("My Account"))
             val otherAccount = createAccount(Account("Other Account"))
-            val transaction = createTransaction(incomingAccount = account.id)
-            val otherTransaction = createTransaction(incomingAccount = otherAccount.id)
+            val transaction = createTransaction(randomOneWayTransaction(account.id))
+            val otherTransaction = createOneWayTransaction(account = otherAccount.id)
 
             handleDeleteAccountRequest(account.id).apply {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.Conflict)
@@ -294,7 +293,7 @@ class AccountsAPITest {
         withTestApplication({ module(testing = true) }) {
             val account = createAccount(Account("My Account"))
             val otherAccount = createAccount(Account("Other Account"))
-            val otherTransaction = createTransaction(incomingAccount = otherAccount.id)
+            val otherTransaction = createOneWayTransaction(account = otherAccount.id)
 
             handleDeleteAccountRequest(account.id).apply {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.Accepted)
