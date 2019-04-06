@@ -9,6 +9,7 @@ import io.ktor.server.testing.withTestApplication
 import kotlinx.serialization.json.Json
 import org.junit.Test
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 class LedgerAPITest {
 
@@ -176,6 +177,124 @@ class LedgerAPITest {
             }
 
             assertThat(listTransactions()).containsOnly(nonDeletedTransaction1, nonDeletedTransaction2)
+        }
+    }
+
+    @Test
+    fun `after updating a transaction the response to getting includes the updated version`() {
+        withTestApplication({ module(testing = true) }) {
+            val account1 = createAccount(Account("Account 1"))
+            val account2 = createAccount(Account("Account 2"))
+            val transaction = createTransaction(
+                Transaction(
+                    amount = 10.5,
+                    description = "bananas",
+                    incomingAccount = account1.id
+                )
+            )
+
+            val newVersion = Transaction(
+                amount = 500.2,
+                description = "some other description",
+                incomingAccount = account2.id
+            )
+
+            val newVersionWithOriginalID = newVersion.copy(id = transaction.id)
+
+            handleUpdateTransactionRequest(transaction.id, newVersion).apply {
+                assertThat(response.status()).isEqualTo(HttpStatusCode.Accepted)
+                assertThat(response.content).isJsonEqualTo(Transaction.serializer(), newVersionWithOriginalID)
+            }
+
+            assertThat(getTransaction(transaction.id)).isEqualTo(newVersionWithOriginalID)
+        }
+    }
+
+    @Test
+    fun `trying to update a transaction that does not exist responds with not found`() {
+        withTestApplication({ module(testing = true) }) {
+            val account1 = createAccount(Account("Account 1"))
+            val account2 = createAccount(Account("Account 2"))
+            val transaction = createTransaction(
+                Transaction(
+                    amount = 10.5,
+                    description = "bananas",
+                    incomingAccount = account1.id
+                )
+            )
+
+            val newVersion = Transaction(
+                amount = 500.2,
+                description = "some other description",
+                incomingAccount = account2.id,
+                id = transaction.id
+            )
+
+            val nonExistingID = randomID()
+
+            handleUpdateTransactionRequest(nonExistingID, newVersion).apply {
+                assertThat(response.status()).isEqualTo(HttpStatusCode.NotFound)
+            }
+
+            assertThat(getTransaction(transaction.id)).isEqualTo(transaction)
+        }
+    }
+
+    @Test
+    fun `trying to update a transaction to a non-existing incoming account should fail`() {
+        withTestApplication({ module(testing = true) }) {
+            val account1 = createAccount(Account("Account 1"))
+            val transaction = createTransaction(
+                Transaction(
+                    incomingAccount = account1.id,
+                    amount = 10.5,
+                    description = "bananas"
+                )
+            )
+
+            val newVersion = Transaction(
+                incomingAccount = randomID(),
+                amount = 500.2,
+                description = "some other description"
+            )
+
+            handleUpdateTransactionRequest(transaction.id, newVersion).apply {
+                assertAll {
+                    assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
+                    assertThat(response.content).errorListContainsAll(ValidationError.LedgerMissingAccount())
+                }
+            }
+
+            assertThat(getTransaction(transaction.id)).isEqualTo(transaction)
+        }
+    }
+    @Test
+    fun `trying to update a transaction to a non-existing sending account should fail`() {
+        withTestApplication({ module(testing = true) }) {
+            val account1 = createAccount(Account("Account 1"))
+            val transaction = createTransaction(
+                Transaction(
+                    incomingAccount = account1.id,
+                    amount = 10.5,
+                    description = "bananas"
+                )
+            )
+
+            val newVersion = Transaction(
+                sendingAccount = randomID(),
+                incomingAccount = transaction.incomingAccount,
+                amount = 500.2,
+                description = "some other description"
+            )
+
+            handleUpdateTransactionRequest(transaction.id, newVersion).apply {
+                assertAll {
+                    assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
+                    assertThat(response.content).errorListContainsAll(ValidationError.LedgerMissingAccount())
+                }
+            }
+
+            assertThat(getTransaction(transaction.id)).isEqualTo(transaction)
         }
     }
 }

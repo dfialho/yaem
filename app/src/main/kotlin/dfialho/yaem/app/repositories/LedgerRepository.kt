@@ -13,5 +13,7 @@ interface LedgerRepository {
 
     fun exists(transactionID: ID): Boolean
 
+    fun update(trxID: String, trx: Transaction)
+
     fun delete(transactionID: String)
 }

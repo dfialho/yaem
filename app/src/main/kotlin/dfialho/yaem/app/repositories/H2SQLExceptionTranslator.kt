@@ -9,6 +9,6 @@ class H2SQLExceptionTranslator : SQLExceptionTranslator {
         ErrorCode.DUPLICATE_KEY_1 -> DuplicateKeyException(exception)
         ErrorCode.REFERENTIAL_INTEGRITY_VIOLATED_PARENT_MISSING_1 -> ParentMissingException(exception)
         ErrorCode.REFERENTIAL_INTEGRITY_VIOLATED_CHILD_EXISTS_1 -> ChildExistsException(exception)
-        else -> UnknownDatabaseException(exception, "Unexpected database exception")
+        else -> UnknownDatabaseException(exception, "Unexpected database exception (code=${exception.errorCode})")
     }
 }

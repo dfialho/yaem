@@ -42,6 +42,9 @@ fun TestApplicationEngine.createTransaction(
     return createTransaction(Transaction(amount, description, incomingAccount, sendingAccount, timestamp, id))
 }
 
+fun TestApplicationEngine.getTransaction(trxID: ID): Transaction = handleGetTransactionRequest(trxID).run {
+    Json.parse(Transaction.serializer(), response.content ?: "")
+}
 
 fun TestApplicationEngine.listTransactions(): List<Transaction> = handleListTransactionsRequest().run {
     Json.parse(Transaction.serializer().list, response.content ?: "")

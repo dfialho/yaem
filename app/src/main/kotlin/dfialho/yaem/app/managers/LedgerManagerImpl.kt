@@ -34,6 +34,19 @@ class LedgerManagerImpl(
         return repository.list()
     }
 
+    override fun update(trxID: String, trx: Transaction) {
+        throwIfValidationError(validator.idValidator.validate(trxID))
+        throwIfValidationError(validator.validate(trx))
+
+        try {
+            repository.update(trxID, trx)
+        } catch (e: NotFoundException) {
+            throwError { ValidationError.NotFound(trxID) }
+        } catch (e: ParentMissingException) {
+            throwError { ValidationError.LedgerMissingAccount() }
+        }
+    }
+
     override fun delete(transactionID: String) {
         throwIfValidationError(validator.idValidator.validate(transactionID))
 

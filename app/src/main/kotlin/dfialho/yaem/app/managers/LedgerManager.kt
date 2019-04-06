@@ -11,5 +11,7 @@ interface LedgerManager {
 
     fun list(): List<Transaction>
 
+    fun update(trxID: String, trx: Transaction)
+
     fun delete(transactionID: String)
 }

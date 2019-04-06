@@ -5,10 +5,7 @@ import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receiveText
 import io.ktor.response.respond
-import io.ktor.routing.Route
-import io.ktor.routing.delete
-import io.ktor.routing.get
-import io.ktor.routing.post
+import io.ktor.routing.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
 
@@ -31,6 +28,16 @@ fun Route.ledger(manager: LedgerManager) {
 
         val transaction = manager.get(receivedID)
         call.respond(HttpStatusCode.OK, Json.stringify(Transaction.serializer(), transaction))
+    }
+
+    put("ledger/{id}") {
+        val trxID = call.parameters["id"] ?: throw IllegalArgumentException("Transaction ID is required")
+        val trx = Json.validatedParse(Transaction.serializer(), call.receiveText())
+
+        manager.update(trxID, trx)
+        val updatedTrx = trx.copy(id = trxID)
+
+        call.respond(HttpStatusCode.Accepted, Json.stringify(Transaction.serializer(), updatedTrx))
     }
 
     delete("ledger/{id}") {
