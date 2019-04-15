@@ -1,9 +1,7 @@
 package dfialho.yaem.app
 
 import dfialho.yaem.app.managers.AccountManager
-import dfialho.yaem.app.managers.AccountManagerImpl
 import dfialho.yaem.app.managers.LedgerManager
-import dfialho.yaem.app.managers.LedgerManagerImpl
 import dfialho.yaem.app.repositories.*
 import dfialho.yaem.app.validators.*
 import io.ktor.application.Application
@@ -37,9 +35,9 @@ fun Application.module(testing: Boolean = false) {
         )
     )
     val accountRepository: AccountRepository = repositoryManager.getAccountRepository()
-    val accountManager: AccountManager = AccountManagerImpl(accountRepository, AccountValidator(IDValidator()))
+    val accountManager = AccountManager(accountRepository, AccountValidator(IDValidator()))
     val ledgerRepository: LedgerRepository = repositoryManager.getLedgerRepository()
-    val ledgerManager: LedgerManager = LedgerManagerImpl(ledgerRepository, TransactionValidator(IDValidator()))
+    val ledgerManager = LedgerManager(ledgerRepository, TransactionValidator(IDValidator()))
 
     install(CallLogging) {
         level = Level.INFO

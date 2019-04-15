@@ -14,13 +14,13 @@ import io.mockk.*
 import org.junit.Test
 import java.sql.SQLException
 
-class LedgerManagerImplTest {
+class LedgerManagerTest {
 
     @Test
     fun `when the transaction is invalid no transaction is created`() {
         val validator = mockk<TransactionValidator>()
         val repository = mockk<LedgerRepository>()
-        val manager: LedgerManager = LedgerManagerImpl(repository, validator)
+        val manager = LedgerManager(repository, validator)
         val transaction = OneWayTransaction(account= randomID(), amount = 10.5)
 
         every { validator.validate(transaction) } returns listOf(ValidationError.InvalidID(transaction.id))
@@ -39,7 +39,7 @@ class LedgerManagerImplTest {
     fun `creating a transaction for existing account should invoke the repository`() {
         val validator = spyk(TransactionValidator(IDValidator()))
         val repository = mockk<LedgerRepository>()
-        val manager: LedgerManager = LedgerManagerImpl(repository, validator)
+        val manager = LedgerManager(repository, validator)
         val transaction = OneWayTransaction(account= randomID(), amount = 10.5)
 
         every { repository.create(any()) } just Runs
@@ -53,7 +53,7 @@ class LedgerManagerImplTest {
     fun `creating a transaction for non-existing account should throw validation error`() {
         val validator = spyk(TransactionValidator(IDValidator()))
         val repository = mockk<LedgerRepository>()
-        val manager: LedgerManager = LedgerManagerImpl(repository, validator)
+        val manager = LedgerManager(repository, validator)
         val nonExistingAccount = randomID()
         val transaction = OneWayTransaction(account= nonExistingAccount, amount = 10.5)
 
