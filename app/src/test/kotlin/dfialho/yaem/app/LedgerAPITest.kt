@@ -146,7 +146,7 @@ class LedgerAPITest {
             handleCreateTransactionRequest(
                 body = """
                 {
-                  "type": "OneWayTransaction",
+                  "type": "OneWay",
                   "value": {
                     "amount": 10.5,
                     "description": "bananas",

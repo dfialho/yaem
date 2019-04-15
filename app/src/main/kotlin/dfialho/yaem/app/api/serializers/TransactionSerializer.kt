@@ -70,14 +70,14 @@ private fun serializerForType(type: String?): KSerializer<out Transaction> {
     requireNotNull(type) { "Field 'type' is required" }
 
     return when (type) {
-        "OneWayTransaction" -> OneWayTransaction.serializer()
+        "OneWay" -> OneWayTransaction.serializer()
         "Transfer" -> Transfer.serializer()
         else -> throw SerializationException("Transaction of type '$type' is not recognized")
     }
 }
 
 private fun transactionTypeOf(transaction: Transaction): String = when (transaction) {
-    is OneWayTransaction -> "OneWayTransaction"
+    is OneWayTransaction -> "OneWay"
     is Transfer -> "Transfer"
 }
 
