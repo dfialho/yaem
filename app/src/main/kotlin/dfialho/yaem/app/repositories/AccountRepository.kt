@@ -3,6 +3,9 @@ package dfialho.yaem.app.repositories
 import dfialho.yaem.app.Account
 import dfialho.yaem.app.ID
 
+/**
+ * Repository holding Accounts.
+ */
 interface AccountRepository {
 
     fun create(account: Account)

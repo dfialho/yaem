@@ -6,7 +6,7 @@ import dfialho.yaem.app.Account
 import dfialho.yaem.app.randomID
 import dfialho.yaem.app.randomTransfer
 import dfialho.yaem.app.repositories.AccountRepository
-import dfialho.yaem.app.repositories.LedgerRepository
+import dfialho.yaem.app.repositories.TransactionRepository
 import dfialho.yaem.app.repositories.uniqueRepositoryManager
 import dfialho.yaem.app.validators.AccountValidator
 import dfialho.yaem.app.validators.IDValidator
@@ -82,14 +82,14 @@ class AccountManagerTest {
     fun `deleting an account which is incoming account of at least one transaction returns a validation error`() {
         val repositoryManager = uniqueRepositoryManager()
         val accountRepository: AccountRepository = repositoryManager.getAccountRepository()
-        val ledgerRepository: LedgerRepository = repositoryManager.getLedgerRepository()
+        val transactionRepository: TransactionRepository = repositoryManager.getLedgerRepository()
         val manager = AccountManager(accountRepository, AccountValidator(IDValidator()))
 
         val incomingAccount = Account("Incoming")
         val outgoingAccount = Account("Sending")
         accountRepository.create(incomingAccount)
         accountRepository.create(outgoingAccount)
-        ledgerRepository.create(randomTransfer(incomingAccount.id, outgoingAccount.id))
+        transactionRepository.create(randomTransfer(incomingAccount.id, outgoingAccount.id))
 
         assertThat {
             manager.delete(incomingAccount.id)
@@ -103,14 +103,14 @@ class AccountManagerTest {
     fun `deleting an account which is sending account of at least one transaction returns a validation error`() {
         val repositoryManager = uniqueRepositoryManager()
         val accountRepository: AccountRepository = repositoryManager.getAccountRepository()
-        val ledgerRepository: LedgerRepository = repositoryManager.getLedgerRepository()
+        val transactionRepository: TransactionRepository = repositoryManager.getLedgerRepository()
         val manager = AccountManager(accountRepository, AccountValidator(IDValidator()))
 
         val incomingAccount = Account("Incoming")
         val outgoingAccount = Account("Sending")
         accountRepository.create(incomingAccount)
         accountRepository.create(outgoingAccount)
-        ledgerRepository.create(randomTransfer(incomingAccount.id, outgoingAccount.id))
+        transactionRepository.create(randomTransfer(incomingAccount.id, outgoingAccount.id))
 
         assertThat {
             manager.delete(outgoingAccount.id)

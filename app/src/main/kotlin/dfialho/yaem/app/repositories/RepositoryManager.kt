@@ -9,7 +9,7 @@ class ExposedRepositoryManager(dbConfig: DatabaseConfig, translator: SQLExceptio
     }
 
     private val accounts: ExposedAccountRepository by lazy { ExposedAccountRepository(translator).apply { createTablesIfMissing() } }
-    private val ledger: ExposedLedgerRepository by lazy { ExposedLedgerRepository(translator).apply {
+    private val ledger: ExposedTransactionRepository by lazy { ExposedTransactionRepository(translator).apply {
         accounts.createTablesIfMissing()
         createTablesIfMissing()
     } }
@@ -18,7 +18,7 @@ class ExposedRepositoryManager(dbConfig: DatabaseConfig, translator: SQLExceptio
         return accounts
     }
 
-    fun getLedgerRepository(): ExposedLedgerRepository {
+    fun getLedgerRepository(): ExposedTransactionRepository {
         return ledger
     }
 }

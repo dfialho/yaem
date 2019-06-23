@@ -2,7 +2,7 @@ package dfialho.yaem.app.managers
 
 import dfialho.yaem.app.ID
 import dfialho.yaem.app.Transaction
-import dfialho.yaem.app.repositories.LedgerRepository
+import dfialho.yaem.app.repositories.TransactionRepository
 import dfialho.yaem.app.repositories.NotFoundException
 import dfialho.yaem.app.repositories.ParentMissingException
 import dfialho.yaem.app.validators.TransactionValidator
@@ -11,7 +11,7 @@ import dfialho.yaem.app.validators.throwError
 import dfialho.yaem.app.validators.throwIfValidationError
 
 class LedgerManager(
-    private val repository: LedgerRepository,
+    private val repository: TransactionRepository,
     private val validator: TransactionValidator
 ) {
 

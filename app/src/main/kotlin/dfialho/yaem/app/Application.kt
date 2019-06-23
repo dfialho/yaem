@@ -36,8 +36,8 @@ fun Application.module(testing: Boolean = false) {
     )
     val accountRepository: AccountRepository = repositoryManager.getAccountRepository()
     val accountManager = AccountManager(accountRepository, AccountValidator(IDValidator()))
-    val ledgerRepository: LedgerRepository = repositoryManager.getLedgerRepository()
-    val ledgerManager = LedgerManager(ledgerRepository, TransactionValidator(IDValidator()))
+    val transactionRepository: TransactionRepository = repositoryManager.getLedgerRepository()
+    val ledgerManager = LedgerManager(transactionRepository, TransactionValidator(IDValidator()))
 
     install(CallLogging) {
         level = Level.INFO

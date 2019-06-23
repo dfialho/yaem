@@ -5,7 +5,7 @@ import org.joda.time.DateTime
 import java.time.Instant
 import java.util.*
 
-fun ID.toUUID(): UUID = java.util.UUID.fromString(this)
+fun ID.toUUID(): UUID = UUID.fromString(this)
 
 fun UUID.toID(): ID = this.toString()
 

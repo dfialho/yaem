@@ -6,20 +6,20 @@ import dfialho.yaem.app.Transaction
 import dfialho.yaem.app.Transfer
 import org.jetbrains.exposed.sql.*
 
-class ExposedLedgerRepository(private val exceptionTranslator: SQLExceptionTranslator) : LedgerRepository, ExposedRepository {
+class ExposedTransactionRepository(private val exceptionTranslator: SQLExceptionTranslator) : TransactionRepository, ExposedRepository {
 
-    private enum class TransactionType {
+    internal enum class TransactionType {
         ONE_WAY, TRANSFER
     }
 
-    private object Transactions : Table() {
+    internal object Transactions : Table() {
         val id = uuid("ID").primaryKey()
         val timestamp = datetime("TIMESTAMP")
         val amount = double("AMOUNT")
         val type = enumeration("TYPE", TransactionType::class)
         val description = text("DESCRIPTION")
-        val incomingAccount = uuid("INCOMING_ACCOUNT") references ExposedAccountRepository.accountIDColumn
-        val outgoingAccount = (uuid("OUTGOING_ACCOUNT") references ExposedAccountRepository.accountIDColumn).nullable()
+        val incomingAccount = uuid("INCOMING_ACCOUNT") references ExposedAccountRepository.Accounts.id
+        val outgoingAccount = (uuid("OUTGOING_ACCOUNT") references ExposedAccountRepository.Accounts.id).nullable()
     }
 
     override fun createTablesIfMissing() {

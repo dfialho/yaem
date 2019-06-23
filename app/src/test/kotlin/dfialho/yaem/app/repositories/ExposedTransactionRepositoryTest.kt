@@ -11,7 +11,7 @@ import org.junit.Test
 import java.time.Instant
 import java.util.*
 
-class ExposedLedgerRepositoryTest {
+class ExposedTransactionRepositoryTest {
 
     @Test
     fun `create transaction for existing account should include transaction in ledger`() {
@@ -37,7 +37,7 @@ class ExposedLedgerRepositoryTest {
 
     @Test
     fun `list transactions before adding any should return an empty list`() {
-        val repository: LedgerRepository = uniqueRepositoryManager().getLedgerRepository()
+        val repository: TransactionRepository = uniqueRepositoryManager().getLedgerRepository()
 
         val transactions = repository.list()
 
@@ -46,7 +46,7 @@ class ExposedLedgerRepositoryTest {
 
     @Test
     fun `getting a transaction before adding any should return null`() {
-        val repository: LedgerRepository = uniqueRepositoryManager().getLedgerRepository()
+        val repository: TransactionRepository = uniqueRepositoryManager().getLedgerRepository()
 
         val transaction = repository.get(randomID())
 
@@ -67,7 +67,7 @@ class ExposedLedgerRepositoryTest {
 
     @Test
     fun `creating a one-way transaction for non-existing account should throw ParentMissingException`() {
-        val repository: LedgerRepository = uniqueRepositoryManager().getLedgerRepository()
+        val repository: TransactionRepository = uniqueRepositoryManager().getLedgerRepository()
         val nonExistingAccountID = randomID()
 
         assertThat {
