@@ -11,15 +11,15 @@ import java.time.Instant
 //
 
 fun TestApplicationEngine.createAccount(account: Account): Account = handleCreateAccountRequest(account).run {
-    Json.parse(Account.serializer(), response.content ?: "")
+    json.parse(Account.serializer(), response.content ?: "")
 }
 
 fun TestApplicationEngine.getAccount(accountID: ID): Account = handleGetAccountRequest(accountID).run {
-    Json.parse(Account.serializer(), response.content ?: "")
+    json.parse(Account.serializer(), response.content ?: "")
 }
 
 fun TestApplicationEngine.listAccounts(): List<Account> = handleListAccountsRequest().run {
-    Json.parse(Account.serializer().list, response.content ?: "")
+    json.parse(Account.serializer().list, response.content ?: "")
 }
 
 //
@@ -29,7 +29,7 @@ fun TestApplicationEngine.listAccounts(): List<Account> = handleListAccountsRequ
 inline fun <reified T : Transaction>TestApplicationEngine.createTransaction(transaction: T): T {
 
     handleCreateTransactionRequest(transaction).run {
-        val trx = Json.parse(Transaction.serializer(), response.content ?: "")
+        val trx = json.parse(Transaction.serializer(), response.content ?: "")
 
         if (trx !is T) {
             throw IllegalStateException("Parsed transaction of type ${trx::class.simpleName}, but expected ${T::class.simpleName}")
@@ -50,9 +50,9 @@ fun TestApplicationEngine.createOneWayTransaction(
 }
 
 fun TestApplicationEngine.getTransaction(trxID: ID): Transaction = handleGetTransactionRequest(trxID).run {
-    Json.parse(Transaction.serializer(), response.content ?: "")
+    json.parse(Transaction.serializer(), response.content ?: "")
 }
 
 fun TestApplicationEngine.listTransactions(): List<Transaction> = handleListTransactionsRequest().run {
-    Json.parse(Transaction.serializer().list, response.content ?: "")
+    json.parse(Transaction.serializer().list, response.content ?: "")
 }

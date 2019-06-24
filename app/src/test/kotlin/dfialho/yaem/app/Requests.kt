@@ -14,7 +14,7 @@ import kotlinx.serialization.json.Json
 //
 
 fun TestApplicationEngine.handleCreateAccountRequest(account: Account): TestApplicationCall {
-    return handleCreateAccountRequest(body = Json.stringify(Account.serializer(), account))
+    return handleCreateAccountRequest(body = json.stringify(Account.serializer(), account))
 }
 
 fun TestApplicationEngine.handleCreateAccountRequest(body: String): TestApplicationCall {
@@ -26,7 +26,7 @@ fun TestApplicationEngine.handleCreateAccountRequest(body: String): TestApplicat
 }
 
 fun TestApplicationEngine.handleUpdateAccountRequest(accountID: ID, account: Account): TestApplicationCall {
-    return handleUpdateAccountRequest(accountID, body = Json.stringify(Account.serializer(), account))
+    return handleUpdateAccountRequest(accountID, body = json.stringify(Account.serializer(), account))
 }
 
 fun TestApplicationEngine.handleUpdateAccountRequest(accountID: String, body: String): TestApplicationCall {
@@ -48,7 +48,7 @@ fun TestApplicationEngine.handleDeleteAccountRequest(accountID: ID) = handleRequ
 //
 
 fun TestApplicationEngine.handleCreateTransactionRequest(transaction: Transaction): TestApplicationCall {
-    return handleCreateTransactionRequest(body = Json.stringify(Transaction.serializer(), transaction))
+    return handleCreateTransactionRequest(body = json.stringify(Transaction.serializer(), transaction))
 }
 
 fun TestApplicationEngine.handleCreateTransactionRequest(body: String): TestApplicationCall {
@@ -66,7 +66,7 @@ fun TestApplicationEngine.handleGetTransactionRequest(nonExistingID: String) = h
 fun TestApplicationEngine.handleDeleteTransactionRequest(transactionID: ID) = handleRequest(HttpMethod.Delete, "/api/ledger/$transactionID")
 
 fun TestApplicationEngine.handleUpdateTransactionRequest(transactionID: ID, transaction: Transaction): TestApplicationCall {
-    return handleUpdateTransactionRequest(transactionID, body = Json.stringify(Transaction.serializer(), transaction))
+    return handleUpdateTransactionRequest(transactionID, body = json.stringify(Transaction.serializer(), transaction))
 }
 
 fun TestApplicationEngine.handleUpdateTransactionRequest(transactionID: String, body: String): TestApplicationCall {

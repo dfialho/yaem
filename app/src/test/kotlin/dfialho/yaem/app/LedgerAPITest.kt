@@ -155,7 +155,8 @@ class LedgerAPITest {
                 }
             """.trimIndent()
             ).apply {
-                val transaction = Json.parse(Transaction.serializer(), response.content ?: "")
+                println("bananas: " + response.content)
+                val transaction = json.parse(Transaction.serializer(), response.content ?: "")
 
                 assertAll {
                     assertThat(response.status()).isEqualTo(HttpStatusCode.Created)

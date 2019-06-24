@@ -10,7 +10,7 @@ import kotlinx.serialization.internal.SerialClassDescImpl
 object TransactionSerializer : KSerializer<Transaction> {
 
     override val descriptor: SerialDescriptor = object : SerialClassDescImpl("kotlin.Any") {
-        override val kind: SerialKind = UnionKind.SEALED
+        override val kind: SerialKind = UnionKind.OBJECT
 
         init {
             addElement("type")

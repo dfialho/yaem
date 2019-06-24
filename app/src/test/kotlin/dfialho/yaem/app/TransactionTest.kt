@@ -28,8 +28,8 @@ class TransactionTest {
             timestamp = Instant.ofEpochMilli(1551633736370)
         )
 
-        val serialized = Json.stringify(OneWayTransaction.serializer(), transaction)
-        val deserialized = Json.parse(OneWayTransaction.serializer(), serialized)
+        val serialized = json.stringify(OneWayTransaction.serializer(), transaction)
+        val deserialized = json.parse(OneWayTransaction.serializer(), serialized)
 
         assertThat(deserialized).isEqualTo(transaction)
     }
@@ -44,8 +44,8 @@ class TransactionTest {
             timestamp = Instant.ofEpochMilli(1551633736370)
         )
 
-        val serialized = Json.stringify(Transfer.serializer(), transaction)
-        val deserialized = Json.parse(Transfer.serializer(), serialized)
+        val serialized = json.stringify(Transfer.serializer(), transaction)
+        val deserialized = json.parse(Transfer.serializer(), serialized)
 
         assertThat(deserialized).isEqualTo(transaction)
     }
@@ -60,8 +60,8 @@ class TransactionTest {
             id = randomID()
         )
 
-        val serialized = Json.stringify(TransactionSerializer, transaction)
-        val deserialized = Json.parse(TransactionSerializer, serialized)
+        val serialized = json.stringify(TransactionSerializer, transaction)
+        val deserialized = json.parse(TransactionSerializer, serialized)
 
         assertThat(deserialized).isEqualTo(transaction)
     }
@@ -76,8 +76,8 @@ class TransactionTest {
             timestamp = Instant.ofEpochMilli(1551633736370)
         )
 
-        val serialized = Json.stringify(TransactionSerializer, transaction)
-        val deserialized = Json.parse(TransactionSerializer, serialized)
+        val serialized = json.stringify(TransactionSerializer, transaction)
+        val deserialized = json.parse(TransactionSerializer, serialized)
 
         assertThat(deserialized).isEqualTo(transaction)
     }
@@ -98,8 +98,8 @@ class TransactionTest {
             )
         )
 
-        val serialized = Json.stringify(TransactionSerializer.list, transactions)
-        val deserialized = Json.parse(TransactionSerializer.list, serialized)
+        val serialized = json.stringify(TransactionSerializer.list, transactions)
+        val deserialized = json.parse(TransactionSerializer.list, serialized)
 
         assertThat(deserialized).isEqualTo(transactions)
     }

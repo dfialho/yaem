@@ -5,7 +5,7 @@ val assertkVersion: String by project
 val mockkVersion: String by project
 
 plugins {
-    kotlin("jvm") version "1.3.21" apply false
+    kotlin("jvm") version "1.3.40" apply false
 }
 
 subprojects {

@@ -2,7 +2,6 @@ package dfialho.yaem.app
 
 import dfialho.yaem.app.api.serializers.InstantSerializer
 import dfialho.yaem.app.api.serializers.TransactionSerializer
-import kotlinx.serialization.Optional
 import kotlinx.serialization.Serializable
 import java.time.Instant
 
@@ -24,9 +23,9 @@ sealed class Transaction {
 data class OneWayTransaction(
     val account: ID,
     override val amount: Double,
-    @Optional override val description: String = "",
-    @Serializable(with = InstantSerializer::class) @Optional override val timestamp: Instant = Instant.now(),
-    @Optional override val id: ID = randomID()
+    override val description: String = "",
+    @Serializable(with = InstantSerializer::class) override val timestamp: Instant = Instant.now(),
+    override val id: ID = randomID()
 ) : Transaction() {
 
     override fun copy(id: ID): Transaction = copy(id = id, description = description)
@@ -37,9 +36,9 @@ data class Transfer(
     val outgoingAccount: ID,
     val incomingAccount: ID,
     override val amount: Double,
-    @Optional override val description: String = "",
-    @Serializable(with = InstantSerializer::class) @Optional override val timestamp: Instant = Instant.now(),
-    @Optional override val id: ID = randomID()
+    override val description: String = "",
+    @Serializable(with = InstantSerializer::class) override val timestamp: Instant = Instant.now(),
+    override val id: ID = randomID()
 ) : Transaction() {
 
     override fun copy(id: ID): Transaction {
