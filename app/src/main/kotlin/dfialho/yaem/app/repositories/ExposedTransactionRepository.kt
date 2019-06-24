@@ -1,9 +1,9 @@
 package dfialho.yaem.app.repositories
 
-import dfialho.yaem.app.ID
-import dfialho.yaem.app.OneWayTransaction
-import dfialho.yaem.app.Transaction
-import dfialho.yaem.app.Transfer
+import dfialho.yaem.app.api.ID
+import dfialho.yaem.app.api.OneWayTransaction
+import dfialho.yaem.app.api.Transaction
+import dfialho.yaem.app.api.Transfer
 import org.jetbrains.exposed.sql.*
 
 class ExposedTransactionRepository(private val exceptionTranslator: SQLExceptionTranslator) : TransactionRepository, ExposedRepository {

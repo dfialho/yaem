@@ -5,6 +5,8 @@ import assertk.assertThat
 import assertk.assertions.containsAll
 import assertk.assertions.containsOnly
 import assertk.assertions.isEqualTo
+import dfialho.yaem.app.api.Account
+import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.validators.ValidationError
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode

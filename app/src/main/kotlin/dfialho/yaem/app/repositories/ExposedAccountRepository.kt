@@ -1,8 +1,8 @@
 package dfialho.yaem.app.repositories
 
-import dfialho.yaem.app.ACCOUNT_NAME_MAX_LENGTH
-import dfialho.yaem.app.Account
-import dfialho.yaem.app.ID
+import dfialho.yaem.app.api.ACCOUNT_NAME_MAX_LENGTH
+import dfialho.yaem.app.api.Account
+import dfialho.yaem.app.api.ID
 import org.jetbrains.exposed.sql.*
 
 class ExposedAccountRepository(private val exceptionTranslator: SQLExceptionTranslator)

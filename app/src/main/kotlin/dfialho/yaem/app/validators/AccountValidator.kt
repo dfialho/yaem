@@ -1,7 +1,7 @@
 package dfialho.yaem.app.validators
 
-import dfialho.yaem.app.ACCOUNT_NAME_MAX_LENGTH
-import dfialho.yaem.app.Account
+import dfialho.yaem.app.api.ACCOUNT_NAME_MAX_LENGTH
+import dfialho.yaem.app.api.Account
 
 class AccountValidator(val idValidator: IDValidator) : Validator<Account> {
 

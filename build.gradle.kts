@@ -4,6 +4,19 @@ val loggingVersion: String by project
 val assertkVersion: String by project
 val mockkVersion: String by project
 
+buildscript {
+    val kotlinVersion: String by project
+
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+        classpath("org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion")
+    }
+}
+
 plugins {
     kotlin("jvm") version "1.3.40" apply false
 }
@@ -24,7 +37,11 @@ subprojects {
         "implementation"(kotlin("stdlib-jdk8"))
         "implementation"("ch.qos.logback:logback-classic:$logbackVersion")
         "implementation"("io.github.microutils:kotlin-logging:$loggingVersion")
+    }
 
+    dependencies {
+        "testImplementation"("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
+        "testImplementation"("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
         "testImplementation"("com.willowtreeapps.assertk:assertk-jvm:$assertkVersion")
         "testImplementation"("io.mockk:mockk:$mockkVersion")
     }

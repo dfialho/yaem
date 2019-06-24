@@ -3,10 +3,10 @@ package dfialho.yaem.app.repositories
 import assertk.assertAll
 import assertk.assertThat
 import assertk.assertions.*
-import dfialho.yaem.app.Account
-import dfialho.yaem.app.OneWayTransaction
-import dfialho.yaem.app.Transfer
-import dfialho.yaem.app.randomID
+import dfialho.yaem.app.api.Account
+import dfialho.yaem.app.api.OneWayTransaction
+import dfialho.yaem.app.api.Transfer
+import dfialho.yaem.app.api.randomID
 import org.junit.Test
 import java.time.Instant
 import java.util.*

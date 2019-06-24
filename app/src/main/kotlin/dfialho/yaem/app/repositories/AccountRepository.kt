@@ -1,7 +1,7 @@
 package dfialho.yaem.app.repositories
 
-import dfialho.yaem.app.Account
-import dfialho.yaem.app.ID
+import dfialho.yaem.app.api.Account
+import dfialho.yaem.app.api.ID
 
 /**
  * Repository holding Accounts.

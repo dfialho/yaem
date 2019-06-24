@@ -1,5 +1,6 @@
 package dfialho.yaem.app
 
+import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.managers.AccountManager
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode

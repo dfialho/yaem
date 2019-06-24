@@ -3,6 +3,7 @@ package dfialho.yaem.app
 import assertk.assertAll
 import assertk.assertThat
 import assertk.assertions.*
+import dfialho.yaem.app.api.*
 import dfialho.yaem.app.validators.ValidationError
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.withTestApplication

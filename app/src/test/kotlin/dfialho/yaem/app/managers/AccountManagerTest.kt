@@ -2,8 +2,8 @@ package dfialho.yaem.app.managers
 
 import assertk.assertThat
 import assertk.assertions.isInstanceOf
-import dfialho.yaem.app.Account
-import dfialho.yaem.app.randomID
+import dfialho.yaem.app.api.Account
+import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.randomTransfer
 import dfialho.yaem.app.repositories.AccountRepository
 import dfialho.yaem.app.repositories.TransactionRepository

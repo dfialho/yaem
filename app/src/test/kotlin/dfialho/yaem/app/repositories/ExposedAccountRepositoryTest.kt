@@ -3,9 +3,9 @@ package dfialho.yaem.app.repositories
 import assertk.assertAll
 import assertk.assertThat
 import assertk.assertions.*
-import dfialho.yaem.app.ACCOUNT_NAME_MAX_LENGTH
-import dfialho.yaem.app.Account
-import dfialho.yaem.app.randomID
+import dfialho.yaem.app.api.ACCOUNT_NAME_MAX_LENGTH
+import dfialho.yaem.app.api.Account
+import dfialho.yaem.app.api.randomID
 import org.junit.Test
 
 class ExposedAccountRepositoryTest {

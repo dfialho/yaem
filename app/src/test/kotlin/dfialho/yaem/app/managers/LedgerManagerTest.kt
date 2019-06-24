@@ -2,8 +2,8 @@ package dfialho.yaem.app.managers
 
 import assertk.assertThat
 import assertk.assertions.isInstanceOf
-import dfialho.yaem.app.OneWayTransaction
-import dfialho.yaem.app.randomID
+import dfialho.yaem.app.api.OneWayTransaction
+import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.repositories.TransactionRepository
 import dfialho.yaem.app.repositories.ParentMissingException
 import dfialho.yaem.app.validators.IDValidator

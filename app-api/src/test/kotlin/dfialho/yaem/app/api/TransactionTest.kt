@@ -1,23 +1,20 @@
-/*
- * The copyright of this file belongs to Feedzai. The file cannot be
- * reproduced in whole or in part, stored in a retrieval system,
- * transmitted in any form, or by any means electronic, mechanical,
- * photocopying, or otherwise, without the prior permission of the owner.
- *
- * © 2019 Feedzai, Strictly Confidential
- */
-
-package dfialho.yaem.app
+package dfialho.yaem.app.api
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import dfialho.yaem.app.api.OneWayTransaction
+import dfialho.yaem.app.api.Transfer
+import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.api.serializers.TransactionSerializer
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.list
 import org.junit.Test
 import java.time.Instant
 
 class TransactionTest {
+
+    val json = Json(JsonConfiguration.Stable)
 
     @Test
     fun `serialization round-trip of one way transaction`() {

@@ -1,8 +1,8 @@
 package dfialho.yaem.app.api.serializers
 
-import dfialho.yaem.app.OneWayTransaction
-import dfialho.yaem.app.Transaction
-import dfialho.yaem.app.Transfer
+import dfialho.yaem.app.api.OneWayTransaction
+import dfialho.yaem.app.api.Transaction
+import dfialho.yaem.app.api.Transfer
 import kotlinx.serialization.*
 import kotlinx.serialization.internal.SerialClassDescImpl
 

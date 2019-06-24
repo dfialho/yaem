@@ -1,6 +1,6 @@
 package dfialho.yaem.app.validators
 
-import dfialho.yaem.app.ID
+import dfialho.yaem.app.api.ID
 import java.util.*
 
 class IDValidator : Validator<ID> {

@@ -1,7 +1,7 @@
 package dfialho.yaem.app.managers
 
-import dfialho.yaem.app.ID
-import dfialho.yaem.app.Transaction
+import dfialho.yaem.app.api.ID
+import dfialho.yaem.app.api.Transaction
 import dfialho.yaem.app.repositories.TransactionRepository
 import dfialho.yaem.app.repositories.NotFoundException
 import dfialho.yaem.app.repositories.ParentMissingException

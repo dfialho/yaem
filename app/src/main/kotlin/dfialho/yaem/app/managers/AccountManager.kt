@@ -1,7 +1,7 @@
 package dfialho.yaem.app.managers
 
-import dfialho.yaem.app.Account
-import dfialho.yaem.app.ID
+import dfialho.yaem.app.api.Account
+import dfialho.yaem.app.api.ID
 import dfialho.yaem.app.repositories.AccountRepository
 import dfialho.yaem.app.repositories.ChildExistsException
 import dfialho.yaem.app.repositories.NotFoundException

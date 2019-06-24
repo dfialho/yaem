@@ -1,4 +1,4 @@
-package dfialho.yaem.app
+package dfialho.yaem.app.api
 
 import java.util.*
 

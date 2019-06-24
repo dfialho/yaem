@@ -1,18 +1,22 @@
-package dfialho.yaem.app
+package dfialho.yaem.app.api
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import com.sun.jndi.toolkit.url.Uri
+import dfialho.yaem.app.api.Account
 import io.mockk.*
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
 import org.junit.Test
 import java.time.Instant
 
 class AccountTest {
 
+    val json = Json(JsonConfiguration.Stable)
+
     @Test
-    fun serializationRoundTrip() {
+    fun `serialization round-trip`() {
         val account = Account("My account")
 
         val serializedAccount = json.stringify(Account.serializer(), account)
@@ -22,7 +26,7 @@ class AccountTest {
     }
 
     @Test
-    fun optionalValues() {
+    fun `deserialize when missing optional parameters`() {
 
         //language=JSON
         val serializedAccount = "{ \"name\": \"My Account\" }"

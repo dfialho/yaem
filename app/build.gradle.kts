@@ -1,25 +1,15 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-buildscript {
-    val kotlinVersion: String by project
-    repositories { jcenter() }
-
-    dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-        classpath("org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion")
-    }
-}
-
-apply(plugin = "kotlinx-serialization")
+val ktorVersion: String by project
+val exposedVersion: String by project
+val h2Version: String by project
+val serializationVersion: String by project
 
 plugins {
     application
 }
 
-val ktorVersion: String by project
-val exposedVersion: String by project
-val h2Version: String by project
-val serializationVersion: String by project
+apply(plugin = "kotlinx-serialization")
 
 application {
     mainClassName = "io.ktor.server.netty.EngineMain"
@@ -32,15 +22,19 @@ repositories {
 }
 
 dependencies {
-    implementation("io.ktor:ktor-server-netty:$ktorVersion")
-    implementation("io.ktor:ktor-server-core:$ktorVersion")
-    testImplementation("io.ktor:ktor-server-tests:$ktorVersion")
+    implementation(project(":app-api"))
 }
 
 dependencies {
     implementation("org.jetbrains.exposed:exposed:$exposedVersion")
     implementation("com.h2database:h2:$h2Version")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationVersion")
+    implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("io.ktor:ktor-server-core:$ktorVersion")
+}
+
+dependencies {
+    testImplementation("io.ktor:ktor-server-tests:$ktorVersion")
 }
 
 tasks.withType<KotlinCompile> {

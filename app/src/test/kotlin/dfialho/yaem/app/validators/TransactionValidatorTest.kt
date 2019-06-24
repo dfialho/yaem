@@ -4,9 +4,9 @@ import assertk.assertThat
 import assertk.assertions.containsAll
 import assertk.assertions.containsOnly
 import assertk.assertions.isEmpty
-import dfialho.yaem.app.OneWayTransaction
-import dfialho.yaem.app.Transfer
-import dfialho.yaem.app.randomID
+import dfialho.yaem.app.api.OneWayTransaction
+import dfialho.yaem.app.api.Transfer
+import dfialho.yaem.app.api.randomID
 import org.junit.Test
 import java.time.Instant
 

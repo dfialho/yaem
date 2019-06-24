@@ -1,7 +1,7 @@
 package dfialho.yaem.app.validators
 
-import dfialho.yaem.app.Transaction
-import dfialho.yaem.app.Transfer
+import dfialho.yaem.app.api.Transaction
+import dfialho.yaem.app.api.Transfer
 
 class TransactionValidator(val idValidator: IDValidator) : Validator<Transaction> {
 

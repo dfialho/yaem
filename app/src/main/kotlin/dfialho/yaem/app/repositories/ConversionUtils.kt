@@ -1,6 +1,6 @@
 package dfialho.yaem.app.repositories
 
-import dfialho.yaem.app.ID
+import dfialho.yaem.app.api.ID
 import org.joda.time.DateTime
 import java.time.Instant
 import java.util.*

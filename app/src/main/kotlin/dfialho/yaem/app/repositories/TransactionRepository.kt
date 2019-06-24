@@ -1,7 +1,7 @@
 package dfialho.yaem.app.repositories
 
-import dfialho.yaem.app.ID
-import dfialho.yaem.app.Transaction
+import dfialho.yaem.app.api.ID
+import dfialho.yaem.app.api.Transaction
 
 /**
  * Repository holding Transactions.

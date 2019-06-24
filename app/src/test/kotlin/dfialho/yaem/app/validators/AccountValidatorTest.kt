@@ -4,9 +4,9 @@ import assertk.assertThat
 import assertk.assertions.containsAll
 import assertk.assertions.containsOnly
 import assertk.assertions.isEmpty
-import dfialho.yaem.app.ACCOUNT_NAME_MAX_LENGTH
-import dfialho.yaem.app.Account
-import dfialho.yaem.app.randomID
+import dfialho.yaem.app.api.ACCOUNT_NAME_MAX_LENGTH
+import dfialho.yaem.app.api.Account
+import dfialho.yaem.app.api.randomID
 import org.junit.Test
 import java.time.Instant
 
