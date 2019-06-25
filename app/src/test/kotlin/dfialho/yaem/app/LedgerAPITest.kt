@@ -5,7 +5,10 @@ import assertk.assertThat
 import assertk.assertions.*
 import dfialho.yaem.app.api.*
 import dfialho.yaem.app.validators.ValidationError
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.withCharset
+import io.ktor.server.testing.contentType
 import io.ktor.server.testing.withTestApplication
 import kotlinx.serialization.json.Json
 import org.junit.Test
@@ -50,6 +53,7 @@ class LedgerAPITest {
             handleCreateTransactionRequest(transaction).apply {
                 assertAll {
                     assertThat(response.status()).isEqualTo(HttpStatusCode.Created)
+                    assertThat(response.contentType()).isEqualTo(ContentType.Application.Json.withCharset(Charsets.UTF_8))
                     assertThat(response.content).isJsonEqualTo(Transaction.serializer(), transaction)
                 }
             }
@@ -74,6 +78,7 @@ class LedgerAPITest {
             handleCreateTransactionRequest(transaction).apply {
                 assertAll {
                     assertThat(response.status()).isEqualTo(HttpStatusCode.Created)
+                    assertThat(response.contentType()).isEqualTo(ContentType.Application.Json.withCharset(Charsets.UTF_8))
                     assertThat(response.content).isJsonEqualTo(Transaction.serializer(), transaction)
                 }
             }
@@ -95,6 +100,7 @@ class LedgerAPITest {
             )
 
             handleListTransactionsRequest().apply {
+                assertThat(response.contentType()).isEqualTo(ContentType.Application.Json.withCharset(Charsets.UTF_8))
                 assertThat(response.content).jsonListContainsOnly(Transaction.serializer(), *transactions)
             }
         }
@@ -132,6 +138,7 @@ class LedgerAPITest {
             handleListTransactionsRequest().apply {
                 assertAll {
                     assertThat(response.status()).isEqualTo(HttpStatusCode.OK)
+                    assertThat(response.contentType()).isEqualTo(ContentType.Application.Json.withCharset(Charsets.UTF_8))
                     assertThat(response.content).isJsonEmptyList(Transaction.serializer())
                 }
             }
@@ -161,6 +168,7 @@ class LedgerAPITest {
 
                 assertAll {
                     assertThat(response.status()).isEqualTo(HttpStatusCode.Created)
+                    assertThat(response.contentType()).isEqualTo(ContentType.Application.Json.withCharset(Charsets.UTF_8))
                     assertThat(transaction).isInstanceOf(OneWayTransaction::class)
                     assertThat(transaction.amount).isEqualTo(10.5)
                     assertThat(transaction.description).isEqualTo("bananas")
@@ -230,7 +238,6 @@ class LedgerAPITest {
             assertThat(listTransactions()).containsOnly(nonDeletedTransaction1, nonDeletedTransaction2)
         }
     }
-
 
     @Test
     fun `after updating a transaction the response to getting includes the updated version`() {
@@ -316,6 +323,7 @@ class LedgerAPITest {
 
             handleUpdateTransactionRequest(transaction.id, newVersion).apply {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.Accepted)
+                assertThat(response.contentType()).isEqualTo(ContentType.Application.Json.withCharset(Charsets.UTF_8))
                 assertThat(response.content).isJsonEqualTo(Transaction.serializer(), newVersionWithOriginalID)
             }
 
@@ -347,6 +355,7 @@ class LedgerAPITest {
 
             handleUpdateTransactionRequest(transaction.id, newVersion).apply {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.Accepted)
+                assertThat(response.contentType()).isEqualTo(ContentType.Application.Json.withCharset(Charsets.UTF_8))
                 assertThat(response.content).isJsonEqualTo(Transaction.serializer(), newVersionWithOriginalID)
             }
 

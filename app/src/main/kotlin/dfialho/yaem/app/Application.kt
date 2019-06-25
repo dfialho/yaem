@@ -57,7 +57,9 @@ fun Application.module(testing: Boolean = false) {
                 else -> HttpStatusCode.BadRequest
             }
 
-            call.respond(statusCode, json.stringify(ValidationError.serializer().list, errors))
+            call.respondText(ContentType.Application.Json, statusCode) {
+                json.stringify(ValidationError.serializer().list, errors)
+            }
         }
 
         exception<DuplicateKeyException> { cause ->

@@ -8,11 +8,15 @@ import assertk.assertions.isEqualTo
 import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.validators.ValidationError
+import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.withCharset
+import io.ktor.server.testing.contentType
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.withTestApplication
 import org.junit.Test
+import java.nio.charset.Charset
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
@@ -23,6 +27,7 @@ class AccountsAPITest {
         handleListAccountsRequest().apply {
             assertAll {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.OK)
+                assertThat(response.contentType()).isEqualTo(ContentType.Application.Json.withCharset(Charsets.UTF_8))
                 assertThat(response.content).isJsonEmptyList(Account.serializer())
             }
         }
@@ -64,6 +69,7 @@ class AccountsAPITest {
         handleCreateAccountRequest(account).apply {
             assertAll {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.Created)
+                assertThat(response.contentType()).isEqualTo(ContentType.Application.Json.withCharset(Charsets.UTF_8))
                 assertThat(response.content).isJsonEqualTo(Account.serializer(), account)
             }
         }
@@ -71,6 +77,7 @@ class AccountsAPITest {
         handleListAccountsRequest().apply {
             assertAll {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.OK)
+                assertThat(response.contentType()).isEqualTo(ContentType.Application.Json.withCharset(Charsets.UTF_8))
                 assertThat(response.content).jsonListContainsExactly(Account.serializer(), account)
             }
         }
@@ -78,6 +85,7 @@ class AccountsAPITest {
         handleGetAccountRequest(account.id).apply {
             assertAll {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.OK)
+                assertThat(response.contentType()).isEqualTo(ContentType.Application.Json.withCharset(Charsets.UTF_8))
                 assertThat(response.content).isJsonEqualTo(Account.serializer(), account)
             }
         }
@@ -97,6 +105,7 @@ class AccountsAPITest {
         handleCreateAccountRequest(account).apply {
             assertAll {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
+                assertThat(response.contentType()).isEqualTo(ContentType.Application.Json.withCharset(Charsets.UTF_8))
                 assertThat(response.content).errorListContainsAll(
                     ValidationError("BASE-01", "Invalid ID string: $accountID")
                 )
@@ -163,6 +172,7 @@ class AccountsAPITest {
         ).apply {
             assertAll {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.Created)
+                assertThat(response.contentType()).isEqualTo(ContentType.Application.Json.withCharset(Charsets.UTF_8))
                 assertThat(response.content).isJsonEqualTo(
                     Account.serializer(),
                     Account(

@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 val kotlinVersion: String by project
 val logbackVersion: String by project
 val loggingVersion: String by project
@@ -44,5 +46,9 @@ subprojects {
         "testImplementation"("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
         "testImplementation"("com.willowtreeapps.assertk:assertk-jvm:$assertkVersion")
         "testImplementation"("io.mockk:mockk:$mockkVersion")
+    }
+
+    tasks.withType<KotlinCompile> {
+        kotlinOptions.jvmTarget = "1.8"
     }
 }
