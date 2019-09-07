@@ -4,21 +4,27 @@ import assertk.assertAll
 import assertk.assertThat
 import assertk.assertions.*
 import dfialho.yaem.app.api.*
+import dfialho.yaem.app.repositories.DatabaseConfig
 import dfialho.yaem.app.validators.ValidationError
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.withCharset
 import io.ktor.server.testing.contentType
 import io.ktor.server.testing.withTestApplication
-import kotlinx.serialization.json.Json
 import org.junit.Test
 import java.time.Instant
+import java.util.*
 
 class LedgerAPITest {
 
+    val dbConfig = DatabaseConfig(
+        url = "jdbc:h2:mem:${UUID.randomUUID()};MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
+        driver = "org.h2.Driver"
+    )
+
     @Test
     fun `creating a new transaction for non-existing account should respond with bad request`() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ app(dbConfig) }) {
 
             val nonExistingAccountID = randomID()
             val transaction = OneWayTransaction(
@@ -40,7 +46,7 @@ class LedgerAPITest {
 
     @Test
     fun `creating a new one-way transaction should respond with created`() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ app(dbConfig) }) {
 
             val account = createAccount(Account(id = "c1929c11-3caa-400c-bee4-fdad5f023759", name = "My New Account"))
             val transaction = OneWayTransaction(
@@ -62,7 +68,7 @@ class LedgerAPITest {
 
     @Test
     fun `creating a new transfer should respond with created`() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ app(dbConfig) }) {
 
             val account1 = createAccount(Account(name = "Account 1"))
             val account2 = createAccount(Account(name = "Account 2"))
@@ -87,7 +93,7 @@ class LedgerAPITest {
 
     @Test
     fun `after creating multiple accounts calling the list endpoint should return all of them`() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ app(dbConfig) }) {
 
             val account1 = createAccount(Account(name = "Account 1"))
             val account2 = createAccount(Account(name = "Account 2"))
@@ -108,7 +114,7 @@ class LedgerAPITest {
 
     @Test
     fun `creating a transaction with an existing ID should respond with conflict`() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ app(dbConfig) }) {
 
             val account = createAccount(Account(id = "c1929c11-3caa-400c-bee4-fdad5f023759", name = "My New Account"))
             val existingTransaction = createTransaction(OneWayTransaction(account.id, 10.5, id = randomID()))
@@ -122,7 +128,7 @@ class LedgerAPITest {
 
     @Test
     fun `calling the get endpoint with non-existing ID should respond with not found`() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ app(dbConfig) }) {
 
             val nonExistingID = "c1929c11-3caa-400c-bee4-fdad5f023759"
             handleGetTransactionRequest(nonExistingID).apply {
@@ -133,7 +139,7 @@ class LedgerAPITest {
 
     @Test
     fun `calling list endpoint when no transactions were created should respond with an empty json list`() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ app(dbConfig) }) {
 
             handleListTransactionsRequest().apply {
                 assertAll {
@@ -147,7 +153,7 @@ class LedgerAPITest {
 
     @Test
     fun `create transaction with optional fields not set should generate those fields`() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ app(dbConfig) }) {
 
             val account = createAccount(Account("My New Account"))
 
@@ -183,14 +189,14 @@ class LedgerAPITest {
     }
 
     @Test
-    fun `create transaction with invalid json`(): Unit = withTestApplication({ module(testing = true) }) {
+    fun `create transaction with invalid json`(): Unit = withTestApplication({ app(dbConfig) }) {
         handleCreateTransactionRequest("{ invalid json }").apply {
             assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
         }
     }
 
     @Test
-    fun `create transaction missing required name field`(): Unit = withTestApplication({ module(testing = true) }) {
+    fun `create transaction missing required name field`(): Unit = withTestApplication({ app(dbConfig) }) {
         handleCreateTransactionRequest(
             body = """
                 {
@@ -205,7 +211,7 @@ class LedgerAPITest {
 
     @Test
     fun `after deleting a transaction it is no longer available`() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ app(dbConfig) }) {
 
             val account = createAccount(Account("My account"))
             val transaction = createTransaction(randomOneWayTransaction(account.id))
@@ -224,7 +230,7 @@ class LedgerAPITest {
 
     @Test
     fun `deleting a non-existing transaction responds with not found`() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ app(dbConfig) }) {
 
             val account = createAccount(Account("My account"))
             val transaction = randomOneWayTransaction(account.id)
@@ -241,7 +247,7 @@ class LedgerAPITest {
 
     @Test
     fun `after updating a transaction the response to getting includes the updated version`() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ app(dbConfig) }) {
             val account1 = createAccount(Account("Account 1"))
             val account2 = createAccount(Account("Account 2"))
             val transaction = createTransaction(
@@ -271,7 +277,7 @@ class LedgerAPITest {
 
     @Test
     fun `trying to update a transaction that does not exist responds with not found`() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ app(dbConfig) }) {
             val account1 = createAccount(Account("Account 1"))
             val account2 = createAccount(Account("Account 2"))
             val transaction = createTransaction(
@@ -301,7 +307,7 @@ class LedgerAPITest {
 
     @Test
     fun `updating from one-way transaction to a transfer`() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ app(dbConfig) }) {
             val account1 = createAccount(Account("Account 1"))
             val account2 = createAccount(Account("Account 2"))
             val transaction = createTransaction(
@@ -333,7 +339,7 @@ class LedgerAPITest {
 
     @Test
     fun `updating from transfer to one-way`() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ app(dbConfig) }) {
             val account1 = createAccount(Account("Account 1"))
             val account2 = createAccount(Account("Account 2"))
             val transaction = createTransaction(
@@ -365,7 +371,7 @@ class LedgerAPITest {
 
     @Test
     fun `trying to update a transaction to a non-existing incoming account should fail`() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ app(dbConfig) }) {
             val account1 = createAccount(Account("Account 1"))
             val transaction = createTransaction(
                 OneWayTransaction(
@@ -394,7 +400,7 @@ class LedgerAPITest {
 
     @Test
     fun `trying to update a transaction to a non-existing sending account should fail`() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ app(dbConfig) }) {
             val account1 = createAccount(Account("Account 1"))
             val transaction = createTransaction(
                 OneWayTransaction(

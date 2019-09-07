@@ -7,6 +7,7 @@ import assertk.assertions.containsOnly
 import assertk.assertions.isEqualTo
 import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.randomID
+import dfialho.yaem.app.repositories.DatabaseConfig
 import dfialho.yaem.app.validators.ValidationError
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
@@ -16,14 +17,19 @@ import io.ktor.server.testing.contentType
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.withTestApplication
 import org.junit.Test
-import java.nio.charset.Charset
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import java.util.*
 
 class AccountsAPITest {
 
+    val dbConfig = DatabaseConfig(
+        url = "jdbc:h2:mem:${UUID.randomUUID()};MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
+        driver = "org.h2.Driver"
+    )
+
     @Test
-    fun listAccountOnEmptyList(): Unit = withTestApplication({ module(testing = true) }) {
+    fun listAccountOnEmptyList(): Unit = withTestApplication({ app(dbConfig) }) {
         handleListAccountsRequest().apply {
             assertAll {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.OK)
@@ -34,7 +40,7 @@ class AccountsAPITest {
     }
 
     @Test
-    fun getAccountOnEmptyList(): Unit = withTestApplication({ module(testing = true) }) {
+    fun getAccountOnEmptyList(): Unit = withTestApplication({ app(dbConfig) }) {
 
         val accountID = "c1929c11-3caa-400c-bee4-fdad5f023759"
         handleGetAccountRequest(accountID).apply {
@@ -43,7 +49,7 @@ class AccountsAPITest {
     }
 
     @Test
-    fun getAccountUsingInvalidID(): Unit = withTestApplication({ module(testing = true) }) {
+    fun getAccountUsingInvalidID(): Unit = withTestApplication({ app(dbConfig) }) {
 
         val accountID = "c1929c11"
         handleGetAccountRequest(accountID).apply {
@@ -57,7 +63,7 @@ class AccountsAPITest {
     }
 
     @Test
-    fun createAccount(): Unit = withTestApplication({ module(testing = true) }) {
+    fun createAccount(): Unit = withTestApplication({ app(dbConfig) }) {
 
         val account = Account(
             name = "My New Account",
@@ -92,7 +98,7 @@ class AccountsAPITest {
     }
 
     @Test
-    fun createAccountWithInvalidID(): Unit = withTestApplication({ module(testing = true) }) {
+    fun createAccountWithInvalidID(): Unit = withTestApplication({ app(dbConfig) }) {
 
         val accountID = "c1929c11"
         val account = Account(
@@ -114,14 +120,14 @@ class AccountsAPITest {
     }
 
     @Test
-    fun `create an account with invalid json`(): Unit = withTestApplication({ module(testing = true) }) {
+    fun `create an account with invalid json`(): Unit = withTestApplication({ app(dbConfig) }) {
         handleCreateAccountRequest("{ invalid json }").apply {
             assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
         }
     }
 
     @Test
-    fun `create an account missing required name field`(): Unit = withTestApplication({ module(testing = true) }) {
+    fun `create an account missing required name field`(): Unit = withTestApplication({ app(dbConfig) }) {
         handleCreateAccountRequest(
             body = """
                 {
@@ -136,7 +142,7 @@ class AccountsAPITest {
     }
 
     @Test
-    fun createAccountWithStringTimestamp(): Unit = withTestApplication({ module(testing = true) }) {
+    fun createAccountWithStringTimestamp(): Unit = withTestApplication({ app(dbConfig) }) {
 
         handleCreateAccountRequest(
             body = """
@@ -158,7 +164,7 @@ class AccountsAPITest {
     }
 
     @Test
-    fun createAccountWithIntegerInitialBalance(): Unit = withTestApplication({ module(testing = true) }) {
+    fun createAccountWithIntegerInitialBalance(): Unit = withTestApplication({ app(dbConfig) }) {
 
         handleCreateAccountRequest(
             body = """
@@ -187,7 +193,7 @@ class AccountsAPITest {
     }
 
     @Test
-    fun createAccountWithDuplicateID(): Unit = withTestApplication({ module(testing = true) }) {
+    fun createAccountWithDuplicateID(): Unit = withTestApplication({ app(dbConfig) }) {
 
         val commonID = "c1929c11-3caa-400c-bee4-fdad5f023759"
         val account1 = Account(
@@ -228,7 +234,7 @@ class AccountsAPITest {
 
     @Test
     fun `delete an existing account that account is not longer listed`() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ app(dbConfig) }) {
 
             val account = Account(
                 name = "My New Account",
@@ -256,7 +262,7 @@ class AccountsAPITest {
 
     @Test
     fun `deleting a non-existing account does not affect other accounts`() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ app(dbConfig) }) {
 
             val account = Account(
                 name = "My New Account",
@@ -283,7 +289,7 @@ class AccountsAPITest {
 
     @Test
     fun `it is not possible to delete an account with transactions associated with it`() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ app(dbConfig) }) {
             val account = createAccount(Account("My Account"))
             val otherAccount = createAccount(Account("Other Account"))
             val transaction = createTransaction(randomOneWayTransaction(account.id))
@@ -302,7 +308,7 @@ class AccountsAPITest {
 
     @Test
     fun `deleting an account when other accounts have transactions should succeed`() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ app(dbConfig) }) {
             val account = createAccount(Account("My Account"))
             val otherAccount = createAccount(Account("Other Account"))
             val otherTransaction = createOneWayTransaction(account = otherAccount.id)
@@ -320,7 +326,7 @@ class AccountsAPITest {
 
     @Test
     fun `after updating an account the response to getting includes the updated version`() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ app(dbConfig) }) {
             val account = createAccount(
                 Account(
                     name = "My Account",
@@ -348,7 +354,7 @@ class AccountsAPITest {
 
     @Test
     fun `trying to update an account that does not exist responds with not found`() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ app(dbConfig) }) {
             val account = createAccount(
                 Account(
                     name = "My Account",

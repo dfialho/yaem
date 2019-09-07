@@ -176,5 +176,5 @@ class ExposedAccountRepositoryTest {
         }
     }
 
-    // TODO deleting account when trasnactions exists for it
+    // TODO deleting account when transactions exists for it
 }
