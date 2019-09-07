@@ -28,9 +28,10 @@ dependencies {
 dependencies {
     implementation("org.jetbrains.exposed:exposed:$exposedVersion")
     implementation("com.h2database:h2:$h2Version")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationVersion")
+//    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-server-core:$ktorVersion")
+    implementation("io.ktor:ktor-serialization:$ktorVersion")
 }
 
 dependencies {

@@ -8,6 +8,7 @@ import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.CallLogging
+import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
 import io.ktor.features.StatusPages
 import io.ktor.http.ContentType
@@ -17,6 +18,8 @@ import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.routing.route
 import io.ktor.routing.routing
+import io.ktor.serialization.SerializationConverter
+import io.ktor.serialization.serialization
 import kotlinx.serialization.list
 import org.slf4j.event.Level
 
@@ -40,6 +43,9 @@ fun Application.app(dbConfig: DatabaseConfig) {
     val transactionController = TransactionController(transactionRepository, TransactionValidator(IDValidator()))
 
     install(DefaultHeaders)
+    install(ContentNegotiation) {
+        serialization()
+    }
     install(CallLogging) {
         level = Level.INFO
         filter { call -> call.request.path().startsWith("/") }
