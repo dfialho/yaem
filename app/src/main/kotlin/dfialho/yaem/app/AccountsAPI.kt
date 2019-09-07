@@ -1,7 +1,7 @@
 package dfialho.yaem.app
 
 import dfialho.yaem.app.api.Account
-import dfialho.yaem.app.managers.AccountManager
+import dfialho.yaem.app.controllers.AccountController
 import io.ktor.application.call
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
@@ -11,12 +11,12 @@ import io.ktor.response.respondText
 import io.ktor.routing.*
 import kotlinx.serialization.list
 
-fun Route.accounts(manager: AccountManager) = route("accounts") {
+fun Route.accounts(controller: AccountController) = route("accounts") {
 
     post {
         val account = json.validatedParse(Account.serializer(), call.receiveText())
 
-        manager.create(account)
+        controller.create(account)
 
         call.respondText(ContentType.Application.Json, HttpStatusCode.Created) {
             json.stringify(Account.serializer(), account)
@@ -24,7 +24,7 @@ fun Route.accounts(manager: AccountManager) = route("accounts") {
     }
 
     get {
-        val accounts = manager.list()
+        val accounts = controller.list()
 
         call.respondText(ContentType.Application.Json, HttpStatusCode.OK) {
             json.stringify(Account.serializer().list, accounts)
@@ -34,7 +34,7 @@ fun Route.accounts(manager: AccountManager) = route("accounts") {
     get("{id}") {
         val receivedID = call.parameters["id"] ?: throw IllegalArgumentException("ID parameter is required")
 
-        val account = manager.get(receivedID)
+        val account = controller.get(receivedID)
 
         call.respondText(ContentType.Application.Json, HttpStatusCode.OK) {
             json.stringify(Account.serializer(), account)
@@ -45,7 +45,7 @@ fun Route.accounts(manager: AccountManager) = route("accounts") {
         val accountID = call.parameters["id"] ?: throw IllegalArgumentException("ID parameter is required")
         val account = json.validatedParse(Account.serializer(), call.receiveText())
 
-        manager.update(accountID, account)
+        controller.update(accountID, account)
         val updatedAccount = account.copy(id = accountID)
 
         call.respondText(ContentType.Application.Json , HttpStatusCode.Accepted) {
@@ -56,7 +56,7 @@ fun Route.accounts(manager: AccountManager) = route("accounts") {
     delete("{id}") {
         val receivedID = call.parameters["id"] ?: throw IllegalArgumentException("ID parameter is required")
 
-        manager.delete(receivedID)
+        controller.delete(receivedID)
         call.respond(HttpStatusCode.Accepted)
     }
 }

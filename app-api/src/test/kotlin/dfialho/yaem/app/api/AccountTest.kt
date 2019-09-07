@@ -3,13 +3,9 @@ package dfialho.yaem.app.api
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
-import com.sun.jndi.toolkit.url.Uri
-import dfialho.yaem.app.api.Account
-import io.mockk.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import org.junit.Test
-import java.time.Instant
 
 class AccountTest {
 

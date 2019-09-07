@@ -1,4 +1,4 @@
-package dfialho.yaem.app.managers
+package dfialho.yaem.app.controllers
 
 import assertk.assertThat
 import assertk.assertions.isInstanceOf
@@ -15,20 +15,20 @@ import dfialho.yaem.app.validators.ValidationErrorException
 import io.mockk.*
 import org.junit.Test
 
-class AccountManagerTest {
+class AccountControllerTest {
 
     @Test
-    fun `when the account is invalid the manager does not try to create the account`() {
+    fun `when the account is invalid the controller does not try to create the account`() {
         val repository = mockk<AccountRepository>()
         val validator = mockk<AccountValidator>()
-        val manager = AccountManager(repository, validator)
+        val controller = AccountController(repository, validator)
         val account = Account("Invalid Account")
 
         every { validator.validate(account) } returns listOf(ValidationError.InvalidID(account.id))
         every { repository.create(any()) } just Runs
 
         assertThat {
-            manager.create(account)
+            controller.create(account)
         }.thrownError {
             isInstanceOf(ValidationErrorException::class)
         }
@@ -37,28 +37,28 @@ class AccountManagerTest {
     }
 
     @Test
-    fun `when no validation error occurs the manager tries to create the account`() {
+    fun `when no validation error occurs the controller tries to create the account`() {
         val repository = mockk<AccountRepository>(relaxed = true)
         val validator = AccountValidator(IDValidator())
-        val manager = AccountManager(repository, validator)
+        val controller = AccountController(repository, validator)
         val account = Account("Valid Account")
 
-        manager.create(account)
+        controller.create(account)
 
         verifyAll { repository.create(account) }
     }
 
     @Test
-    fun `when the account ID is invalid the manager does not try to delete any account`() {
+    fun `when the account ID is invalid the controller does not try to delete any account`() {
         val repository = mockk<AccountRepository>()
         val validator = AccountValidator(IDValidator())
-        val manager = AccountManager(repository, validator)
+        val controller = AccountController(repository, validator)
         val accountID = "invalid id"
 
         every { repository.delete(accountID) } just Runs
 
         assertThat {
-            manager.delete(accountID)
+            controller.delete(accountID)
         }.thrownError {
             isInstanceOf(ValidationErrorException::class)
         }
@@ -67,13 +67,13 @@ class AccountManagerTest {
     }
 
     @Test
-    fun `when the account ID is valid the manager tries to delete the account`() {
+    fun `when the account ID is valid the controller tries to delete the account`() {
         val repository = mockk<AccountRepository>(relaxed = true)
         val validator = AccountValidator(IDValidator())
-        val manager = AccountManager(repository, validator)
+        val controller = AccountController(repository, validator)
         val accountID = randomID()
 
-        manager.delete(accountID)
+        controller.delete(accountID)
 
         verifyAll { repository.delete(accountID) }
     }
@@ -83,7 +83,7 @@ class AccountManagerTest {
         val repositoryManager = uniqueRepositoryManager()
         val accountRepository: AccountRepository = repositoryManager.getAccountRepository()
         val transactionRepository: TransactionRepository = repositoryManager.getLedgerRepository()
-        val manager = AccountManager(accountRepository, AccountValidator(IDValidator()))
+        val controller = AccountController(accountRepository, AccountValidator(IDValidator()))
 
         val incomingAccount = Account("Incoming")
         val outgoingAccount = Account("Sending")
@@ -92,7 +92,7 @@ class AccountManagerTest {
         transactionRepository.create(randomTransfer(incomingAccount.id, outgoingAccount.id))
 
         assertThat {
-            manager.delete(incomingAccount.id)
+            controller.delete(incomingAccount.id)
         }.thrownError {
             isInstanceOf(ValidationErrorException::class)
             containsError(ValidationError.AccountReferences(incomingAccount.id))
@@ -104,7 +104,7 @@ class AccountManagerTest {
         val repositoryManager = uniqueRepositoryManager()
         val accountRepository: AccountRepository = repositoryManager.getAccountRepository()
         val transactionRepository: TransactionRepository = repositoryManager.getLedgerRepository()
-        val manager = AccountManager(accountRepository, AccountValidator(IDValidator()))
+        val controller = AccountController(accountRepository, AccountValidator(IDValidator()))
 
         val incomingAccount = Account("Incoming")
         val outgoingAccount = Account("Sending")
@@ -113,7 +113,7 @@ class AccountManagerTest {
         transactionRepository.create(randomTransfer(incomingAccount.id, outgoingAccount.id))
 
         assertThat {
-            manager.delete(outgoingAccount.id)
+            controller.delete(outgoingAccount.id)
         }.thrownError {
             isInstanceOf(ValidationErrorException::class)
             containsError(ValidationError.AccountReferences(outgoingAccount.id))

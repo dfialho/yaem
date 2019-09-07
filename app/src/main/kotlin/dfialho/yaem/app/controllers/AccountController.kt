@@ -1,4 +1,4 @@
-package dfialho.yaem.app.managers
+package dfialho.yaem.app.controllers
 
 import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.ID
@@ -10,7 +10,7 @@ import dfialho.yaem.app.validators.ValidationError
 import dfialho.yaem.app.validators.throwError
 import dfialho.yaem.app.validators.throwIfValidationError
 
-class AccountManager(
+class AccountController(
     private val repository: AccountRepository,
     private val validator: AccountValidator
 ) {

@@ -1,7 +1,7 @@
 package dfialho.yaem.app
 
-import dfialho.yaem.app.managers.AccountManager
-import dfialho.yaem.app.managers.LedgerManager
+import dfialho.yaem.app.controllers.AccountController
+import dfialho.yaem.app.controllers.TransactionController
 import dfialho.yaem.app.repositories.*
 import dfialho.yaem.app.validators.*
 import io.ktor.application.Application
@@ -17,7 +17,6 @@ import io.ktor.response.respondText
 import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.route
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
 import org.slf4j.event.Level
 import java.util.*
@@ -35,9 +34,9 @@ fun Application.module(testing: Boolean = false) {
         )
     )
     val accountRepository: AccountRepository = repositoryManager.getAccountRepository()
-    val accountManager = AccountManager(accountRepository, AccountValidator(IDValidator()))
+    val accountController = AccountController(accountRepository, AccountValidator(IDValidator()))
     val transactionRepository: TransactionRepository = repositoryManager.getLedgerRepository()
-    val ledgerManager = LedgerManager(transactionRepository, TransactionValidator(IDValidator()))
+    val transactionController = TransactionController(transactionRepository, TransactionValidator(IDValidator()))
 
     install(CallLogging) {
         level = Level.INFO
@@ -77,8 +76,8 @@ fun Application.module(testing: Boolean = false) {
         }
 
         route("api") {
-            accounts(accountManager)
-            ledger(ledgerManager)
+            accounts(accountController)
+            ledger(transactionController)
         }
     }
 }

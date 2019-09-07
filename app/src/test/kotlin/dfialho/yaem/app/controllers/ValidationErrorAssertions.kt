@@ -1,4 +1,4 @@
-package dfialho.yaem.app.managers
+package dfialho.yaem.app.controllers
 
 import assertk.Assert
 import assertk.assertions.contains

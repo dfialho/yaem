@@ -1,4 +1,4 @@
-package dfialho.yaem.app.managers
+package dfialho.yaem.app.controllers
 
 import assertk.assertThat
 import assertk.assertions.isInstanceOf
@@ -14,20 +14,20 @@ import io.mockk.*
 import org.junit.Test
 import java.sql.SQLException
 
-class LedgerManagerTest {
+class TransactionControllerTest {
 
     @Test
     fun `when the transaction is invalid no transaction is created`() {
         val validator = mockk<TransactionValidator>()
         val repository = mockk<TransactionRepository>()
-        val manager = LedgerManager(repository, validator)
+        val controller = TransactionController(repository, validator)
         val transaction = OneWayTransaction(account= randomID(), amount = 10.5)
 
         every { validator.validate(transaction) } returns listOf(ValidationError.InvalidID(transaction.id))
         every { repository.create(any()) } just Runs
 
         assertThat {
-            manager.create(transaction)
+            controller.create(transaction)
         }.thrownError {
             isInstanceOf(ValidationErrorException::class)
         }
@@ -39,12 +39,12 @@ class LedgerManagerTest {
     fun `creating a transaction for existing account should invoke the repository`() {
         val validator = spyk(TransactionValidator(IDValidator()))
         val repository = mockk<TransactionRepository>()
-        val manager = LedgerManager(repository, validator)
+        val controller = TransactionController(repository, validator)
         val transaction = OneWayTransaction(account= randomID(), amount = 10.5)
 
         every { repository.create(any()) } just Runs
 
-        manager.create(transaction)
+        controller.create(transaction)
 
         verify { repository.create(transaction) }
     }
@@ -53,14 +53,14 @@ class LedgerManagerTest {
     fun `creating a transaction for non-existing account should throw validation error`() {
         val validator = spyk(TransactionValidator(IDValidator()))
         val repository = mockk<TransactionRepository>()
-        val manager = LedgerManager(repository, validator)
+        val controller = TransactionController(repository, validator)
         val nonExistingAccount = randomID()
         val transaction = OneWayTransaction(account= nonExistingAccount, amount = 10.5)
 
         every { repository.create(any()) } throws ParentMissingException(SQLException())
 
         assertThat {
-            manager.create(transaction)
+            controller.create(transaction)
         }.thrownError {
             isInstanceOf(ValidationErrorException::class)
             containsError(ValidationError.LedgerMissingAccount())
