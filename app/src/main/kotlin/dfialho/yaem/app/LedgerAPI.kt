@@ -2,6 +2,7 @@ package dfialho.yaem.app
 
 import dfialho.yaem.app.api.Transaction
 import dfialho.yaem.app.controllers.TransactionController
+import dfialho.yaem.json.lib.json
 import io.ktor.application.call
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode

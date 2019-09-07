@@ -4,6 +4,7 @@ import dfialho.yaem.app.controllers.AccountController
 import dfialho.yaem.app.controllers.TransactionController
 import dfialho.yaem.app.repositories.*
 import dfialho.yaem.app.validators.*
+import dfialho.yaem.json.lib.json
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
@@ -44,7 +45,7 @@ fun Application.app(dbConfig: DatabaseConfig) {
 
     install(DefaultHeaders)
     install(ContentNegotiation) {
-        serialization()
+        serialization(json = json)
     }
     install(CallLogging) {
         level = Level.INFO

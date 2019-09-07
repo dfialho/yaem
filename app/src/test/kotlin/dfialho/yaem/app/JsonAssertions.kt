@@ -5,8 +5,8 @@ import assertk.assertions.*
 import assertk.assertions.support.fail
 import dfialho.yaem.app.validators.ValidationError
 import dfialho.yaem.app.validators.toBaseError
+import dfialho.yaem.json.lib.json
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
 
 inline fun <reified T> Assert<String?>.isJsonEmptyList(serializer: KSerializer<T>) = given { actual ->

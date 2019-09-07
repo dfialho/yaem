@@ -2,19 +2,13 @@ package dfialho.yaem.app.api
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
-import dfialho.yaem.app.api.OneWayTransaction
-import dfialho.yaem.app.api.Transfer
-import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.api.serializers.TransactionSerializer
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
+import dfialho.yaem.json.lib.json
 import kotlinx.serialization.list
 import org.junit.Test
 import java.time.Instant
 
 class TransactionTest {
-
-    val json = Json(JsonConfiguration.Stable)
 
     @Test
     fun `serialization round-trip of one way transaction`() {

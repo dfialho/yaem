@@ -6,6 +6,7 @@ import assertk.assertions.*
 import dfialho.yaem.app.api.*
 import dfialho.yaem.app.repositories.DatabaseConfig
 import dfialho.yaem.app.validators.ValidationError
+import dfialho.yaem.json.lib.json
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.withCharset

@@ -1,6 +1,7 @@
 package dfialho.yaem.app
 
 import dfialho.yaem.app.api.*
+import dfialho.yaem.json.lib.json
 import io.ktor.server.testing.TestApplicationEngine
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.list

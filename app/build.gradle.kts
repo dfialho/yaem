@@ -23,6 +23,7 @@ repositories {
 
 dependencies {
     implementation(project(":app-api"))
+    implementation(project(":json-lib"))
 }
 
 dependencies {
