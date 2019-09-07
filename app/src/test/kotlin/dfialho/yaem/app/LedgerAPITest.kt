@@ -3,7 +3,9 @@ package dfialho.yaem.app
 import assertk.assertAll
 import assertk.assertThat
 import assertk.assertions.*
-import dfialho.yaem.app.api.*
+import dfialho.yaem.app.api.Account
+import dfialho.yaem.app.api.Transaction
+import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.repositories.DatabaseConfig
 import dfialho.yaem.app.validators.ValidationError
 import dfialho.yaem.json.lib.json
@@ -28,8 +30,8 @@ class LedgerAPITest {
         withTestApplication({ app(dbConfig) }) {
 
             val nonExistingAccountID = randomID()
-            val transaction = OneWayTransaction(
-                account = nonExistingAccountID,
+            val transaction = Transaction(
+                receiver = nonExistingAccountID,
                 amount = 10.5,
                 description = "bananas",
                 timestamp = Instant.ofEpochMilli(1550395065330),
@@ -50,8 +52,8 @@ class LedgerAPITest {
         withTestApplication({ app(dbConfig) }) {
 
             val account = createAccount(Account(id = "c1929c11-3caa-400c-bee4-fdad5f023759", name = "My New Account"))
-            val transaction = OneWayTransaction(
-                account = account.id,
+            val transaction = Transaction(
+                receiver = account.id,
                 amount = 10.5,
                 description = "bananas",
                 id = randomID()
@@ -74,9 +76,9 @@ class LedgerAPITest {
             val account1 = createAccount(Account(name = "Account 1"))
             val account2 = createAccount(Account(name = "Account 2"))
 
-            val transaction = Transfer(
-                outgoingAccount = account1.id,
-                incomingAccount = account2.id,
+            val transaction = Transaction(
+                sender = account1.id,
+                receiver = account2.id,
                 amount = 10.5,
                 description = "bananas",
                 id = randomID()
@@ -100,10 +102,10 @@ class LedgerAPITest {
             val account2 = createAccount(Account(name = "Account 2"))
 
             val transactions = arrayOf(
-                createTransaction(randomOneWayTransaction(account1.id)),
-                createTransaction(randomTransfer(account1.id, account2.id)),
-                createTransaction(randomOneWayTransaction(account2.id)),
-                createTransaction(randomTransfer(account2.id, account1.id))
+                createTransaction(anyTransaction(account1.id)),
+                createTransaction(anyTransaction(account1.id, account2.id)),
+                createTransaction(anyTransaction(account2.id)),
+                createTransaction(anyTransaction(account2.id, account1.id))
             )
 
             handleListTransactionsRequest().apply {
@@ -118,8 +120,8 @@ class LedgerAPITest {
         withTestApplication({ app(dbConfig) }) {
 
             val account = createAccount(Account(id = "c1929c11-3caa-400c-bee4-fdad5f023759", name = "My New Account"))
-            val existingTransaction = createTransaction(OneWayTransaction(account.id, 10.5, id = randomID()))
-            val newTransaction = OneWayTransaction(account.id, 11.5, id = existingTransaction.id)
+            val existingTransaction = createTransaction(Transaction(10.5, account.id, id = randomID()))
+            val newTransaction = Transaction(11.5, account.id, id = existingTransaction.id)
 
             handleCreateTransactionRequest(newTransaction).apply {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.Conflict)
@@ -161,12 +163,9 @@ class LedgerAPITest {
             handleCreateTransactionRequest(
                 body = """
                 {
-                  "type": "OneWay",
-                  "value": {
-                    "amount": 10.5,
-                    "description": "bananas",
-                    "account": "${account.id}"
-                  }
+                  "amount": 10.5,
+                  "description": "bananas",
+                  "receiver": "${account.id}"
                 }
             """.trimIndent()
             ).apply {
@@ -176,15 +175,13 @@ class LedgerAPITest {
                 assertAll {
                     assertThat(response.status()).isEqualTo(HttpStatusCode.Created)
                     assertThat(response.contentType()).isEqualTo(ContentType.Application.Json.withCharset(Charsets.UTF_8))
-                    assertThat(transaction).isInstanceOf(OneWayTransaction::class)
                     assertThat(transaction.amount).isEqualTo(10.5)
                     assertThat(transaction.description).isEqualTo("bananas")
                     assertThat(transaction.id).isNotEmpty()
                     assertThat(transaction.timestamp).isNotNull()
+                    assertThat(transaction.receiver).isEqualTo(account.id)
+                    assertThat(transaction.sender).isNull()
                 }
-
-                transaction as OneWayTransaction
-                assertThat(transaction.account).isEqualTo(account.id)
             }
         }
     }
@@ -215,9 +212,9 @@ class LedgerAPITest {
         withTestApplication({ app(dbConfig) }) {
 
             val account = createAccount(Account("My account"))
-            val transaction = createTransaction(randomOneWayTransaction(account.id))
-            createTransaction(randomOneWayTransaction(account.id))
-            createTransaction(randomOneWayTransaction(account.id))
+            val transaction = createTransaction(anyTransaction(account.id))
+            createTransaction(anyTransaction(account.id))
+            createTransaction(anyTransaction(account.id))
 
             handleDeleteTransactionRequest(transaction.id).apply {
                 assertAll {
@@ -234,9 +231,9 @@ class LedgerAPITest {
         withTestApplication({ app(dbConfig) }) {
 
             val account = createAccount(Account("My account"))
-            val transaction = randomOneWayTransaction(account.id)
-            val nonDeletedTransaction1 = createTransaction(randomOneWayTransaction(account.id))
-            val nonDeletedTransaction2 = createTransaction(randomOneWayTransaction(account.id))
+            val transaction = anyTransaction(account.id)
+            val nonDeletedTransaction1 = createTransaction(anyTransaction(account.id))
+            val nonDeletedTransaction2 = createTransaction(anyTransaction(account.id))
 
             handleDeleteTransactionRequest(transaction.id).apply {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.NotFound)
@@ -252,17 +249,17 @@ class LedgerAPITest {
             val account1 = createAccount(Account("Account 1"))
             val account2 = createAccount(Account("Account 2"))
             val transaction = createTransaction(
-                OneWayTransaction(
+                Transaction(
                     amount = 10.5,
                     description = "bananas",
-                    account = account1.id
+                    receiver = account1.id
                 )
             )
 
-            val newVersion = OneWayTransaction(
+            val newVersion = Transaction(
                 amount = 500.2,
                 description = "some other description",
-                account = account2.id
+                receiver = account2.id
             )
 
             val newVersionWithOriginalID = newVersion.copy(id = transaction.id)
@@ -282,17 +279,17 @@ class LedgerAPITest {
             val account1 = createAccount(Account("Account 1"))
             val account2 = createAccount(Account("Account 2"))
             val transaction = createTransaction(
-                OneWayTransaction(
+                Transaction(
                     amount = 10.5,
                     description = "bananas",
-                    account = account1.id
+                    receiver = account1.id
                 )
             )
 
-            val newVersion = OneWayTransaction(
+            val newVersion = Transaction(
                 amount = 500.2,
                 description = "some other description",
-                account = account2.id,
+                receiver = account2.id,
                 id = transaction.id
             )
 
@@ -312,18 +309,18 @@ class LedgerAPITest {
             val account1 = createAccount(Account("Account 1"))
             val account2 = createAccount(Account("Account 2"))
             val transaction = createTransaction(
-                OneWayTransaction(
+                Transaction(
                     amount = 10.5,
                     description = "bananas",
-                    account = account1.id
+                    receiver = account1.id
                 )
             )
 
-            val newVersion = Transfer(
+            val newVersion = Transaction(
                 amount = 500.2,
                 description = "some other description",
-                incomingAccount = account1.id,
-                outgoingAccount = account2.id
+                receiver = account1.id,
+                sender = account2.id
             )
 
             val newVersionWithOriginalID = newVersion.copy(id = transaction.id)
@@ -344,18 +341,18 @@ class LedgerAPITest {
             val account1 = createAccount(Account("Account 1"))
             val account2 = createAccount(Account("Account 2"))
             val transaction = createTransaction(
-                Transfer(
+                Transaction(
                     amount = 10.5,
                     description = "bananas",
-                    incomingAccount = account1.id,
-                    outgoingAccount = account2.id
+                    receiver = account1.id,
+                    sender = account2.id
                 )
             )
 
-            val newVersion = OneWayTransaction(
+            val newVersion = Transaction(
                 amount = 500.2,
                 description = "some other description",
-                account = account2.id
+                receiver = account2.id
             )
 
             val newVersionWithOriginalID = newVersion.copy(id = transaction.id)
@@ -375,15 +372,15 @@ class LedgerAPITest {
         withTestApplication({ app(dbConfig) }) {
             val account1 = createAccount(Account("Account 1"))
             val transaction = createTransaction(
-                OneWayTransaction(
-                    account = account1.id,
+                Transaction(
+                    receiver = account1.id,
                     amount = 10.5,
                     description = "bananas"
                 )
             )
 
-            val newVersion = OneWayTransaction(
-                account = randomID(),
+            val newVersion = Transaction(
+                receiver = randomID(),
                 amount = 500.2,
                 description = "some other description"
             )
@@ -404,16 +401,16 @@ class LedgerAPITest {
         withTestApplication({ app(dbConfig) }) {
             val account1 = createAccount(Account("Account 1"))
             val transaction = createTransaction(
-                OneWayTransaction(
-                    account = account1.id,
+                Transaction(
+                    receiver = account1.id,
                     amount = 10.5,
                     description = "bananas"
                 )
             )
 
-            val newVersion = Transfer(
-                outgoingAccount = randomID(),
-                incomingAccount = transaction.account,
+            val newVersion = Transaction(
+                sender = randomID(),
+                receiver = transaction.receiver,
                 amount = 500.2,
                 description = "some other description"
             )

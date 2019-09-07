@@ -4,8 +4,7 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import dfialho.yaem.json.lib.json
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
+import dfialho.yaem.json.lib.json
 import org.junit.Test
 
 class AccountTest {

@@ -6,6 +6,7 @@ import assertk.assertions.containsAll
 import assertk.assertions.containsOnly
 import assertk.assertions.isEqualTo
 import dfialho.yaem.app.api.Account
+import dfialho.yaem.app.api.Transaction
 import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.repositories.DatabaseConfig
 import dfialho.yaem.app.validators.ValidationError
@@ -292,8 +293,8 @@ class AccountsAPITest {
         withTestApplication({ app(dbConfig) }) {
             val account = createAccount(Account("My Account"))
             val otherAccount = createAccount(Account("Other Account"))
-            val transaction = createTransaction(randomOneWayTransaction(account.id))
-            val otherTransaction = createOneWayTransaction(account = otherAccount.id)
+            val transaction = createTransaction(anyTransaction(account.id))
+            val otherTransaction = createTransaction(Transaction(receiver = otherAccount.id, amount = 10.5))
 
             handleDeleteAccountRequest(account.id).apply {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.Conflict)
@@ -311,7 +312,7 @@ class AccountsAPITest {
         withTestApplication({ app(dbConfig) }) {
             val account = createAccount(Account("My Account"))
             val otherAccount = createAccount(Account("Other Account"))
-            val otherTransaction = createOneWayTransaction(account = otherAccount.id)
+            val otherTransaction = createTransaction(Transaction(receiver = otherAccount.id, amount = 10.5))
 
             handleDeleteAccountRequest(account.id).apply {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.Accepted)

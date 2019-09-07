@@ -1,23 +1,12 @@
 package dfialho.yaem.app
 
-import dfialho.yaem.app.api.ID
-import dfialho.yaem.app.api.OneWayTransaction
-import dfialho.yaem.app.api.Transfer
-import dfialho.yaem.app.api.randomID
+import dfialho.yaem.app.api.*
 import java.time.Instant
 
-fun randomOneWayTransaction(account: ID) = OneWayTransaction(
-    account = account,
+fun anyTransaction(account: ID, sender: ID? = null) = Transaction(
     amount = Math.random(),
-    description = "random-trx-${randomID()}",
-    timestamp = Instant.now(),
-    id = randomID()
-)
-
-fun randomTransfer(incomingAccount: ID, outgoingAccount: ID) = Transfer(
-    outgoingAccount = outgoingAccount,
-    incomingAccount = incomingAccount,
-    amount = Math.random(),
+    receiver = account,
+    sender = sender,
     description = "random-trx-${randomID()}",
     timestamp = Instant.now(),
     id = randomID()

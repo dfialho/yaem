@@ -4,8 +4,7 @@ import assertk.assertAll
 import assertk.assertThat
 import assertk.assertions.*
 import dfialho.yaem.app.api.Account
-import dfialho.yaem.app.api.OneWayTransaction
-import dfialho.yaem.app.api.Transfer
+import dfialho.yaem.app.api.Transaction
 import dfialho.yaem.app.api.randomID
 import org.junit.Test
 import java.time.Instant
@@ -18,9 +17,9 @@ class ExposedTransactionRepositoryTest {
         val repositoryManager = uniqueRepositoryManager()
         val account = createAnAccount(repositoryManager)
         val repository = repositoryManager.getLedgerRepository()
-        val transaction = OneWayTransaction(
-            account = account.id,
+        val transaction = Transaction(
             amount = 10.5,
+            receiver = account.id,
             description = "bananas",
             timestamp = Instant.ofEpochMilli(1550395065330),
             id = randomID()
@@ -58,7 +57,7 @@ class ExposedTransactionRepositoryTest {
         val repositoryManager = uniqueRepositoryManager()
         val account = createAnAccount(repositoryManager)
         val repository = repositoryManager.getLedgerRepository()
-        repository.create(OneWayTransaction(account = account.id, amount = 10.5, description = "bananas"))
+        repository.create(Transaction(receiver = account.id, amount = 10.5, description = "bananas"))
 
         val transaction = repository.get(randomID())
 
@@ -71,7 +70,7 @@ class ExposedTransactionRepositoryTest {
         val nonExistingAccountID = randomID()
 
         assertThat {
-            repository.create(OneWayTransaction(nonExistingAccountID, amount = 10.5))
+            repository.create(Transaction(receiver = nonExistingAccountID, amount = 10.5))
         }.thrownError {
             isInstanceOf(ParentMissingException::class)
         }
@@ -86,9 +85,9 @@ class ExposedTransactionRepositoryTest {
 
         assertThat {
             repository.create(
-                Transfer(
-                    outgoingAccount = account.id,
-                    incomingAccount = nonExistingAccountID,
+                Transaction(
+                    receiver = nonExistingAccountID,
+                    sender = account.id,
                     amount = 10.5
                 )
             )
@@ -106,9 +105,9 @@ class ExposedTransactionRepositoryTest {
 
         assertThat {
             repository.create(
-                Transfer(
-                    outgoingAccount = nonExistingAccountID,
-                    incomingAccount = account.id,
+                Transaction(
+                    receiver = account.id,
+                    sender = nonExistingAccountID,
                     amount = 10.5
                 )
             )

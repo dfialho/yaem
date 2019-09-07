@@ -2,9 +2,9 @@ package dfialho.yaem.app.controllers
 
 import assertk.assertThat
 import assertk.assertions.isInstanceOf
+import dfialho.yaem.app.anyTransaction
 import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.randomID
-import dfialho.yaem.app.randomTransfer
 import dfialho.yaem.app.repositories.AccountRepository
 import dfialho.yaem.app.repositories.TransactionRepository
 import dfialho.yaem.app.repositories.uniqueRepositoryManager
@@ -79,23 +79,23 @@ class AccountControllerTest {
     }
 
     @Test
-    fun `deleting an account which is incoming account of at least one transaction returns a validation error`() {
+    fun `deleting an account which is receiver account of at least one transaction returns a validation error`() {
         val repositoryManager = uniqueRepositoryManager()
         val accountRepository: AccountRepository = repositoryManager.getAccountRepository()
         val transactionRepository: TransactionRepository = repositoryManager.getLedgerRepository()
         val controller = AccountController(accountRepository, AccountValidator(IDValidator()))
 
-        val incomingAccount = Account("Incoming")
-        val outgoingAccount = Account("Sending")
-        accountRepository.create(incomingAccount)
-        accountRepository.create(outgoingAccount)
-        transactionRepository.create(randomTransfer(incomingAccount.id, outgoingAccount.id))
+        val receiverAccount = Account("Incoming")
+        val senderAccount = Account("Sending")
+        accountRepository.create(receiverAccount)
+        accountRepository.create(senderAccount)
+        transactionRepository.create(anyTransaction(receiverAccount.id, senderAccount.id))
 
         assertThat {
-            controller.delete(incomingAccount.id)
+            controller.delete(receiverAccount.id)
         }.thrownError {
             isInstanceOf(ValidationErrorException::class)
-            containsError(ValidationError.AccountReferences(incomingAccount.id))
+            containsError(ValidationError.AccountReferences(receiverAccount.id))
         }
     }
 
@@ -106,17 +106,17 @@ class AccountControllerTest {
         val transactionRepository: TransactionRepository = repositoryManager.getLedgerRepository()
         val controller = AccountController(accountRepository, AccountValidator(IDValidator()))
 
-        val incomingAccount = Account("Incoming")
-        val outgoingAccount = Account("Sending")
-        accountRepository.create(incomingAccount)
-        accountRepository.create(outgoingAccount)
-        transactionRepository.create(randomTransfer(incomingAccount.id, outgoingAccount.id))
+        val receiverAccount = Account("Incoming")
+        val senderAccount = Account("Sending")
+        accountRepository.create(receiverAccount)
+        accountRepository.create(senderAccount)
+        transactionRepository.create(anyTransaction(receiverAccount.id, senderAccount.id))
 
         assertThat {
-            controller.delete(outgoingAccount.id)
+            controller.delete(senderAccount.id)
         }.thrownError {
             isInstanceOf(ValidationErrorException::class)
-            containsError(ValidationError.AccountReferences(outgoingAccount.id))
+            containsError(ValidationError.AccountReferences(senderAccount.id))
         }
     }
 }

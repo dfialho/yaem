@@ -2,10 +2,10 @@ package dfialho.yaem.app.controllers
 
 import assertk.assertThat
 import assertk.assertions.isInstanceOf
-import dfialho.yaem.app.api.OneWayTransaction
+import dfialho.yaem.app.api.Transaction
 import dfialho.yaem.app.api.randomID
-import dfialho.yaem.app.repositories.TransactionRepository
 import dfialho.yaem.app.repositories.ParentMissingException
+import dfialho.yaem.app.repositories.TransactionRepository
 import dfialho.yaem.app.validators.IDValidator
 import dfialho.yaem.app.validators.TransactionValidator
 import dfialho.yaem.app.validators.ValidationError
@@ -21,7 +21,7 @@ class TransactionControllerTest {
         val validator = mockk<TransactionValidator>()
         val repository = mockk<TransactionRepository>()
         val controller = TransactionController(repository, validator)
-        val transaction = OneWayTransaction(account= randomID(), amount = 10.5)
+        val transaction = Transaction(receiver = randomID(), amount = 10.5)
 
         every { validator.validate(transaction) } returns listOf(ValidationError.InvalidID(transaction.id))
         every { repository.create(any()) } just Runs
@@ -40,7 +40,7 @@ class TransactionControllerTest {
         val validator = spyk(TransactionValidator(IDValidator()))
         val repository = mockk<TransactionRepository>()
         val controller = TransactionController(repository, validator)
-        val transaction = OneWayTransaction(account= randomID(), amount = 10.5)
+        val transaction = Transaction(receiver = randomID(), amount = 10.5)
 
         every { repository.create(any()) } just Runs
 
@@ -55,7 +55,7 @@ class TransactionControllerTest {
         val repository = mockk<TransactionRepository>()
         val controller = TransactionController(repository, validator)
         val nonExistingAccount = randomID()
-        val transaction = OneWayTransaction(account= nonExistingAccount, amount = 10.5)
+        val transaction = Transaction(receiver = nonExistingAccount, amount = 10.5)
 
         every { repository.create(any()) } throws ParentMissingException(SQLException())
 
