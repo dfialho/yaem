@@ -1,4 +1,4 @@
-package dfialho.yaem.app
+package dfialho.yaem.app.testutils
 
 import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.ID

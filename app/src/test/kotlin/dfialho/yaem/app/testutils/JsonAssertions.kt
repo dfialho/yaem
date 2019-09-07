@@ -1,4 +1,4 @@
-package dfialho.yaem.app
+package dfialho.yaem.app.testutils
 
 import assertk.Assert
 import assertk.assertions.*
@@ -49,7 +49,7 @@ inline fun <reified T> Assert<String?>.isJsonEqualTo(serializer: KSerializer<T>,
     } ?: fail(emptyList<T>(), actual)
 }
 
-fun Assert<String?>.errorListContainsAll(vararg errors: ValidationError) {
+fun Assert<String?>.isErrorListWith(vararg errors: ValidationError) {
     val normalizedErrors = errors.map { it.toBaseError() }.toTypedArray()
     jsonListContainsAll(ValidationError.serializer(), *normalizedErrors)
 }

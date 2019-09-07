@@ -2,7 +2,7 @@ package dfialho.yaem.app.controllers
 
 import assertk.assertThat
 import assertk.assertions.isInstanceOf
-import dfialho.yaem.app.anyTransaction
+import dfialho.yaem.app.testutils.anyTransaction
 import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.repositories.AccountRepository

@@ -7,6 +7,7 @@ import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.Transaction
 import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.repositories.DatabaseConfig
+import dfialho.yaem.app.testutils.*
 import dfialho.yaem.app.validators.ValidationError
 import dfialho.yaem.json.lib.json
 import io.ktor.http.ContentType
@@ -41,7 +42,7 @@ class LedgerAPITest {
             handleCreateTransactionRequest(transaction).apply {
                 assertAll {
                     assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
-                    assertThat(response.content).errorListContainsAll(ValidationError.LedgerMissingAccount())
+                    assertThat(response.content).isErrorListWith(ValidationError.LedgerMissingAccount())
                 }
             }
         }
@@ -388,7 +389,7 @@ class LedgerAPITest {
             handleUpdateTransactionRequest(transaction.id, newVersion).apply {
                 assertAll {
                     assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
-                    assertThat(response.content).errorListContainsAll(ValidationError.LedgerMissingAccount())
+                    assertThat(response.content).isErrorListWith(ValidationError.LedgerMissingAccount())
                 }
             }
 
@@ -418,7 +419,7 @@ class LedgerAPITest {
             handleUpdateTransactionRequest(transaction.id, newVersion).apply {
                 assertAll {
                     assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
-                    assertThat(response.content).errorListContainsAll(ValidationError.LedgerMissingAccount())
+                    assertThat(response.content).isErrorListWith(ValidationError.LedgerMissingAccount())
                 }
             }
 

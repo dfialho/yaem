@@ -2,20 +2,14 @@ package dfialho.yaem.app
 
 import assertk.assertAll
 import assertk.assertThat
-import assertk.assertions.containsAll
-import assertk.assertions.containsOnly
-import assertk.assertions.isEqualTo
+import assertk.assertions.*
 import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.Transaction
 import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.repositories.DatabaseConfig
+import dfialho.yaem.app.testutils.*
 import dfialho.yaem.app.validators.ValidationError
-import io.ktor.http.ContentType
-import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.withCharset
-import io.ktor.server.testing.contentType
-import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.withTestApplication
 import org.junit.Test
 import java.time.Instant
@@ -30,211 +24,26 @@ class AccountsAPITest {
     )
 
     @Test
-    fun listAccountOnEmptyList(): Unit = withTestApplication({ app(dbConfig) }) {
-        handleListAccountsRequest().apply {
-            assertAll {
-                assertThat(response.status()).isEqualTo(HttpStatusCode.OK)
-                assertThat(response.contentType()).isEqualTo(ContentType.Application.Json.withCharset(Charsets.UTF_8))
-                assertThat(response.content).isJsonEmptyList(Account.serializer())
-            }
+    fun `list accounts before any was created`(): Unit =
+        withTestApplication({ app(dbConfig) }) {
+
+            val accounts = listAccounts()
+            assertThat(accounts).isEmpty()
         }
-    }
 
     @Test
-    fun getAccountOnEmptyList(): Unit = withTestApplication({ app(dbConfig) }) {
+    fun `get account before any was created`(): Unit =
+        withTestApplication({ app(dbConfig) }) {
 
-        val accountID = "c1929c11-3caa-400c-bee4-fdad5f023759"
-        handleGetAccountRequest(accountID).apply {
-            assertThat(response.status()).isEqualTo(HttpStatusCode.NotFound)
-        }
-    }
-
-    @Test
-    fun getAccountUsingInvalidID(): Unit = withTestApplication({ app(dbConfig) }) {
-
-        val accountID = "c1929c11"
-        handleGetAccountRequest(accountID).apply {
-            assertAll {
-                assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
-                assertThat(response.content).errorListContainsAll(
-                    ValidationError("BASE-01", "Invalid ID string: $accountID")
-                )
-            }
-        }
-    }
-
-    @Test
-    fun createAccount(): Unit = withTestApplication({ app(dbConfig) }) {
-
-        val account = Account(
-            name = "My New Account",
-            initialBalance = 10.0,
-            startTimestamp = Instant.ofEpochMilli(1550250740735),
-            id = "c1929c11-3caa-400c-bee4-fdad5f023759"
-        )
-
-        handleCreateAccountRequest(account).apply {
-            assertAll {
-                assertThat(response.status()).isEqualTo(HttpStatusCode.Created)
-                assertThat(response.contentType()).isEqualTo(ContentType.Application.Json.withCharset(Charsets.UTF_8))
-                assertThat(response.content).isJsonEqualTo(Account.serializer(), account)
+            val accountID = "c1929c11-3caa-400c-bee4-fdad5f023759"
+            handleGetAccountRequest(accountID).apply {
+                assertThat(response.status()).isEqualTo(HttpStatusCode.NotFound)
+                assertThat(response.content).isErrorListWith(ValidationError.NotFound(accountID))
             }
         }
 
-        handleListAccountsRequest().apply {
-            assertAll {
-                assertThat(response.status()).isEqualTo(HttpStatusCode.OK)
-                assertThat(response.contentType()).isEqualTo(ContentType.Application.Json.withCharset(Charsets.UTF_8))
-                assertThat(response.content).jsonListContainsExactly(Account.serializer(), account)
-            }
-        }
-
-        handleGetAccountRequest(account.id).apply {
-            assertAll {
-                assertThat(response.status()).isEqualTo(HttpStatusCode.OK)
-                assertThat(response.contentType()).isEqualTo(ContentType.Application.Json.withCharset(Charsets.UTF_8))
-                assertThat(response.content).isJsonEqualTo(Account.serializer(), account)
-            }
-        }
-    }
-
     @Test
-    fun createAccountWithInvalidID(): Unit = withTestApplication({ app(dbConfig) }) {
-
-        val accountID = "c1929c11"
-        val account = Account(
-            name = "My New Account",
-            initialBalance = 10.0,
-            startTimestamp = Instant.ofEpochMilli(1550250740735),
-            id = accountID
-        )
-
-        handleCreateAccountRequest(account).apply {
-            assertAll {
-                assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
-                assertThat(response.contentType()).isEqualTo(ContentType.Application.Json.withCharset(Charsets.UTF_8))
-                assertThat(response.content).errorListContainsAll(
-                    ValidationError("BASE-01", "Invalid ID string: $accountID")
-                )
-            }
-        }
-    }
-
-    @Test
-    fun `create an account with invalid json`(): Unit = withTestApplication({ app(dbConfig) }) {
-        handleCreateAccountRequest("{ invalid json }").apply {
-            assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
-        }
-    }
-
-    @Test
-    fun `create an account missing required name field`(): Unit = withTestApplication({ app(dbConfig) }) {
-        handleCreateAccountRequest(
-            body = """
-                {
-                  "initialBalance": 10.0,
-                  "startTimestamp": "timestamp",
-                  "id": "a1929c11-3caa-400c-bee4-fdad5f023759"
-                }
-            """.trimIndent()
-        ).apply {
-            assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
-        }
-    }
-
-    @Test
-    fun createAccountWithStringTimestamp(): Unit = withTestApplication({ app(dbConfig) }) {
-
-        handleCreateAccountRequest(
-            body = """
-                {
-                  "name": "My Account",
-                  "initialBalance": 10.0,
-                  "startTimestamp": "timestamp",
-                  "id": "a1929c11-3caa-400c-bee4-fdad5f023759"
-                }
-            """.trimIndent()
-        ).apply {
-            assertAll {
-                assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
-                assertThat(response.content).errorListContainsAll(
-                    ValidationError("BASE-02", "Failed to parse 'Account' from json")
-                )
-            }
-        }
-    }
-
-    @Test
-    fun createAccountWithIntegerInitialBalance(): Unit = withTestApplication({ app(dbConfig) }) {
-
-        handleCreateAccountRequest(
-            body = """
-                {
-                  "name": "My Account",
-                  "initialBalance": 10,
-                  "startTimestamp": 1550250740735,
-                  "id": "a1929c11-3caa-400c-bee4-fdad5f023759"
-                }
-            """.trimIndent()
-        ).apply {
-            assertAll {
-                assertThat(response.status()).isEqualTo(HttpStatusCode.Created)
-                assertThat(response.contentType()).isEqualTo(ContentType.Application.Json.withCharset(Charsets.UTF_8))
-                assertThat(response.content).isJsonEqualTo(
-                    Account.serializer(),
-                    Account(
-                        name = "My Account",
-                        initialBalance = 10.0,
-                        startTimestamp = Instant.ofEpochMilli(1550250740735),
-                        id = "a1929c11-3caa-400c-bee4-fdad5f023759"
-                    )
-                )
-            }
-        }
-    }
-
-    @Test
-    fun createAccountWithDuplicateID(): Unit = withTestApplication({ app(dbConfig) }) {
-
-        val commonID = "c1929c11-3caa-400c-bee4-fdad5f023759"
-        val account1 = Account(
-            name = "Account 1",
-            initialBalance = 10.0,
-            startTimestamp = Instant.ofEpochMilli(1550250740735),
-            id = commonID
-        )
-        val account2 = Account(
-            name = "Account 2",
-            initialBalance = 10.0,
-            startTimestamp = Instant.ofEpochMilli(1550250767151),
-            id = commonID
-        )
-
-        handleCreateAccountRequest(account1).apply {
-            assertThat(response.status()).isEqualTo(HttpStatusCode.Created)
-        }
-
-        handleCreateAccountRequest(account2).apply {
-            assertThat(response.status()).isEqualTo(HttpStatusCode.Conflict)
-        }
-
-        handleListAccountsRequest().apply {
-            assertAll {
-                assertThat(response.status()).isEqualTo(HttpStatusCode.OK)
-                assertThat(response.content).jsonListContainsExactly(Account.serializer(), account1)
-            }
-        }
-
-        handleGetAccountRequest(commonID).apply {
-            assertAll {
-                assertThat(response.status()).isEqualTo(HttpStatusCode.OK)
-                assertThat(response.content).isJsonEqualTo(Account.serializer(), account1)
-            }
-        }
-    }
-
-    @Test
-    fun `delete an existing account that account is not longer listed`() {
+    fun `create first account`(): Unit =
         withTestApplication({ app(dbConfig) }) {
 
             val account = Account(
@@ -243,21 +52,108 @@ class AccountsAPITest {
                 startTimestamp = Instant.ofEpochMilli(1550250740735),
                 id = "c1929c11-3caa-400c-bee4-fdad5f023759"
             )
-            val others = listOf(Account("Acc-1"), Account("Acc-2"))
 
-            createAccount(account)
-            others.forEach { createAccount(it) }
+            val createdAccount = createAccount(account)
 
-            handleRequest(HttpMethod.Delete, "/api/accounts/${account.id}").apply {
-                assertThat(response.status()).isEqualTo(HttpStatusCode.Accepted)
+            assertAll {
+                assertThat(createdAccount.ignoreId())
+                    .isEqualTo(account.ignoreId())
+
+                assertThat(getAccount(createdAccount.id))
+                    .isEqualTo(createdAccount)
             }
+        }
 
-            handleRequest(HttpMethod.Get, "/api/accounts").apply {
+
+    @Test
+    fun `getting account with an invalid ID should fail`(): Unit =
+        withTestApplication({ app(dbConfig) }) {
+
+            val accountID = "c1929c11"
+            handleGetAccountRequest(accountID).apply {
                 assertAll {
-                    assertThat(response.status()).isEqualTo(HttpStatusCode.OK)
-                    assertThat(response.content).jsonListContainsAll(Account.serializer(), *others.toTypedArray())
+                    assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
+                    assertThat(response.content).isErrorListWith(ValidationError.InvalidID(accountID))
                 }
             }
+        }
+
+    @Test
+    fun `creating an account with an invalid ID should succeed`(): Unit =
+        withTestApplication({ app(dbConfig) }) {
+
+            val accountID = "c1929c11"
+            val account = Account(
+                name = "My New Account",
+                initialBalance = 10.0,
+                startTimestamp = Instant.ofEpochMilli(1550250740735),
+                id = accountID
+            )
+
+            val createdAccount = createAccount(account)
+
+            assertAll {
+                assertThat(createdAccount.id)
+                    .isNotEqualTo(account.id)
+                assertThat(createdAccount.ignoreId())
+                    .isEqualTo(account.ignoreId())
+                assertThat(getAccount(createdAccount.id))
+                    .isEqualTo(createdAccount)
+            }
+        }
+
+    @Test
+    fun `creating an account with invalid json should fail`(): Unit =
+        withTestApplication({ app(dbConfig) }) {
+            handleCreateAccountRequest("{ invalid json }").apply {
+                assertAll {
+                    assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
+                    assertThat(response.content).isErrorListWith(ValidationError.InvalidJson("Account"))
+                }
+            }
+        }
+
+    @Test
+    fun `creating an account missing a required field should fail`(): Unit =
+        withTestApplication({ app(dbConfig) }) {
+            handleCreateAccountRequest(
+                // Body is missing the 'name'
+                body = """
+                {
+                  "initialBalance": 10.0,
+                  "startTimestamp": "timestamp",
+                  "id": "a1929c11-3caa-400c-bee4-fdad5f023759"
+                }
+            """.trimIndent()
+            ).apply {
+                assertAll {
+                    assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
+                    assertThat(response.content).isErrorListWith(ValidationError.InvalidJson("Account"))
+                }
+            }
+        }
+
+    @Test
+    fun `after creating multiple accounts they are all listed`(): Unit =
+        withTestApplication({ app(dbConfig) }) {
+            val createdAccounts = (1..5).map {
+                createAccount(Account("Expense-$it"))
+            }
+
+            assertThat(listAccounts()).containsOnly(createdAccounts)
+        }
+
+    @Test
+    fun `after deleting an existing account that account is no longer listed`() {
+        withTestApplication({ app(dbConfig) }) {
+
+            val deletedAccount = createAccount(Account("Expense"))
+            val others = listOf(Account("Acc-1"), Account("Acc-2"))
+                .map { createAccount(it) }
+
+            deleteAccount(deletedAccount.id)
+
+            assertThat(listAccounts()).containsOnly(others)
         }
     }
 
@@ -265,28 +161,19 @@ class AccountsAPITest {
     fun `deleting a non-existing account does not affect other accounts`() {
         withTestApplication({ app(dbConfig) }) {
 
-            val account = Account(
-                name = "My New Account",
-                initialBalance = 10.0,
-                startTimestamp = Instant.ofEpochMilli(1550250740735),
-                id = "c1929c11-3caa-400c-bee4-fdad5f023759"
-            )
-            val others = listOf(Account("Acc-1"), Account("Acc-2"))
+            val nonExistingID = randomID()
+            val existingAccounts = listOf(Account("Acc-1"), Account("Acc-2"))
+                .map { createAccount(it) }
 
-            others.forEach { createAccount(it) }
-
-            handleDeleteAccountRequest(account.id).apply {
+            handleDeleteAccountRequest(nonExistingID).apply {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.NotFound)
             }
 
-            handleListAccountsRequest().apply {
-                assertAll {
-                    assertThat(response.status()).isEqualTo(HttpStatusCode.OK)
-                    assertThat(response.content).jsonListContainsAll(Account.serializer(), *others.toTypedArray())
-                }
-            }
+            assertThat(listAccounts()).containsOnly(existingAccounts)
         }
     }
+
+    // FIXME review tests below
 
     @Test
     fun `it is not possible to delete an account with transactions associated with it`() {

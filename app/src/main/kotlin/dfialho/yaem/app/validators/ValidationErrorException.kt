@@ -4,10 +4,6 @@ class ValidationErrorException(val errors: List<ValidationError>, cause: Throwab
     : Exception("Some validation error(s) occurred: $errors", cause) {
 }
 
-fun ValidationError.throwIt(): Nothing {
-    throw ValidationErrorException(listOf(this))
-}
-
 fun throwError(error: () -> ValidationError): Nothing {
     throw ValidationErrorException(listOf(error()))
 }
