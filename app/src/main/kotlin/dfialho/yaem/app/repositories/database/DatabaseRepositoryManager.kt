@@ -12,18 +12,8 @@ class DatabaseRepositoryManager(dbConfig: DatabaseConfig, translator: SQLExcepti
     private val accounts: DatabaseAccountRepository by lazy { DatabaseAccountRepository(
         translator
     ).apply { createTablesIfMissing() } }
-    private val ledger: DatabaseTransactionRepository by lazy { DatabaseTransactionRepository(
-        translator
-    ).apply {
-        accounts.createTablesIfMissing()
-        createTablesIfMissing()
-    } }
 
     fun getAccountRepository(): DatabaseAccountRepository {
         return accounts
-    }
-
-    fun getLedgerRepository(): DatabaseTransactionRepository {
-        return ledger
     }
 }

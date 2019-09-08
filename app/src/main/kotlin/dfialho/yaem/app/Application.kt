@@ -1,7 +1,6 @@
 package dfialho.yaem.app
 
 import dfialho.yaem.app.controllers.AccountController
-import dfialho.yaem.app.controllers.TransactionController
 import dfialho.yaem.app.repositories.*
 import dfialho.yaem.app.repositories.database.DatabaseRepositoryManager
 import dfialho.yaem.app.repositories.DuplicateKeyException
@@ -41,8 +40,6 @@ fun Application.app(dbConfig: DatabaseConfig) {
     val repositoryManager = DatabaseRepositoryManager(dbConfig)
     val accountRepository: AccountRepository = repositoryManager.getAccountRepository()
     val accountController = AccountController(accountRepository, AccountValidator())
-    val transactionRepository: TransactionRepository = repositoryManager.getLedgerRepository()
-    val transactionController = TransactionController(transactionRepository, TransactionValidator())
 
     install(DefaultHeaders)
     install(ContentNegotiation) {
@@ -81,7 +78,6 @@ fun Application.app(dbConfig: DatabaseConfig) {
     routing {
         route("api") {
             accounts(accountController)
-            ledger(transactionController)
         }
     }
 }

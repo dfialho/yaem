@@ -5,10 +5,6 @@ import assertk.assertions.isInstanceOf
 import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.repositories.AccountRepository
-import dfialho.yaem.app.repositories.TransactionRepository
-import dfialho.yaem.app.repositories.uniqueRepositoryManager
-import dfialho.yaem.app.testutils.anyTransaction
-import dfialho.yaem.app.testutils.containsError
 import dfialho.yaem.app.validators.AccountValidator
 import dfialho.yaem.app.validators.ValidationError
 import dfialho.yaem.app.validators.ValidationErrorException
@@ -76,47 +72,5 @@ class AccountControllerTest {
         controller.delete(accountID)
 
         verifyAll { repository.delete(accountID) }
-    }
-
-    @Test
-    fun `deleting an account which is receiver account of at least one transaction returns a validation error`() {
-        val repositoryManager = uniqueRepositoryManager()
-        val accountRepository: AccountRepository = repositoryManager.getAccountRepository()
-        val transactionRepository: TransactionRepository = repositoryManager.getLedgerRepository()
-        val controller = AccountController(accountRepository, AccountValidator())
-
-        val receiverAccount = Account("Incoming")
-        val senderAccount = Account("Sending")
-        accountRepository.create(receiverAccount)
-        accountRepository.create(senderAccount)
-        transactionRepository.create(anyTransaction(receiverAccount.id, senderAccount.id))
-
-        assertThat {
-            controller.delete(receiverAccount.id)
-        }.thrownError {
-            isInstanceOf(ValidationErrorException::class)
-            containsError(ValidationError.AccountReferences(receiverAccount.id))
-        }
-    }
-
-    @Test
-    fun `deleting an account which is sending account of at least one transaction returns a validation error`() {
-        val repositoryManager = uniqueRepositoryManager()
-        val accountRepository: AccountRepository = repositoryManager.getAccountRepository()
-        val transactionRepository: TransactionRepository = repositoryManager.getLedgerRepository()
-        val controller = AccountController(accountRepository, AccountValidator())
-
-        val receiverAccount = Account("Incoming")
-        val senderAccount = Account("Sending")
-        accountRepository.create(receiverAccount)
-        accountRepository.create(senderAccount)
-        transactionRepository.create(anyTransaction(receiverAccount.id, senderAccount.id))
-
-        assertThat {
-            controller.delete(senderAccount.id)
-        }.thrownError {
-            isInstanceOf(ValidationErrorException::class)
-            containsError(ValidationError.AccountReferences(senderAccount.id))
-        }
     }
 }
