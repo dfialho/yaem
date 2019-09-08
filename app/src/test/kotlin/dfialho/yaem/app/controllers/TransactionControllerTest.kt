@@ -6,6 +6,7 @@ import dfialho.yaem.app.api.Transaction
 import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.repositories.ParentMissingException
 import dfialho.yaem.app.repositories.TransactionRepository
+import dfialho.yaem.app.testutils.containsError
 import dfialho.yaem.app.validators.IDValidator
 import dfialho.yaem.app.validators.TransactionValidator
 import dfialho.yaem.app.validators.ValidationError

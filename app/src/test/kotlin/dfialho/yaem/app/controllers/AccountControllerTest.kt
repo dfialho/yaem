@@ -8,6 +8,7 @@ import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.repositories.AccountRepository
 import dfialho.yaem.app.repositories.TransactionRepository
 import dfialho.yaem.app.repositories.uniqueRepositoryManager
+import dfialho.yaem.app.testutils.containsError
 import dfialho.yaem.app.validators.AccountValidator
 import dfialho.yaem.app.validators.IDValidator
 import dfialho.yaem.app.validators.ValidationError

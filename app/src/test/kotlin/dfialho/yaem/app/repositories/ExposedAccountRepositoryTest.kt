@@ -7,12 +7,13 @@ import dfialho.yaem.app.api.ACCOUNT_NAME_MAX_LENGTH
 import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.randomID
 import org.junit.Test
+import java.time.Instant
 
 class ExposedAccountRepositoryTest {
 
     @Test
     fun `create first account`() {
-        val repository: AccountRepository = uniqueRepositoryManager().getAccountRepository()
+        val repository = uniqueRepositoryManager().getAccountRepository()
         val account = Account("My Account")
 
         repository.create(account)
@@ -25,22 +26,20 @@ class ExposedAccountRepositoryTest {
     }
 
     @Test
-    fun `after creating 3 accounts the repository should contain all 3 accounts`() {
-        val repository: AccountRepository = uniqueRepositoryManager().getAccountRepository()
-        val account1 = Account("Account 1")
-        val account2 = Account("Account 2")
-        val account3 = Account("Account 3")
+    fun `after creating N accounts the repository should contain all N accounts`() {
+        val repository = uniqueRepositoryManager().getAccountRepository()
+        val accounts = (1..3)
+            .map { Account("Acc-$it") }
+            .toTypedArray()
 
-        repository.create(account1)
-        repository.create(account2)
-        repository.create(account3)
+        accounts.forEach { repository.create(it) }
 
-        assertThat(repository.list()).containsOnly(account1, account2, account3)
+        assertThat(repository.list()).containsOnly(*accounts)
     }
 
     @Test
-    fun `creating an account with an existing id should fail`() {
-        val repository: AccountRepository = uniqueRepositoryManager().getAccountRepository()
+    fun `creating an account with an existing ID should throw exception`() {
+        val repository = uniqueRepositoryManager().getAccountRepository()
         val account = Account("My Account")
         repository.create(account)
 
@@ -52,42 +51,48 @@ class ExposedAccountRepositoryTest {
     }
 
     @Test
-    fun `creating an account with an existing name should succeed`() {
-        val repository: AccountRepository = uniqueRepositoryManager().getAccountRepository()
-        val account1 = Account("My Account")
-        val account2 = Account("My Account")
+    fun `creating an account with an existing name should throw exception`() {
+        val repository = uniqueRepositoryManager().getAccountRepository()
+        val existingAccount = Account("My Account")
+        repository.create(existingAccount)
 
-        repository.create(account1)
-        repository.create(account2)
-
-        assertThat(repository.list()).containsAll(account1, account2)
+        assertThat {
+            repository.create(Account(existingAccount.name))
+        }.thrownError {
+            isInstanceOf(DuplicateKeyException::class)
+        }
     }
 
     @Test
-    fun `get account before creating any should return null`() {
-        val repository: AccountRepository = uniqueRepositoryManager().getAccountRepository()
-        val account = Account("My Account")
-
-        val obtainedAccount = repository.get(account.id)
-
-        assertThat(obtainedAccount).isNull()
-    }
-
-    @Test
-    fun `get non-existing account should return null`() {
-        val repository: AccountRepository = uniqueRepositoryManager().getAccountRepository()
-        val account = Account("My Account")
-        repository.create(account)
+    fun `get account before creating any should throw exception`() {
+        val repository = uniqueRepositoryManager().getAccountRepository()
         val nonExistingAccountID = randomID()
 
-        val obtainedAccount = repository.get(nonExistingAccountID)
+        assertThat {
+            repository.get(nonExistingAccountID)
+        }.thrownError {
+            isInstanceOf(NotFoundException::class)
+        }
+    }
 
-        assertThat(obtainedAccount).isNull()
+    @Test
+    fun `get non-existing account should throw exception`() {
+        val repository = uniqueRepositoryManager().getAccountRepository()
+        (1..5)
+            .map { Account("Account-$it") }
+            .forEach { repository.create(it) }
+        val nonExistingAccountID = randomID()
+
+        assertThat {
+            repository.get(nonExistingAccountID)
+        }.thrownError {
+            isInstanceOf(NotFoundException::class)
+        }
     }
 
     @Test
     fun `list accounts before creating any should return an empty list`() {
-        val repository: AccountRepository = uniqueRepositoryManager().getAccountRepository()
+        val repository = uniqueRepositoryManager().getAccountRepository()
 
         val obtainedAccounts = repository.list()
 
@@ -96,7 +101,7 @@ class ExposedAccountRepositoryTest {
 
     @Test
     fun `creating an account with name with the max length should succeed`() {
-        val repository: AccountRepository = uniqueRepositoryManager().getAccountRepository()
+        val repository = uniqueRepositoryManager().getAccountRepository()
         val account = Account("A".repeat(ACCOUNT_NAME_MAX_LENGTH))
 
         repository.create(account)
@@ -105,26 +110,15 @@ class ExposedAccountRepositoryTest {
     }
 
     @Test
-    fun `creating an account with name over the max length should fail`() {
-        val repository: AccountRepository = uniqueRepositoryManager().getAccountRepository()
-        val account = Account("A".repeat(ACCOUNT_NAME_MAX_LENGTH + 1))
-
-        assertAll {
-            assertThat { repository.create(account) }.thrownError { }
-            assertThat(repository.list()).isEmpty()
-        }
-    }
-
-    @Test
     fun `exists should return false when no accounts have been created`() {
-        val repository: AccountRepository = uniqueRepositoryManager().getAccountRepository()
+        val repository = uniqueRepositoryManager().getAccountRepository()
 
         assertThat(repository.exists(randomID())).isFalse()
     }
 
     @Test
     fun `exists should return true when the account exists`() {
-        val repository: AccountRepository = uniqueRepositoryManager().getAccountRepository()
+        val repository = uniqueRepositoryManager().getAccountRepository()
 
         val account = Account("Account 2")
         repository.create(Account("Account 1"))
@@ -137,7 +131,7 @@ class ExposedAccountRepositoryTest {
 
     @Test
     fun `exists should return false when the account does not exist`() {
-        val repository: AccountRepository = uniqueRepositoryManager().getAccountRepository()
+        val repository = uniqueRepositoryManager().getAccountRepository()
 
         val nonExistingID = randomID()
         repository.create(Account("Account 1"))
@@ -149,8 +143,8 @@ class ExposedAccountRepositoryTest {
     }
 
     @Test
-    fun `deleting a non-existing account returns failure`() {
-        val repository: AccountRepository = uniqueRepositoryManager().getAccountRepository()
+    fun `deleting a non-existing account throws exception`() {
+        val repository = uniqueRepositoryManager().getAccountRepository()
         val nonExistingID = randomID()
 
         assertThat {
@@ -162,9 +156,9 @@ class ExposedAccountRepositoryTest {
 
     @Test
     fun `after deleting an existing account the account is no longer listed`() {
-        val repository: AccountRepository = uniqueRepositoryManager().getAccountRepository()
+        val repository = uniqueRepositoryManager().getAccountRepository()
         val deletedAccount = Account("My account")
-        val otherAccounts = listOf(Account("Acc-1"), Account("Acc-2"), Account("Acc-3"))
+        val otherAccounts = arrayOf(Account("Acc-1"), Account("Acc-2"), Account("Acc-3"))
         val allAccounts = otherAccounts + deletedAccount
         allAccounts.forEach { repository.create(it) }
 
@@ -172,9 +166,61 @@ class ExposedAccountRepositoryTest {
 
         assertAll {
             assertThat(repository.exists(deletedAccount.id)).isFalse()
-            assertThat(repository.list()).containsOnly(*otherAccounts.toTypedArray())
+            assertThat(repository.list()).containsOnly(*otherAccounts)
         }
     }
 
-    // TODO deleting account when transactions exists for it
+    @Test
+    fun `update an account`() {
+        val repository = uniqueRepositoryManager().getAccountRepository()
+        val accounts = (1..3).map { Account("Acc-$it") }
+        accounts.forEach { repository.create(it) }
+        val updatedAccount = accounts[1].copy(
+            name = "Updated Account",
+            startTimestamp = Instant.ofEpochMilli(129031291230L),
+            initialBalance = 10.0
+        )
+
+        repository.update(updatedAccount)
+
+        assertThat(repository.get(updatedAccount.id))
+            .isEqualTo(updatedAccount)
+    }
+
+    @Test
+    fun `updating a non-existent account should throw exception`() {
+        val repository = uniqueRepositoryManager().getAccountRepository()
+        val accounts = (1..3).map { Account("Acc-$it") }
+        accounts.forEach { repository.create(it) }
+        val updatedAccount = Account(
+            id = randomID(),
+            name = "Updated Account",
+            startTimestamp = Instant.ofEpochMilli(129031291230L),
+            initialBalance = 10.0
+        )
+
+        assertThat {
+            repository.update(updatedAccount)
+        }.thrownError {
+            isInstanceOf(NotFoundException::class)
+        }
+    }
+
+    @Test
+    fun `updating an account's name to an existing name should throw exception`() {
+        val repository = uniqueRepositoryManager().getAccountRepository()
+        val accounts = (1..3).map { Account("Acc-$it") }
+        accounts.forEach { repository.create(it) }
+        val updatedAccount = accounts[1].copy(
+            name = accounts[0].name,
+            startTimestamp = Instant.ofEpochMilli(129031291230L),
+            initialBalance = 10.0
+        )
+
+        assertThat {
+            repository.update(updatedAccount)
+        }.thrownError {
+            isInstanceOf(DuplicateKeyException::class)
+        }
+    }
 }

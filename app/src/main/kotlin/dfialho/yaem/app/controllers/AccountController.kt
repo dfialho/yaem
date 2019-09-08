@@ -22,7 +22,12 @@ class AccountController(
 
     fun get(accountID: ID): Account {
         throwIfValidationError(validator.idValidator.validate(accountID))
-        return repository.get(accountID) ?: throwError { ValidationError.NotFound(accountID) }
+
+        try {
+            return repository.get(accountID)
+        } catch (e: NotFoundException) {
+            throwError { ValidationError.NotFound(accountID) }
+        }
     }
 
     fun list(): List<Account> {
@@ -34,7 +39,8 @@ class AccountController(
         throwIfValidationError(validator.validate(account))
 
         try {
-            repository.update(accountID, account)
+            // FIXME remove account ID parameter
+            repository.update(account.copy(id = accountID))
         } catch (e: NotFoundException) {
             throwError { ValidationError.NotFound(accountID) }
         }

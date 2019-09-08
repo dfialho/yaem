@@ -10,13 +10,13 @@ interface AccountRepository {
 
     fun create(account: Account)
 
-    fun get(accountID: ID): Account?
+    fun get(accountID: ID): Account
 
     fun list(): List<Account>
 
     fun exists(accountID: ID): Boolean
 
-    fun update(accountID: String, account: Account)
+    fun update(account: Account)
 
     fun delete(accountID: String)
 }
