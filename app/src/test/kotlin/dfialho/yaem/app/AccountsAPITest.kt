@@ -136,11 +136,12 @@ class AccountsAPITest {
     @Test
     fun `after creating multiple accounts they are all listed`(): Unit =
         withTestApplication({ app(dbConfig) }) {
-            val createdAccounts = (1..5).map {
-                createAccount(Account("Expense-$it"))
-            }
+            val createdAccounts = (1..5)
+                .map { Account("Acc-$it") }
+                .map { createAccount(it) }
+                .toTypedArray()
 
-            assertThat(listAccounts()).containsOnly(createdAccounts)
+            assertThat(listAccounts()).containsOnly(*createdAccounts)
         }
 
     @Test
@@ -148,12 +149,14 @@ class AccountsAPITest {
         withTestApplication({ app(dbConfig) }) {
 
             val deletedAccount = createAccount(Account("Expense"))
-            val others = listOf(Account("Acc-1"), Account("Acc-2"))
+            val others = (1..3)
+                .map { Account("Acc-$it") }
                 .map { createAccount(it) }
+                .toTypedArray()
 
             deleteAccount(deletedAccount.id)
 
-            assertThat(listAccounts()).containsOnly(others)
+            assertThat(listAccounts()).containsOnly(*others)
         }
     }
 
@@ -162,53 +165,16 @@ class AccountsAPITest {
         withTestApplication({ app(dbConfig) }) {
 
             val nonExistingID = randomID()
-            val existingAccounts = listOf(Account("Acc-1"), Account("Acc-2"))
+            val existingAccounts = (1..3)
+                .map { Account("Acc-$it") }
                 .map { createAccount(it) }
+                .toTypedArray()
 
             handleDeleteAccountRequest(nonExistingID).apply {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.NotFound)
             }
 
-            assertThat(listAccounts()).containsOnly(existingAccounts)
-        }
-    }
-
-    // FIXME review tests below
-
-    @Test
-    fun `it is not possible to delete an account with transactions associated with it`() {
-        withTestApplication({ app(dbConfig) }) {
-            val account = createAccount(Account("My Account"))
-            val otherAccount = createAccount(Account("Other Account"))
-            val transaction = createTransaction(anyTransaction(account.id))
-            val otherTransaction = createTransaction(Transaction(receiver = otherAccount.id, amount = 10.5))
-
-            handleDeleteAccountRequest(account.id).apply {
-                assertThat(response.status()).isEqualTo(HttpStatusCode.Conflict)
-            }
-
-            assertAll {
-                assertThat(listTransactions()).containsAll(transaction, otherTransaction)
-                assertThat(listAccounts()).containsAll(account, otherAccount)
-            }
-        }
-    }
-
-    @Test
-    fun `deleting an account when other accounts have transactions should succeed`() {
-        withTestApplication({ app(dbConfig) }) {
-            val account = createAccount(Account("My Account"))
-            val otherAccount = createAccount(Account("Other Account"))
-            val otherTransaction = createTransaction(Transaction(receiver = otherAccount.id, amount = 10.5))
-
-            handleDeleteAccountRequest(account.id).apply {
-                assertThat(response.status()).isEqualTo(HttpStatusCode.Accepted)
-            }
-
-            assertAll {
-                assertThat(listTransactions()).containsAll(otherTransaction)
-                assertThat(listAccounts()).containsOnly(otherAccount)
-            }
+            assertThat(listAccounts()).containsOnly(*existingAccounts)
         }
     }
 
