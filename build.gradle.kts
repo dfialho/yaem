@@ -23,10 +23,12 @@ buildscript {
 
 plugins {
     kotlin("jvm") version "1.3.50" apply false
+    id("info.solidsoft.pitest") version "1.4.5"
 }
 
 subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
+    apply(plugin = "info.solidsoft.pitest")
 
     group = "dfialho.yaem"
     version = "0.1.0-SNAPSHOT"
