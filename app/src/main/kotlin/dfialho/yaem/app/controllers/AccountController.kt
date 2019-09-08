@@ -60,6 +60,8 @@ class AccountController(
             return account
         } catch (e: NotFoundException) {
             throwError { ValidationError.NotFound(RESOURCE_NAME, account.id) }
+        } catch (e: DuplicateKeyException) {
+            throwError { ValidationError.AccountNameExists(account.name) }
         }
     }
 

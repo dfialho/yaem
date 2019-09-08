@@ -1,5 +1,6 @@
-package dfialho.yaem.app.repositories
+package dfialho.yaem.app.testutils
 
+import dfialho.yaem.app.repositories.DatabaseConfig
 import dfialho.yaem.app.repositories.database.DatabaseRepositoryManager
 import java.util.*
 

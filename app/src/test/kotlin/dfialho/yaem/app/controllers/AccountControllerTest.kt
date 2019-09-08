@@ -6,21 +6,30 @@ import assertk.assertions.*
 import dfialho.yaem.app.api.ACCOUNT_NAME_MAX_LENGTH
 import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.randomID
-import dfialho.yaem.app.repositories.uniqueRepositoryManager
+import dfialho.yaem.app.repositories.AccountRepository
+import dfialho.yaem.app.repositories.database.DatabaseRepositoryManager
+import dfialho.yaem.app.testutils.uniqueRepositoryManager
 import dfialho.yaem.app.testutils.thrownValidationError
 import dfialho.yaem.app.validators.AccountValidator
 import dfialho.yaem.app.validators.ValidationError
+import org.junit.Before
 import org.junit.Test
+import java.time.Instant
 
 class AccountControllerTest {
 
-    @Test
-    fun `creating an account`() {
-        val repository = uniqueRepositoryManager().getAccountRepository()
-        val controller = AccountController(repository, AccountValidator())
-        val account = Account("Expense")
+    lateinit var controller: AccountController
 
-        val createdAccount = controller.create(account)
+    @Before
+    fun setUp() {
+        val repository = uniqueRepositoryManager().getAccountRepository()
+        controller = AccountController(repository, AccountValidator())
+    }
+
+    @Test
+    fun `creating first account`() {
+
+        val createdAccount = controller.create(Account("Acc"))
 
         assertAll {
             assertThat(controller.get(createdAccount.id))
@@ -31,9 +40,18 @@ class AccountControllerTest {
     }
 
     @Test
+    fun `after creating N accounts the repository should contain all N accounts`() {
+
+        val createdAccounts = (1..5)
+            .map { Account("Acc-$it") }
+            .map { controller.create(it) }
+            .toTypedArray()
+
+        assertThat(controller.list()).containsOnly(*createdAccounts)
+    }
+
+    @Test
     fun `creating an invalid account throws an error and does not create it`() {
-        val repository = uniqueRepositoryManager().getAccountRepository()
-        val controller = AccountController(repository, AccountValidator())
         val invalidAccount = Account("A".repeat(ACCOUNT_NAME_MAX_LENGTH + 1))
 
         assertThat {
@@ -44,9 +62,21 @@ class AccountControllerTest {
     }
 
     @Test
+    fun `creating an account with an existing ID should succeed`() {
+        val existingAccounts = (1..3)
+            .map { Account("Acc-$it") }
+            .map { controller.create(it) }
+            .toTypedArray()
+        val existingAccount = existingAccounts.first()
+
+        val createdAccount = controller.create(Account("New Name", id = existingAccount.id))
+
+        assertThat(controller.get(createdAccount.id))
+            .isEqualTo(createdAccount)
+    }
+
+    @Test
     fun `creating an account with an existing name throws an error`() {
-        val repository = uniqueRepositoryManager().getAccountRepository()
-        val controller = AccountController(repository, AccountValidator())
         val existingAccounts = (1..3)
             .map { Account("Acc-$it") }
             .map { controller.create(it) }
@@ -63,9 +93,28 @@ class AccountControllerTest {
     }
 
     @Test
+    fun `creating an account whose name is longer than the max should throw error`() {
+        val account = Account("A".repeat(ACCOUNT_NAME_MAX_LENGTH + 1))
+
+
+        assertThat {
+            controller.create(account)
+        }.thrownValidationError {
+            ValidationError.NameTooLong(account.name, ACCOUNT_NAME_MAX_LENGTH)
+        }
+    }
+
+    @Test
+    fun `creating an account whose name's length is equal to the max should succeed`() {
+        val account = Account("A".repeat(ACCOUNT_NAME_MAX_LENGTH))
+
+        val createdAccount = controller.create(account)
+
+        assertThat(controller.get(createdAccount.id)).isEqualTo(createdAccount)
+    }
+
+    @Test
     fun `getting a non-existing account should throw error`() {
-        val repository = uniqueRepositoryManager().getAccountRepository()
-        val controller = AccountController(repository, AccountValidator())
         (1..3)
             .map { Account("Acc-$it") }
             .map { controller.create(it) }
@@ -80,26 +129,32 @@ class AccountControllerTest {
     }
 
     @Test
-    fun `getting a non-existing account throws an error`() {
-        val repository = uniqueRepositoryManager().getAccountRepository()
-        val controller = AccountController(repository, AccountValidator())
-        (1..3)
+    fun `exists should return false when no accounts have been created`() {
+        assertThat(controller.exists(randomID())).isFalse()
+    }
+
+    @Test
+    fun `exists should return true when the account exists`() {
+
+        val accounts = (1..3)
             .map { Account("Acc-$it") }
             .map { controller.create(it) }
-            .toTypedArray()
-        val nonExistingID = randomID()
+        val account = accounts.first()
 
-        assertThat {
-            controller.get(nonExistingID)
-        }.thrownValidationError {
-            ValidationError.NotFound("account", nonExistingID)
+        assertAll {
+            accounts.forEach {
+                assertThat(controller.exists(it.id)).isTrue()
+            }
         }
+    }
+
+    @Test
+    fun `listing accounts before creating any should return an empty list`() {
+        assertThat(controller.list()).isEmpty()
     }
 
     @Test
     fun `deleting an account removes it from the list`() {
-        val repository = uniqueRepositoryManager().getAccountRepository()
-        val controller = AccountController(repository, AccountValidator())
         val otherAccounts = (1..3)
             .map { Account("Acc-$it") }
             .map { controller.create(it) }
@@ -116,8 +171,6 @@ class AccountControllerTest {
 
     @Test
     fun `deleting a non-existing account throws an error`() {
-        val repository = uniqueRepositoryManager().getAccountRepository()
-        val controller = AccountController(repository, AccountValidator())
         val existingAccounts = (1..3)
             .map { Account("Acc-$it") }
             .map { controller.create(it) }
@@ -135,8 +188,6 @@ class AccountControllerTest {
 
     @Test
     fun `update an account`() {
-        val repository = uniqueRepositoryManager().getAccountRepository()
-        val controller = AccountController(repository, AccountValidator())
         val existingAccounts = (1..3)
             .map { Account("Acc-$it") }
             .map { controller.create(it) }
@@ -156,8 +207,6 @@ class AccountControllerTest {
 
     @Test
     fun `updating an account with name too long should throw an error`() {
-        val repository = uniqueRepositoryManager().getAccountRepository()
-        val controller = AccountController(repository, AccountValidator())
         val existingAccounts = (1..3)
             .map { Account("Acc-$it") }
             .map { controller.create(it) }
@@ -176,8 +225,6 @@ class AccountControllerTest {
 
     @Test
     fun `updating non-existing account should throw an error`() {
-        val repository = uniqueRepositoryManager().getAccountRepository()
-        val controller = AccountController(repository, AccountValidator())
         val existingAccounts = (1..3)
             .map { Account("Acc-$it") }
             .map { controller.create(it) }
@@ -191,5 +238,24 @@ class AccountControllerTest {
         }
 
         assertThat(controller.list()).containsOnly(*existingAccounts)
+    }
+
+    @Test
+    fun `updating an account's name to an existing name should throw exception`() {
+        val accounts = (1..5)
+            .map { Account("Acc-$it") }
+            .map { controller.create(it)}
+
+        val updatedAccount = accounts[1].copy(
+            name = accounts.first().name,
+            startTimestamp = Instant.ofEpochMilli(129031291230L),
+            initialBalance = 10.0
+        )
+
+        assertThat {
+            controller.update(updatedAccount)
+        }.thrownValidationError {
+            ValidationError.AccountNameExists(updatedAccount.name)
+        }
     }
 }
