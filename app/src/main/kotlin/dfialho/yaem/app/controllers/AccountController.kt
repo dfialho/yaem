@@ -70,8 +70,6 @@ class AccountController(
             repository.delete(accountID)
         } catch (e: NotFoundException) {
             throwError { ValidationError.NotFound(RESOURCE_NAME, accountID) }
-        } catch (e: ChildExistsException) {
-            throwError { ValidationError.AccountReferences(accountID) }
         }
     }
 }
