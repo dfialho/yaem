@@ -6,8 +6,7 @@ import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.sql.SQLException
 
-
-fun <T> repositoryTransaction(translator: SQLExceptionTranslator, statement: Transaction.() -> T): T {
+fun <T> transaction(translator: SQLExceptionTranslator, statement: Transaction.() -> T): T {
 
     try {
         return transaction { statement() }

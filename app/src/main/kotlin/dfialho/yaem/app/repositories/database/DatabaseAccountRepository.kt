@@ -8,7 +8,7 @@ import dfialho.yaem.app.repositories.NotFoundException
 import dfialho.yaem.app.repositories.utils.*
 import org.jetbrains.exposed.sql.*
 
-class DatabaseAccountRepository(private val exceptionTranslator: SQLExceptionTranslator)
+class DatabaseAccountRepository(private val translator: SQLExceptionTranslator)
     : AccountRepository, DatabaseRepository {
 
     internal object Accounts : Table() {
@@ -19,13 +19,13 @@ class DatabaseAccountRepository(private val exceptionTranslator: SQLExceptionTra
     }
 
     override fun createTablesIfMissing() {
-        repositoryTransaction(exceptionTranslator) {
+        transaction(translator) {
             SchemaUtils.create(Accounts)
         }
     }
 
     override fun create(account: Account): Unit =
-        repositoryTransaction(exceptionTranslator) {
+        transaction(translator) {
             Accounts.insert {
                 it[id] = account.id.toUUID()
                 it[name] = account.name
@@ -39,17 +39,17 @@ class DatabaseAccountRepository(private val exceptionTranslator: SQLExceptionTra
     }
 
     override fun list(): List<Account> =
-        repositoryTransaction(exceptionTranslator) {
-            return@repositoryTransaction Accounts.selectAll().mapToAccount()
+        transaction(translator) {
+            return@transaction Accounts.selectAll().mapToAccount()
         }
 
     override fun exists(accountID: ID): Boolean =
-        repositoryTransaction(exceptionTranslator) {
-            return@repositoryTransaction findAccount(accountID) != null
+        transaction(translator) {
+            return@transaction findAccount(accountID) != null
         }
 
     override fun update(account: Account): Unit =
-        repositoryTransaction(exceptionTranslator) {
+        transaction(translator) {
 
             val updatedCount = Accounts.update({ Accounts.id eq account.id.toUUID() }) {
                 it[name] = account.name
@@ -63,7 +63,7 @@ class DatabaseAccountRepository(private val exceptionTranslator: SQLExceptionTra
         }
 
     override fun delete(accountID: String): Unit =
-        repositoryTransaction(exceptionTranslator) {
+        transaction(translator) {
             val accountUUID = accountID.toUUID()
             val deleteCount = Accounts.deleteWhere { Accounts.id eq accountUUID }
 
@@ -73,10 +73,10 @@ class DatabaseAccountRepository(private val exceptionTranslator: SQLExceptionTra
         }
 
     private fun findAccount(accountID: ID): Account? =
-        repositoryTransaction(exceptionTranslator) {
+        transaction(translator) {
             val accountUUID = accountID.toUUID()
 
-            return@repositoryTransaction Accounts.select { Accounts.id eq accountUUID }
+            return@transaction Accounts.select { Accounts.id eq accountUUID }
                 .limit(1)
                 .mapToAccount()
                 .firstOrNull()
