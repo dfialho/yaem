@@ -40,9 +40,9 @@ fun Application.app(dbConfig: DatabaseConfig) {
 
     val repositoryManager = DatabaseRepositoryManager(dbConfig)
     val accountRepository: AccountRepository = repositoryManager.getAccountRepository()
-    val accountController = AccountController(accountRepository, AccountValidator(IDValidator()))
+    val accountController = AccountController(accountRepository, AccountValidator())
     val transactionRepository: TransactionRepository = repositoryManager.getLedgerRepository()
-    val transactionController = TransactionController(transactionRepository, TransactionValidator(IDValidator()))
+    val transactionController = TransactionController(transactionRepository, TransactionValidator())
 
     install(DefaultHeaders)
     install(ContentNegotiation) {

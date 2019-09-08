@@ -13,7 +13,7 @@ class TransactionValidatorTest {
 
     @Test
     fun `when the transaction has a valid ID it should return no errors`() {
-        val validator = TransactionValidator(IDValidator())
+        val validator = TransactionValidator()
         val validID = randomID()
 
         val validationErrors = validator.validate(
@@ -31,7 +31,7 @@ class TransactionValidatorTest {
 
     @Test
     fun `when the transaction has an invalid ID it should return an invalid ID error`() {
-        val validator = TransactionValidator(IDValidator())
+        val validator = TransactionValidator()
         val invalidID = "invalid id"
 
         val validationErrors = validator.validate(
@@ -49,7 +49,7 @@ class TransactionValidatorTest {
 
     @Test
     fun `when the transfer has the same sending and receiving accounts it should return an error`() {
-        val validator = TransactionValidator(IDValidator())
+        val validator = TransactionValidator()
         val commonAccountID = randomID()
 
         val validationErrors = validator.validate(
@@ -68,7 +68,7 @@ class TransactionValidatorTest {
 
     @Test
     fun `when the transaction has multiple validation errors it should return all errors`() {
-        val validator = TransactionValidator(IDValidator())
+        val validator = TransactionValidator()
         val invalidID = "invalid id"
         val commonAccountID = randomID()
 

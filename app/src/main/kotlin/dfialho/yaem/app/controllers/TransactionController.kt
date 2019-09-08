@@ -5,10 +5,7 @@ import dfialho.yaem.app.api.Transaction
 import dfialho.yaem.app.repositories.TransactionRepository
 import dfialho.yaem.app.repositories.NotFoundException
 import dfialho.yaem.app.repositories.ParentMissingException
-import dfialho.yaem.app.validators.TransactionValidator
-import dfialho.yaem.app.validators.ValidationError
-import dfialho.yaem.app.validators.throwError
-import dfialho.yaem.app.validators.throwIfValidationError
+import dfialho.yaem.app.validators.*
 
 class TransactionController(
     private val repository: TransactionRepository,
@@ -26,7 +23,7 @@ class TransactionController(
     }
 
     fun get(transactionID: ID): Transaction {
-        throwIfValidationError(validator.idValidator.validate(transactionID))
+        throwIfValidationError(validateID(transactionID))
         return repository.get(transactionID) ?: throwError { ValidationError.NotFound(transactionID) }
     }
 
@@ -35,7 +32,7 @@ class TransactionController(
     }
 
     fun update(trxID: String, trx: Transaction) {
-        throwIfValidationError(validator.idValidator.validate(trxID))
+        throwIfValidationError(validateID(trxID))
         throwIfValidationError(validator.validate(trx))
 
         try {
@@ -48,7 +45,7 @@ class TransactionController(
     }
 
     fun delete(transactionID: String) {
-        throwIfValidationError(validator.idValidator.validate(transactionID))
+        throwIfValidationError(validateID(transactionID))
 
         try {
             repository.delete(transactionID)

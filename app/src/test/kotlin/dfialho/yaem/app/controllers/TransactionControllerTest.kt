@@ -7,7 +7,6 @@ import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.repositories.ParentMissingException
 import dfialho.yaem.app.repositories.TransactionRepository
 import dfialho.yaem.app.testutils.containsError
-import dfialho.yaem.app.validators.IDValidator
 import dfialho.yaem.app.validators.TransactionValidator
 import dfialho.yaem.app.validators.ValidationError
 import dfialho.yaem.app.validators.ValidationErrorException
@@ -38,7 +37,7 @@ class TransactionControllerTest {
 
     @Test
     fun `creating a transaction for existing account should invoke the repository`() {
-        val validator = spyk(TransactionValidator(IDValidator()))
+        val validator = spyk(TransactionValidator())
         val repository = mockk<TransactionRepository>()
         val controller = TransactionController(repository, validator)
         val transaction = Transaction(receiver = randomID(), amount = 10.5)
@@ -52,7 +51,7 @@ class TransactionControllerTest {
 
     @Test
     fun `creating a transaction for non-existing account should throw validation error`() {
-        val validator = spyk(TransactionValidator(IDValidator()))
+        val validator = spyk(TransactionValidator())
         val repository = mockk<TransactionRepository>()
         val controller = TransactionController(repository, validator)
         val nonExistingAccount = randomID()

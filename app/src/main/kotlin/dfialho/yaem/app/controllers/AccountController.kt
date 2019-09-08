@@ -5,10 +5,7 @@ import dfialho.yaem.app.api.ID
 import dfialho.yaem.app.repositories.AccountRepository
 import dfialho.yaem.app.repositories.ChildExistsException
 import dfialho.yaem.app.repositories.NotFoundException
-import dfialho.yaem.app.validators.AccountValidator
-import dfialho.yaem.app.validators.ValidationError
-import dfialho.yaem.app.validators.throwError
-import dfialho.yaem.app.validators.throwIfValidationError
+import dfialho.yaem.app.validators.*
 
 class AccountController(
     private val repository: AccountRepository,
@@ -21,7 +18,7 @@ class AccountController(
     }
 
     fun get(accountID: ID): Account {
-        throwIfValidationError(validator.idValidator.validate(accountID))
+        throwIfValidationError(validateID(accountID))
 
         try {
             return repository.get(accountID)
@@ -35,7 +32,7 @@ class AccountController(
     }
 
     fun update(accountID: String, account: Account) {
-        throwIfValidationError(validator.idValidator.validate(accountID))
+        throwIfValidationError(validateID(accountID))
         throwIfValidationError(validator.validate(account))
 
         try {
@@ -47,7 +44,7 @@ class AccountController(
     }
 
     fun delete(accountID: String) {
-        throwIfValidationError(validator.idValidator.validate(accountID))
+        throwIfValidationError(validateID(accountID))
 
         try {
             repository.delete(accountID)

@@ -2,15 +2,14 @@ package dfialho.yaem.app.controllers
 
 import assertk.assertThat
 import assertk.assertions.isInstanceOf
-import dfialho.yaem.app.testutils.anyTransaction
 import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.repositories.AccountRepository
 import dfialho.yaem.app.repositories.TransactionRepository
 import dfialho.yaem.app.repositories.uniqueRepositoryManager
+import dfialho.yaem.app.testutils.anyTransaction
 import dfialho.yaem.app.testutils.containsError
 import dfialho.yaem.app.validators.AccountValidator
-import dfialho.yaem.app.validators.IDValidator
 import dfialho.yaem.app.validators.ValidationError
 import dfialho.yaem.app.validators.ValidationErrorException
 import io.mockk.*
@@ -40,7 +39,7 @@ class AccountControllerTest {
     @Test
     fun `when no validation error occurs the controller tries to create the account`() {
         val repository = mockk<AccountRepository>(relaxed = true)
-        val validator = AccountValidator(IDValidator())
+        val validator = AccountValidator()
         val controller = AccountController(repository, validator)
         val account = Account("Valid Account")
 
@@ -52,7 +51,7 @@ class AccountControllerTest {
     @Test
     fun `when the account ID is invalid the controller does not try to delete any account`() {
         val repository = mockk<AccountRepository>()
-        val validator = AccountValidator(IDValidator())
+        val validator = AccountValidator()
         val controller = AccountController(repository, validator)
         val accountID = "invalid id"
 
@@ -70,7 +69,7 @@ class AccountControllerTest {
     @Test
     fun `when the account ID is valid the controller tries to delete the account`() {
         val repository = mockk<AccountRepository>(relaxed = true)
-        val validator = AccountValidator(IDValidator())
+        val validator = AccountValidator()
         val controller = AccountController(repository, validator)
         val accountID = randomID()
 
@@ -84,7 +83,7 @@ class AccountControllerTest {
         val repositoryManager = uniqueRepositoryManager()
         val accountRepository: AccountRepository = repositoryManager.getAccountRepository()
         val transactionRepository: TransactionRepository = repositoryManager.getLedgerRepository()
-        val controller = AccountController(accountRepository, AccountValidator(IDValidator()))
+        val controller = AccountController(accountRepository, AccountValidator())
 
         val receiverAccount = Account("Incoming")
         val senderAccount = Account("Sending")
@@ -105,7 +104,7 @@ class AccountControllerTest {
         val repositoryManager = uniqueRepositoryManager()
         val accountRepository: AccountRepository = repositoryManager.getAccountRepository()
         val transactionRepository: TransactionRepository = repositoryManager.getLedgerRepository()
-        val controller = AccountController(accountRepository, AccountValidator(IDValidator()))
+        val controller = AccountController(accountRepository, AccountValidator())
 
         val receiverAccount = Account("Incoming")
         val senderAccount = Account("Sending")

@@ -14,7 +14,7 @@ class AccountValidatorTest {
 
     @Test
     fun `when the account is valid it should return no errors`() {
-        val validator = AccountValidator(IDValidator())
+        val validator = AccountValidator()
         val account = Account(
             name = "My Account",
             initialBalance = 10.0,
@@ -29,7 +29,7 @@ class AccountValidatorTest {
 
     @Test
     fun `when the account has an invalid id it should return an invalid ID error`() {
-        val validator = AccountValidator(IDValidator())
+        val validator = AccountValidator()
         val invalidID = "invalid id"
         val account = Account(
             name = "My Account",
@@ -45,7 +45,7 @@ class AccountValidatorTest {
 
     @Test
     fun `when the account name has max length size it should validate with no errors`() {
-        val validator = AccountValidator(IDValidator())
+        val validator = AccountValidator()
         val account = Account(name = "A".repeat(ACCOUNT_NAME_MAX_LENGTH))
 
         val validationErrors = validator.validate(account)
@@ -55,7 +55,7 @@ class AccountValidatorTest {
 
     @Test
     fun `when the account name is over the max length it should return error`() {
-        val validator = AccountValidator(IDValidator())
+        val validator = AccountValidator()
         val account = Account(name = "A".repeat(ACCOUNT_NAME_MAX_LENGTH + 1))
 
         val validationErrors = validator.validate(account)
@@ -65,7 +65,7 @@ class AccountValidatorTest {
 
     @Test
     fun `when the account's name and id are invalid it should return both errors`() {
-        val validator = AccountValidator(IDValidator())
+        val validator = AccountValidator()
         val invalidID = "invalid id"
         val tooLongName = "A".repeat(ACCOUNT_NAME_MAX_LENGTH + 1)
         val account = Account(
