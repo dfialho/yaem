@@ -11,8 +11,8 @@ fun Route.accounts(controller: AccountController) = route("accounts") {
 
     post {
         val account = call.validatedReceive<Account>()
-        controller.create(account)
-        call.respond(HttpStatusCode.Created, account)
+        val createdAccount = controller.create(account)
+        call.respond(HttpStatusCode.Created, createdAccount)
     }
 
     get {
@@ -26,13 +26,9 @@ fun Route.accounts(controller: AccountController) = route("accounts") {
         call.respond(HttpStatusCode.OK, account)
     }
 
-    put("{id}") {
-        val accountID = call.parameters["id"] ?: throw IllegalArgumentException("ID parameter is required")
+    put {
         val account = call.validatedReceive<Account>()
-
-        val updatedAccount = account.copy(id = accountID)
-        controller.update(accountID, account)
-
+        val updatedAccount = controller.update(account)
         call.respond(HttpStatusCode.Accepted, updatedAccount)
     }
 

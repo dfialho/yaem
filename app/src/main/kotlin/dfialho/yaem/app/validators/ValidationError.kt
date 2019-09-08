@@ -18,17 +18,22 @@ open class ValidationError internal constructor(val code: String, val message: S
 
     class NameTooLong(name: String, max: Int) : ValidationError(
         code = "BASE-03",
-        message = "Name is too long (max=$max): $name"
+        message = "Name is too long (max=$max): $name (${name.length})"
     )
 
-    class NotFound(resourceID: ID) : ValidationError(
+    class NotFound(resourceName: String, resourceID: ID) : ValidationError(
         code = "BASE-04",
-        message = "Resource with ID '$resourceID' was not found"
+        message = "Resource '$resourceName' with ID '$resourceID' was not found"
     )
 
     class AccountReferences(accountID: ID) : ValidationError(
         code = "ACCOUNT-01",
         message = "Account '$accountID' is still being referenced by at least one transaction"
+    )
+
+    class AccountNameExists(name: String) : ValidationError(
+        code = "ACCOUNT-02",
+        message = "Account with name '$name' already exists"
     )
 
     class LedgerMissingAccount(accountID: ID? = null) : ValidationError(

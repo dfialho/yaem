@@ -2,8 +2,10 @@ package dfialho.yaem.app.controllers
 
 import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.ID
+import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.repositories.AccountRepository
 import dfialho.yaem.app.repositories.ChildExistsException
+import dfialho.yaem.app.repositories.DuplicateKeyException
 import dfialho.yaem.app.repositories.NotFoundException
 import dfialho.yaem.app.validators.*
 
@@ -11,10 +13,24 @@ class AccountController(
     private val repository: AccountRepository,
     private val validator: AccountValidator
 ) {
+    companion object {
+        const val RESOURCE_NAME = "account"
+    }
 
-    fun create(account: Account) {
-        throwIfValidationError(validator.validate(account))
-        repository.create(account)
+    fun create(account: Account): Account {
+        // Generate the ID for the account internally to ensure
+        // the IDs are controlled internally
+        val uniqueAccount = account.copy(id = randomID())
+
+        throwIfValidationError(validator.validate(uniqueAccount))
+
+        try {
+            repository.create(uniqueAccount)
+        } catch (e: DuplicateKeyException) {
+            throwError { ValidationError.AccountNameExists(account.name) }
+        }
+
+        return uniqueAccount
     }
 
     fun get(accountID: ID): Account {
@@ -23,7 +39,7 @@ class AccountController(
         try {
             return repository.get(accountID)
         } catch (e: NotFoundException) {
-            throwError { ValidationError.NotFound(accountID) }
+            throwError { ValidationError.NotFound(RESOURCE_NAME, accountID) }
         }
     }
 
@@ -31,15 +47,19 @@ class AccountController(
         return repository.list()
     }
 
-    fun update(accountID: String, account: Account) {
+    fun exists(accountID: ID): Boolean {
         throwIfValidationError(validateID(accountID))
+        return repository.exists(accountID)
+    }
+
+    fun update(account: Account): Account {
         throwIfValidationError(validator.validate(account))
 
         try {
-            // FIXME remove account ID parameter
-            repository.update(account.copy(id = accountID))
+            repository.update(account)
+            return account
         } catch (e: NotFoundException) {
-            throwError { ValidationError.NotFound(accountID) }
+            throwError { ValidationError.NotFound(RESOURCE_NAME, account.id) }
         }
     }
 
@@ -49,7 +69,7 @@ class AccountController(
         try {
             repository.delete(accountID)
         } catch (e: NotFoundException) {
-            throwError { ValidationError.NotFound(accountID) }
+            throwError { ValidationError.NotFound(RESOURCE_NAME, accountID) }
         } catch (e: ChildExistsException) {
             throwError { ValidationError.AccountReferences(accountID) }
         }

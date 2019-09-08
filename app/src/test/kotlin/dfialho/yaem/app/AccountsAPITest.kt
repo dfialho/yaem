@@ -4,7 +4,6 @@ import assertk.assertAll
 import assertk.assertThat
 import assertk.assertions.*
 import dfialho.yaem.app.api.Account
-import dfialho.yaem.app.api.Transaction
 import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.repositories.DatabaseConfig
 import dfialho.yaem.app.testutils.*
@@ -38,7 +37,7 @@ class AccountsAPITest {
             val accountID = "c1929c11-3caa-400c-bee4-fdad5f023759"
             handleGetAccountRequest(accountID).apply {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.NotFound)
-                assertThat(response.content).isErrorListWith(ValidationError.NotFound(accountID))
+                assertThat(response.content).isErrorListWith(ValidationError.NotFound("account", accountID))
             }
         }
 
@@ -179,7 +178,7 @@ class AccountsAPITest {
     }
 
     @Test
-    fun `after updating an account the response to getting includes the updated version`() {
+    fun `update an account`() {
         withTestApplication({ app(dbConfig) }) {
             val account = createAccount(
                 Account(
@@ -190,19 +189,18 @@ class AccountsAPITest {
             )
 
             val newVersion = Account(
+                id = account.id,
                 name = "New Account Name",
                 initialBalance = account.initialBalance + 11.8,
                 startTimestamp = account.startTimestamp.plus(1, ChronoUnit.DAYS)
             )
 
-            val newVersionWithOriginalID = newVersion.copy(id = account.id)
-
-            handleUpdateAccountRequest(account.id, newVersion).apply {
+            handleUpdateAccountRequest(newVersion).apply {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.Accepted)
-                assertThat(response.content).isJsonEqualTo(Account.serializer(), newVersionWithOriginalID)
+                assertThat(response.content).isJsonEqualTo(Account.serializer(), newVersion)
             }
 
-            assertThat(getAccount(account.id)).isEqualTo(newVersionWithOriginalID)
+            assertThat(getAccount(account.id)).isEqualTo(newVersion)
         }
     }
 
@@ -218,19 +216,17 @@ class AccountsAPITest {
             )
 
             val newVersion = Account(
+                id = randomID(),
                 name = "New Account Name",
                 initialBalance = account.initialBalance + 11.8,
-                startTimestamp = account.startTimestamp.plus(1, ChronoUnit.DAYS),
-                id = account.id
+                startTimestamp = account.startTimestamp.plus(1, ChronoUnit.DAYS)
             )
 
-            val nonExistingID = randomID()
-
-            handleUpdateAccountRequest(nonExistingID, newVersion).apply {
+            handleUpdateAccountRequest(newVersion).apply {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.NotFound)
             }
 
-            assertThat(getAccount(account.id)).isEqualTo(account)
+            assertThat(listAccounts()).containsOnly(account)
         }
     }
 }

@@ -28,13 +28,13 @@ fun TestApplicationEngine.handleCreateAccountRequest(body: String): TestApplicat
     }
 }
 
-fun TestApplicationEngine.handleUpdateAccountRequest(accountID: ID, account: Account): TestApplicationCall {
-    return handleUpdateAccountRequest(accountID, body = json.stringify(Account.serializer(), account))
+fun TestApplicationEngine.handleUpdateAccountRequest(account: Account): TestApplicationCall {
+    return handleUpdateAccountRequest(body = json.stringify(Account.serializer(), account))
 }
 
-fun TestApplicationEngine.handleUpdateAccountRequest(accountID: String, body: String): TestApplicationCall {
+fun TestApplicationEngine.handleUpdateAccountRequest(body: String): TestApplicationCall {
 
-    return handleRequest(HttpMethod.Put, "/api/accounts/$accountID") {
+    return handleRequest(HttpMethod.Put, "/api/accounts") {
         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(body)
     }
