@@ -6,13 +6,12 @@ import assertk.assertions.*
 import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.Transaction
 import dfialho.yaem.app.api.randomID
-import dfialho.yaem.app.repositories.exposed.ExposedRepositoryManager
-import dfialho.yaem.app.repositories.exceptions.ParentMissingException
+import dfialho.yaem.app.repositories.database.DatabaseRepositoryManager
 import org.junit.Test
 import java.time.Instant
 import java.util.*
 
-class ExposedTransactionRepositoryTest {
+class DatabaseTransactionRepositoryTest {
 
     @Test
     fun `create transaction for existing account should include transaction in ledger`() {
@@ -118,7 +117,7 @@ class ExposedTransactionRepositoryTest {
         }
     }
 
-    private fun createAnAccount(repositoryManager: ExposedRepositoryManager): Account {
+    private fun createAnAccount(repositoryManager: DatabaseRepositoryManager): Account {
         val accountRepository = repositoryManager.getAccountRepository()
         val account = Account("account-${UUID.randomUUID().toString().substring(0, 5)}")
         accountRepository.create(account)

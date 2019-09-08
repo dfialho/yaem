@@ -1,8 +1,8 @@
-package dfialho.yaem.app.repositories.exposed
+package dfialho.yaem.app.repositories.database
 
 /**
  * Base interface for a repository implemented using the exposed library.
  */
-internal interface ExposedRepository {
+internal interface DatabaseRepository {
     fun createTablesIfMissing()
 }

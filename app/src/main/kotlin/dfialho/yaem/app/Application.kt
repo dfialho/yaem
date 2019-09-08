@@ -3,8 +3,8 @@ package dfialho.yaem.app
 import dfialho.yaem.app.controllers.AccountController
 import dfialho.yaem.app.controllers.TransactionController
 import dfialho.yaem.app.repositories.*
-import dfialho.yaem.app.repositories.exposed.ExposedRepositoryManager
-import dfialho.yaem.app.repositories.exceptions.DuplicateKeyException
+import dfialho.yaem.app.repositories.database.DatabaseRepositoryManager
+import dfialho.yaem.app.repositories.DuplicateKeyException
 import dfialho.yaem.app.validators.*
 import dfialho.yaem.json.lib.json
 import io.ktor.application.Application
@@ -38,7 +38,7 @@ fun Application.app() {
 
 fun Application.app(dbConfig: DatabaseConfig) {
 
-    val repositoryManager = ExposedRepositoryManager(dbConfig)
+    val repositoryManager = DatabaseRepositoryManager(dbConfig)
     val accountRepository: AccountRepository = repositoryManager.getAccountRepository()
     val accountController = AccountController(accountRepository, AccountValidator(IDValidator()))
     val transactionRepository: TransactionRepository = repositoryManager.getLedgerRepository()

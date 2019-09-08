@@ -6,12 +6,10 @@ import assertk.assertions.*
 import dfialho.yaem.app.api.ACCOUNT_NAME_MAX_LENGTH
 import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.randomID
-import dfialho.yaem.app.repositories.exceptions.DuplicateKeyException
-import dfialho.yaem.app.repositories.exceptions.NotFoundException
 import org.junit.Test
 import java.time.Instant
 
-class ExposedAccountRepositoryTest {
+class DatabaseAccountRepositoryTest {
 
     @Test
     fun `create first account`() {

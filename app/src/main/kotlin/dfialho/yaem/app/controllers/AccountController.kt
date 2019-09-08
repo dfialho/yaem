@@ -3,8 +3,8 @@ package dfialho.yaem.app.controllers
 import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.ID
 import dfialho.yaem.app.repositories.AccountRepository
-import dfialho.yaem.app.repositories.exceptions.ChildExistsException
-import dfialho.yaem.app.repositories.exceptions.NotFoundException
+import dfialho.yaem.app.repositories.ChildExistsException
+import dfialho.yaem.app.repositories.NotFoundException
 import dfialho.yaem.app.validators.AccountValidator
 import dfialho.yaem.app.validators.ValidationError
 import dfialho.yaem.app.validators.throwError

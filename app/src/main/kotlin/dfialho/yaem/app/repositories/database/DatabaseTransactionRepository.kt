@@ -1,16 +1,15 @@
-package dfialho.yaem.app.repositories.exposed
+package dfialho.yaem.app.repositories.database
 
 import dfialho.yaem.app.api.ID
 import dfialho.yaem.app.api.Transaction
-import dfialho.yaem.app.repositories.exceptions.NotFoundException
+import dfialho.yaem.app.repositories.NotFoundException
 import dfialho.yaem.app.repositories.TransactionRepository
-import dfialho.yaem.app.repositories.exposed.ExposedAccountRepository.Accounts
-import dfialho.yaem.app.repositories.exceptions.SQLExceptionTranslator
+import dfialho.yaem.app.repositories.database.DatabaseAccountRepository.Accounts
 import dfialho.yaem.app.repositories.utils.*
 import org.jetbrains.exposed.sql.*
 
-class ExposedTransactionRepository(private val exceptionTranslator: SQLExceptionTranslator)
-    : TransactionRepository, ExposedRepository {
+class DatabaseTransactionRepository(private val exceptionTranslator: SQLExceptionTranslator)
+    : TransactionRepository, DatabaseRepository {
 
     internal object Transactions : Table() {
         val id = uuid("ID").primaryKey()

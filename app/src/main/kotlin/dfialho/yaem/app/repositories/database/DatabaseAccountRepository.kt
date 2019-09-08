@@ -1,16 +1,15 @@
-package dfialho.yaem.app.repositories.exposed
+package dfialho.yaem.app.repositories.database
 
 import dfialho.yaem.app.api.ACCOUNT_NAME_MAX_LENGTH
 import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.ID
 import dfialho.yaem.app.repositories.AccountRepository
-import dfialho.yaem.app.repositories.exceptions.NotFoundException
-import dfialho.yaem.app.repositories.exceptions.SQLExceptionTranslator
+import dfialho.yaem.app.repositories.NotFoundException
 import dfialho.yaem.app.repositories.utils.*
 import org.jetbrains.exposed.sql.*
 
-class ExposedAccountRepository(private val exceptionTranslator: SQLExceptionTranslator)
-    : AccountRepository, ExposedRepository {
+class DatabaseAccountRepository(private val exceptionTranslator: SQLExceptionTranslator)
+    : AccountRepository, DatabaseRepository {
 
     internal object Accounts : Table() {
         val id = uuid("ID").primaryKey()
