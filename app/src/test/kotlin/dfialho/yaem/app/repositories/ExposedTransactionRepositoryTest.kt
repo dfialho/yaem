@@ -6,6 +6,8 @@ import assertk.assertions.*
 import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.Transaction
 import dfialho.yaem.app.api.randomID
+import dfialho.yaem.app.repositories.exposed.ExposedRepositoryManager
+import dfialho.yaem.app.repositories.exceptions.ParentMissingException
 import org.junit.Test
 import java.time.Instant
 import java.util.*

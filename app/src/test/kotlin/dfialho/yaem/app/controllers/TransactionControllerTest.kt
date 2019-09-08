@@ -4,7 +4,7 @@ import assertk.assertThat
 import assertk.assertions.isInstanceOf
 import dfialho.yaem.app.api.Transaction
 import dfialho.yaem.app.api.randomID
-import dfialho.yaem.app.repositories.ParentMissingException
+import dfialho.yaem.app.repositories.exceptions.ParentMissingException
 import dfialho.yaem.app.repositories.TransactionRepository
 import dfialho.yaem.app.testutils.containsError
 import dfialho.yaem.app.validators.IDValidator
@@ -58,7 +58,9 @@ class TransactionControllerTest {
         val nonExistingAccount = randomID()
         val transaction = Transaction(receiver = nonExistingAccount, amount = 10.5)
 
-        every { repository.create(any()) } throws ParentMissingException(SQLException())
+        every { repository.create(any()) } throws ParentMissingException(
+            SQLException()
+        )
 
         assertThat {
             controller.create(transaction)

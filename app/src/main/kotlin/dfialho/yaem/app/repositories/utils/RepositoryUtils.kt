@@ -1,5 +1,6 @@
-package dfialho.yaem.app.repositories
+package dfialho.yaem.app.repositories.utils
 
+import dfialho.yaem.app.repositories.exceptions.SQLExceptionTranslator
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.transactions.transaction

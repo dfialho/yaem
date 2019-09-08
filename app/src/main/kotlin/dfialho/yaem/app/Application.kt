@@ -3,6 +3,8 @@ package dfialho.yaem.app
 import dfialho.yaem.app.controllers.AccountController
 import dfialho.yaem.app.controllers.TransactionController
 import dfialho.yaem.app.repositories.*
+import dfialho.yaem.app.repositories.exposed.ExposedRepositoryManager
+import dfialho.yaem.app.repositories.exceptions.DuplicateKeyException
 import dfialho.yaem.app.validators.*
 import dfialho.yaem.json.lib.json
 import io.ktor.application.Application
@@ -19,7 +21,6 @@ import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.routing.route
 import io.ktor.routing.routing
-import io.ktor.serialization.SerializationConverter
 import io.ktor.serialization.serialization
 import kotlinx.serialization.list
 import org.slf4j.event.Level

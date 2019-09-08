@@ -1,4 +1,4 @@
-package dfialho.yaem.app.repositories
+package dfialho.yaem.app.repositories.exceptions
 
 import java.sql.SQLException
 

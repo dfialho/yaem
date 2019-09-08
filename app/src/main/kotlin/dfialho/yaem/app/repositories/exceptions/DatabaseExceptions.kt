@@ -1,6 +1,4 @@
-package dfialho.yaem.app.repositories
-
-import java.sql.SQLException
+package dfialho.yaem.app.repositories.exceptions
 
 sealed class DatabaseException(cause: Exception?, message: String? = null) : Exception(message, cause)
 
@@ -9,4 +7,3 @@ class ParentMissingException(cause: Exception, message: String? = null) : Databa
 class ChildExistsException(cause: Exception, message: String? = null) : DatabaseException(cause, message)
 class UnknownDatabaseException(cause: Exception, message: String? = null) : DatabaseException(cause, message)
 class NotFoundException(message: String? = null) : DatabaseException(null, message)
-class ColumnConstraintException(message: String? = null) : DatabaseException(null, message)

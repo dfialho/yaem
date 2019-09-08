@@ -3,8 +3,8 @@ package dfialho.yaem.app.controllers
 import dfialho.yaem.app.api.ID
 import dfialho.yaem.app.api.Transaction
 import dfialho.yaem.app.repositories.TransactionRepository
-import dfialho.yaem.app.repositories.NotFoundException
-import dfialho.yaem.app.repositories.ParentMissingException
+import dfialho.yaem.app.repositories.exceptions.NotFoundException
+import dfialho.yaem.app.repositories.exceptions.ParentMissingException
 import dfialho.yaem.app.validators.TransactionValidator
 import dfialho.yaem.app.validators.ValidationError
 import dfialho.yaem.app.validators.throwError

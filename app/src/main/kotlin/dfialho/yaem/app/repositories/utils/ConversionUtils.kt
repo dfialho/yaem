@@ -1,4 +1,4 @@
-package dfialho.yaem.app.repositories
+package dfialho.yaem.app.repositories.utils
 
 import dfialho.yaem.app.api.ID
 import org.joda.time.DateTime
