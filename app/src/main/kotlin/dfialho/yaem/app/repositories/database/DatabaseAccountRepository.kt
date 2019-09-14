@@ -1,6 +1,5 @@
 package dfialho.yaem.app.repositories.database
 
-import dfialho.yaem.app.api.ACCOUNT_NAME_MAX_LENGTH
 import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.ID
 import dfialho.yaem.app.repositories.AccountRepository
@@ -10,13 +9,6 @@ import org.jetbrains.exposed.sql.*
 
 class DatabaseAccountRepository(private val translator: SQLExceptionTranslator)
     : AccountRepository, DatabaseRepository {
-
-    internal object Accounts : Table() {
-        val id = uuid("ID").primaryKey()
-        val name = varchar("NAME", length = ACCOUNT_NAME_MAX_LENGTH).uniqueIndex("NAME_INDEX")
-        val initialBalance = double("INITIAL_BALANCE")
-        val startTimestamp = datetime("START_TIMESTAMP")
-    }
 
     override fun createTablesIfMissing() {
         transaction(translator) {

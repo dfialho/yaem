@@ -36,14 +36,14 @@ open class ValidationError internal constructor(val code: String, val message: S
         message = "Account with name '$name' already exists"
     )
 
-    class LedgerMissingAccount(accountID: ID? = null) : ValidationError(
-        code = "LEDGER-01",
+    class TransactionMissingAccount(accountID: ID? = null) : ValidationError(
+        code = "TRANSACTION-01",
         message = "Transaction depends on account ${(if (accountID == null) "" else "with id '$accountID' ")}which does not exist"
     )
 
-    class LedgerCommonAccounts(accountID: ID) : ValidationError(
-        code = "LEDGER-02",
-        message = "Transaction's incoming and outgoing accounts cannot have the same id: $accountID"
+    class TransactionCommonAccounts(accountID: ID) : ValidationError(
+        code = "TRANSACTION-02",
+        message = "Transaction's receiver and sender accounts cannot have the same id: $accountID"
     )
 
     override fun equals(other: Any?): Boolean {

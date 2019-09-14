@@ -1,10 +1,14 @@
 package dfialho.yaem.app
 
 import dfialho.yaem.app.controllers.AccountController
-import dfialho.yaem.app.repositories.*
-import dfialho.yaem.app.repositories.database.DatabaseRepositoryManager
+import dfialho.yaem.app.repositories.AccountRepository
+import dfialho.yaem.app.repositories.DatabaseConfig
 import dfialho.yaem.app.repositories.DuplicateKeyException
-import dfialho.yaem.app.validators.*
+import dfialho.yaem.app.repositories.database.DatabaseRepositoryManager
+import dfialho.yaem.app.repositories.database.H2SQLExceptionTranslator
+import dfialho.yaem.app.validators.AccountValidator
+import dfialho.yaem.app.validators.ValidationError
+import dfialho.yaem.app.validators.ValidationErrorException
 import dfialho.yaem.json.lib.json
 import io.ktor.application.Application
 import io.ktor.application.call
@@ -37,7 +41,7 @@ fun Application.app() {
 
 fun Application.app(dbConfig: DatabaseConfig) {
 
-    val repositoryManager = DatabaseRepositoryManager(dbConfig)
+    val repositoryManager = DatabaseRepositoryManager(dbConfig, H2SQLExceptionTranslator())
     val accountRepository: AccountRepository = repositoryManager.getAccountRepository()
     val accountController = AccountController(accountRepository, AccountValidator())
 
