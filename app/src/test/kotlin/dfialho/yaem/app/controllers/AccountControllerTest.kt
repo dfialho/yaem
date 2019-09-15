@@ -6,11 +6,12 @@ import assertk.assertions.*
 import dfialho.yaem.app.api.ACCOUNT_NAME_MAX_LENGTH
 import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.randomID
-import dfialho.yaem.app.repositories.AccountRepository
-import dfialho.yaem.app.repositories.database.DatabaseRepositoryManager
-import dfialho.yaem.app.testutils.uniqueRepositoryManager
+import dfialho.yaem.app.testutils.anyAccount
+import dfialho.yaem.app.testutils.anyTransaction
 import dfialho.yaem.app.testutils.thrownValidationError
+import dfialho.yaem.app.testutils.uniqueRepositoryManager
 import dfialho.yaem.app.validators.AccountValidator
+import dfialho.yaem.app.validators.TransactionValidator
 import dfialho.yaem.app.validators.ValidationError
 import org.junit.Before
 import org.junit.Test
@@ -19,11 +20,13 @@ import java.time.Instant
 class AccountControllerTest {
 
     lateinit var controller: AccountController
+    lateinit var trxController: TransactionController
 
     @Before
     fun setUp() {
-        val repository = uniqueRepositoryManager().getAccountRepository()
-        controller = AccountController(repository, AccountValidator())
+        val manager = uniqueRepositoryManager()
+        controller = AccountController(manager.getAccountRepository(), AccountValidator())
+        trxController = TransactionController(manager.getTransactionRepository(), TransactionValidator())
     }
 
     @Test
@@ -187,6 +190,37 @@ class AccountControllerTest {
     }
 
     @Test
+    fun `deleting an account that is a receiver of a transaction should throw an error`() {
+        val account = controller.create(anyAccount())
+        val transaction = trxController.create(anyTransaction(account.id))
+
+        assertThat {
+            controller.delete(account.id)
+        }.thrownValidationError {
+            ValidationError.AccountReferences(account.id)
+        }
+
+        assertThat(controller.get(account.id)).isEqualTo(account)
+        assertThat(trxController.get(transaction.id)).isEqualTo(transaction)
+    }
+
+    @Test
+    fun `deleting an account that is the sender of a transaction should throw an error`() {
+        val mainAccount = controller.create(anyAccount())
+        val account = controller.create(anyAccount())
+        val transaction = trxController.create(anyTransaction(account = mainAccount.id, sender = account.id))
+
+        assertThat {
+            controller.delete(account.id)
+        }.thrownValidationError {
+            ValidationError.AccountReferences(account.id)
+        }
+
+        assertThat(controller.get(account.id)).isEqualTo(account)
+        assertThat(trxController.get(transaction.id)).isEqualTo(transaction)
+    }
+
+    @Test
     fun `update an account`() {
         val existingAccounts = (1..3)
             .map { Account("Acc-$it") }
@@ -244,7 +278,7 @@ class AccountControllerTest {
     fun `updating an account's name to an existing name should throw exception`() {
         val accounts = (1..5)
             .map { Account("Acc-$it") }
-            .map { controller.create(it)}
+            .map { controller.create(it) }
 
         val updatedAccount = accounts[1].copy(
             name = accounts.first().name,
