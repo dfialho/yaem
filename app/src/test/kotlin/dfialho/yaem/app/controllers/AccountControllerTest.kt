@@ -142,7 +142,6 @@ class AccountControllerTest {
         val accounts = (1..3)
             .map { Account("Acc-$it") }
             .map { controller.create(it) }
-        val account = accounts.first()
 
         assertAll {
             accounts.forEach {
@@ -291,5 +290,19 @@ class AccountControllerTest {
         }.thrownValidationError {
             ValidationError.AccountNameExists(updatedAccount.name)
         }
+    }
+
+    @Test
+    fun `account can be deleted after all of its transactions are deleted`() {
+        controller.create(anyAccount())
+        val account = controller.create(anyAccount())
+        (1..5)
+            .map { anyTransaction(account.id) }
+            .map { trxController.create(it) }
+            .forEach { trxController.delete(it.id) }
+
+        controller.delete(account.id)
+
+        assertThat(controller.list()).doesNotContain(account)
     }
 }

@@ -56,17 +56,17 @@ fun TestApplicationEngine.handleCreateTransactionRequest(transaction: Transactio
 
 fun TestApplicationEngine.handleCreateTransactionRequest(body: String): TestApplicationCall {
 
-    return handleRequest(HttpMethod.Post, "/api/ledger") {
+    return handleRequest(HttpMethod.Post, "/api/transactions") {
         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(body)
     }
 }
 
-fun TestApplicationEngine.handleListTransactionsRequest() = handleRequest(HttpMethod.Get, "/api/ledger")
+fun TestApplicationEngine.handleListTransactionsRequest() = handleRequest(HttpMethod.Get, "/api/transactions")
 
-fun TestApplicationEngine.handleGetTransactionRequest(nonExistingID: String) = handleRequest(HttpMethod.Get, "/api/ledger/$nonExistingID")
+fun TestApplicationEngine.handleGetTransactionRequest(nonExistingID: String) = handleRequest(HttpMethod.Get, "/api/transactions/$nonExistingID")
 
-fun TestApplicationEngine.handleDeleteTransactionRequest(transactionID: ID) = handleRequest(HttpMethod.Delete, "/api/ledger/$transactionID")
+fun TestApplicationEngine.handleDeleteTransactionRequest(transactionID: ID) = handleRequest(HttpMethod.Delete, "/api/transactions/$transactionID")
 
 fun TestApplicationEngine.handleUpdateTransactionRequest(transactionID: ID, transaction: Transaction): TestApplicationCall {
     return handleUpdateTransactionRequest(transactionID, body = json.stringify(Transaction.serializer(), transaction))
@@ -74,7 +74,7 @@ fun TestApplicationEngine.handleUpdateTransactionRequest(transactionID: ID, tran
 
 fun TestApplicationEngine.handleUpdateTransactionRequest(transactionID: String, body: String): TestApplicationCall {
 
-    return handleRequest(HttpMethod.Put, "/api/ledger/$transactionID") {
+    return handleRequest(HttpMethod.Put, "/api/transactions/$transactionID") {
         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(body)
     }

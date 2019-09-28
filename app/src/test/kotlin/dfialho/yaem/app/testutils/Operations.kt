@@ -77,15 +77,40 @@ fun TestApplicationEngine.deleteAccount(accountID: ID): Unit =
 
 fun TestApplicationEngine.createTransaction(transaction: Transaction): Transaction =
     handleCreateTransactionRequest(transaction).run {
-        json.parse(Transaction.serializer(), response.content ?: "")
+        assertThat(response.status()).isEqualTo(HttpStatusCode.Created)
+        assertThat(response.contentType()).isEqualTo(ContentType.Application.Json.withCharset(Charsets.UTF_8))
+        assertThat(response.content)
+            .isNotNull()
+            .isNotEmpty()
+
+        parseTransaction()
     }
 
 fun TestApplicationEngine.getTransaction(trxID: ID): Transaction =
     handleGetTransactionRequest(trxID).run {
-        json.parse(Transaction.serializer(), response.content ?: "")
+        assertThat(response.status()).isEqualTo(HttpStatusCode.OK)
+        assertThat(response.contentType()).isEqualTo(ContentType.Application.Json.withCharset(Charsets.UTF_8))
+        assertThat(response.content)
+            .isNotNull()
+            .isNotEmpty()
+
+        parseTransaction()
     }
 
 fun TestApplicationEngine.listTransactions(): List<Transaction> =
     handleListTransactionsRequest().run {
+        assertThat(response.status()).isEqualTo(HttpStatusCode.OK)
+        assertThat(response.contentType()).isEqualTo(ContentType.Application.Json.withCharset(Charsets.UTF_8))
+        assertThat(response.content)
+            .isNotNull()
+            .isNotEmpty()
+
         json.parse(Transaction.serializer().list, response.content ?: "")
     }
+
+fun TestApplicationEngine.deleteTransaction(transactionID: ID): Unit =
+    handleDeleteTransactionRequest(transactionID).run {
+        assertThat(response.status()).isEqualTo(HttpStatusCode.Accepted)
+    }
+
+private fun TestApplicationCall.parseTransaction() = json.parse(Transaction.serializer(), response.content ?: "")

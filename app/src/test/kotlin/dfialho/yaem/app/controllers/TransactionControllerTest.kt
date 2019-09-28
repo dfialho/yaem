@@ -216,7 +216,6 @@ class TransactionControllerTest {
             .map { Transaction(amount = it.toDouble(), receiver = account.id) }
             .map { controller.create(it) }
             .toTypedArray()
-        val nonExistingAccountID = randomID()
         val trxToUpdate = existingTransactions[1].copy(receiver = randomID())
 
         assertThat {
@@ -233,7 +232,6 @@ class TransactionControllerTest {
             .map { Transaction(amount = it.toDouble(), receiver = account.id) }
             .map { controller.create(it) }
             .toTypedArray()
-        val nonExistingAccountID = randomID()
         val trxToUpdate = existingTransactions[1].copy(sender = randomID())
 
         assertThat {

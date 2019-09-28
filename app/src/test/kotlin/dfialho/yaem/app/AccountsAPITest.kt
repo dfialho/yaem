@@ -23,15 +23,13 @@ class AccountsAPITest {
     )
 
     @Test
-    fun `list accounts before any was created`(): Unit =
+    fun `listing accounts before any was created should respond with an empty list`(): Unit =
         withTestApplication({ app(dbConfig) }) {
-
-            val accounts = listAccounts()
-            assertThat(accounts).isEmpty()
+            assertThat(listAccounts()).isEmpty()
         }
 
     @Test
-    fun `get account before any was created`(): Unit =
+    fun `obtaining an account before any was created should respond with Not Found`(): Unit =
         withTestApplication({ app(dbConfig) }) {
 
             val accountID = "c1929c11-3caa-400c-bee4-fdad5f023759"
@@ -65,7 +63,7 @@ class AccountsAPITest {
 
 
     @Test
-    fun `getting account with an invalid ID should fail`(): Unit =
+    fun `getting account with an invalid ID should responds with Bad Request`(): Unit =
         withTestApplication({ app(dbConfig) }) {
 
             val accountID = "c1929c11"
@@ -78,7 +76,7 @@ class AccountsAPITest {
         }
 
     @Test
-    fun `creating an account with an invalid ID should succeed`(): Unit =
+    fun `trying to create an account with an invalid ID should succeed because the ID is ignored`(): Unit =
         withTestApplication({ app(dbConfig) }) {
 
             val accountID = "c1929c11"
@@ -102,7 +100,7 @@ class AccountsAPITest {
         }
 
     @Test
-    fun `creating an account with invalid json should fail`(): Unit =
+    fun `trying to create an account with invalid json should respond with Bad Request`(): Unit =
         withTestApplication({ app(dbConfig) }) {
             handleCreateAccountRequest("{ invalid json }").apply {
                 assertAll {
@@ -113,7 +111,7 @@ class AccountsAPITest {
         }
 
     @Test
-    fun `creating an account missing a required field should fail`(): Unit =
+    fun `trying to create an account missing a required field should respond with Bad Request`(): Unit =
         withTestApplication({ app(dbConfig) }) {
             handleCreateAccountRequest(
                 // Body is missing the 'name'
@@ -178,6 +176,19 @@ class AccountsAPITest {
     }
 
     @Test
+    fun `trying to create an account with an existing name should respond with Conflict`() {
+        withTestApplication({ app(dbConfig) }) {
+            val existingAccount = createAccount(anyAccount())
+            val account = Account(name = existingAccount.name)
+
+            handleCreateAccountRequest(account).apply {
+                assertThat(response.status()).isEqualTo(HttpStatusCode.Conflict)
+                assertThat(response.content).isErrorListWith(ValidationError.AccountNameExists(account.name))
+            }
+        }
+    }
+
+    @Test
     fun `update an account`() {
         withTestApplication({ app(dbConfig) }) {
             val account = createAccount(
@@ -205,7 +216,7 @@ class AccountsAPITest {
     }
 
     @Test
-    fun `trying to update an account that does not exist responds with not found`() {
+    fun `trying to update an account that does not exist responds with Not Found`() {
         withTestApplication({ app(dbConfig) }) {
             val account = createAccount(
                 Account(
@@ -227,6 +238,19 @@ class AccountsAPITest {
             }
 
             assertThat(listAccounts()).containsOnly(account)
+        }
+    }
+
+    @Test
+    fun `trying to delete an account referenced by a transaction should respond with conflict`() {
+        withTestApplication({ app(dbConfig) }) {
+            val account = createAccount(anyAccount())
+            createTransaction(anyTransaction(account.id))
+
+            handleDeleteAccountRequest(account.id).apply {
+                assertThat(response.status()).isEqualTo(HttpStatusCode.Conflict)
+                assertThat(response.content).isErrorListWith(ValidationError.AccountReferences(account.id))
+            }
         }
     }
 }

@@ -1,12 +1,15 @@
 package dfialho.yaem.app
 
 import dfialho.yaem.app.controllers.AccountController
+import dfialho.yaem.app.controllers.TransactionController
 import dfialho.yaem.app.repositories.AccountRepository
 import dfialho.yaem.app.repositories.DatabaseConfig
 import dfialho.yaem.app.repositories.DuplicateKeyException
+import dfialho.yaem.app.repositories.TransactionRepository
 import dfialho.yaem.app.repositories.database.DatabaseRepositoryManager
 import dfialho.yaem.app.repositories.database.H2SQLExceptionTranslator
 import dfialho.yaem.app.validators.AccountValidator
+import dfialho.yaem.app.validators.TransactionValidator
 import dfialho.yaem.app.validators.ValidationError
 import dfialho.yaem.app.validators.ValidationErrorException
 import dfialho.yaem.json.lib.json
@@ -44,6 +47,8 @@ fun Application.app(dbConfig: DatabaseConfig) {
     val repositoryManager = DatabaseRepositoryManager(dbConfig, H2SQLExceptionTranslator())
     val accountRepository: AccountRepository = repositoryManager.getAccountRepository()
     val accountController = AccountController(accountRepository, AccountValidator())
+    val transactionRepository: TransactionRepository = repositoryManager.getTransactionRepository()
+    val transactionController = TransactionController(transactionRepository, TransactionValidator())
 
     install(DefaultHeaders)
     install(ContentNegotiation) {
@@ -61,6 +66,8 @@ fun Application.app(dbConfig: DatabaseConfig) {
                 errors.size == 1 -> when (errors[0]) {
                     is ValidationError.NotFound -> HttpStatusCode.NotFound
                     is ValidationError.AccountReferences -> HttpStatusCode.Conflict
+                    is ValidationError.AccountNameExists -> HttpStatusCode.Conflict
+                    is ValidationError.TransactionMissingAccount -> HttpStatusCode.NotFound
                     else -> HttpStatusCode.BadRequest
                 }
                 else -> HttpStatusCode.BadRequest
@@ -82,6 +89,7 @@ fun Application.app(dbConfig: DatabaseConfig) {
     routing {
         route("api") {
             accounts(accountController)
+            transactions(transactionController)
         }
     }
 }
