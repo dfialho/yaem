@@ -61,7 +61,6 @@ class AccountsAPITest {
             }
         }
 
-
     @Test
     fun `getting account with an invalid ID should responds with Bad Request`(): Unit =
         withTestApplication({ app(dbConfig) }) {

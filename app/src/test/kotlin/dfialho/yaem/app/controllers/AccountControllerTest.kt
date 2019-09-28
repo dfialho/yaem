@@ -117,6 +117,17 @@ class AccountControllerTest {
     }
 
     @Test
+    fun `creating an account with a blank name should throw an error`() {
+        val account = Account("  ")
+
+        assertThat {
+            controller.create(account)
+        }.thrownValidationError {
+            ValidationError.NameIsBlank()
+        }
+    }
+
+    @Test
     fun `getting a non-existing account should throw error`() {
         (1..3)
             .map { Account("Acc-$it") }

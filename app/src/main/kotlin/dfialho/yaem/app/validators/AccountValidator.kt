@@ -12,6 +12,10 @@ class AccountValidator : Validator<Account> {
             errors += ValidationError.NameTooLong(item.name, ACCOUNT_NAME_MAX_LENGTH)
         }
 
+        if (item.name.isBlank()) {
+            errors += ValidationError.NameIsBlank()
+        }
+
         return errors
     }
 }

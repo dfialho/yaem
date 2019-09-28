@@ -26,6 +26,11 @@ open class ValidationError internal constructor(val code: String, val message: S
         message = "Resource '$resourceName' with ID '$resourceID' was not found"
     )
 
+    class NameIsBlank : ValidationError(
+        code = "BASE-05",
+        message = "Name cannot be blank"
+    )
+
     class AccountReferences(accountID: ID) : ValidationError(
         code = "ACCOUNT-01",
         message = "Account '$accountID' is still being referenced by at least one transaction"
