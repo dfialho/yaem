@@ -1,5 +1,6 @@
 package dfialho.yaem.app.validators
 
+import dfialho.yaem.app.api.Category
 import dfialho.yaem.app.api.ID
 import kotlinx.serialization.Serializable
 
@@ -91,6 +92,64 @@ open class ValidationError internal constructor(val code: String, val message: S
             code = "$LABEL-05",
             message = "Account name is too long (max=$max): $name (size=${name.length})"
         )
+    }
+
+    abstract class BaseNotFound(code: String, resourceName: String, resourceID: ID) : ValidationError(
+        code,
+        message = "$resourceName '$resourceID' was not found"
+    )
+
+    object Categories {
+        private const val LABEL = "CATEGORY"
+        private const val NAME = "Category"
+
+        private fun subCategoryLabel(category: String, subCategory: String?) =
+            if (subCategory == null) category else "$category:$subCategory"
+
+        class NotFound(category: String, subCategory: String? = null) : BaseNotFound(
+            code = "$LABEL-01",
+            resourceName = NAME,
+            resourceID = subCategoryLabel(category, subCategory)
+        )
+
+        class Exists(category: String, subCategory: String? = null) : ValidationError(
+            code = "$LABEL-02",
+            message = "Category '${subCategoryLabel(category, subCategory)}' already exists"
+        )
+
+        class References(name: String) : ValidationError(
+            code = "$LABEL-03",
+            message = "Category '$name' is still being referenced by at least one transaction"
+        )
+
+        sealed class InvalidName(code: String, name: String, explanation: String) : ValidationError(
+            code,
+            message = "Category name '$name' is invalid: $explanation"
+        ) {
+            class TooLong(name: String) : InvalidName(
+                code = "$LABEL-NAME-01",
+                name = name,
+                explanation = "it cannot be longer than ${Category.NAME_MAX_LENGTH} characters"
+            )
+
+            class StartingWhitespace(name: String) : InvalidName(
+                code = "$LABEL-NAME-02",
+                name = name,
+                explanation = "it cannot start with whitespace"
+            )
+
+            class EndingWhitespace(name: String) : InvalidName(
+                code = "$LABEL-NAME-03",
+                name = name,
+                explanation = "it cannot end with whitespace"
+            )
+
+            class Blank(name: String) : InvalidName(
+                code = "$LABEL-NAME-04",
+                name = name,
+                explanation = "it cannot be blank"
+            )
+        }
     }
 
     override fun equals(other: Any?): Boolean {
