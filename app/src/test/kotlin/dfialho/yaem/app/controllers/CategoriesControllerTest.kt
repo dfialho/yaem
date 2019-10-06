@@ -268,7 +268,7 @@ class CategoriesControllerTest {
         assertThat {
             controller.rename(bills.name, newName)
         }.thrownValidationError {
-            ValidationError.Categories.InvalidName.Blank(newName)
+            ValidationError.Categories.Name.Blank(newName)
         }
     }
 

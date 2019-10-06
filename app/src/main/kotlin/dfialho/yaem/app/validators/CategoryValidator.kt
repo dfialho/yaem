@@ -8,16 +8,16 @@ class CategoryValidator : Validator<Category> {
         val errors = mutableListOf<ValidationError>()
 
         if (item.name.isBlank()) {
-            errors += ValidationError.Categories.InvalidName.Blank(item.name)
+            errors += ValidationError.Categories.Name.Blank(item.name)
             return errors
         }
 
         if (item.name.first().isWhitespace()) {
-            errors += ValidationError.Categories.InvalidName.StartingWhitespace(item.name)
+            errors += ValidationError.Categories.Name.StartingWhitespace(item.name)
         }
 
         if (item.name.last().isWhitespace()) {
-            errors += ValidationError.Categories.InvalidName.EndingWhitespace(item.name)
+            errors += ValidationError.Categories.Name.EndingWhitespace(item.name)
         }
 
         return errors

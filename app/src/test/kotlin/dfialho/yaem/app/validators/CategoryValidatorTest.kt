@@ -34,7 +34,7 @@ class CategoryValidatorTest {
         val errors = validator.validate(category)
 
         assertThat(errors)
-            .contains(ValidationError.Categories.InvalidName.StartingWhitespace(category.name))
+            .contains(ValidationError.Categories.Name.StartingWhitespace(category.name))
     }
 
     @Test
@@ -43,7 +43,7 @@ class CategoryValidatorTest {
         val errors = validator.validate(category)
 
         assertThat(errors)
-            .contains(ValidationError.Categories.InvalidName.EndingWhitespace(category.name))
+            .contains(ValidationError.Categories.Name.EndingWhitespace(category.name))
     }
 
     @Test
@@ -52,7 +52,7 @@ class CategoryValidatorTest {
         val errors = validator.validate(category)
 
         assertThat(errors)
-            .contains(ValidationError.Categories.InvalidName.Blank(category.name))
+            .contains(ValidationError.Categories.Name.Blank(category.name))
     }
 
     @Test
@@ -61,6 +61,6 @@ class CategoryValidatorTest {
         val errors = validator.validate(category)
 
         assertThat(errors)
-            .contains(ValidationError.Categories.InvalidName.Blank(category.name))
+            .contains(ValidationError.Categories.Name.Blank(category.name))
     }
 }

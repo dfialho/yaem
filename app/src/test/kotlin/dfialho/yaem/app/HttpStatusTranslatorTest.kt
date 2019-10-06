@@ -25,8 +25,8 @@ class HttpStatusTranslatorTest : StringSpec({
             ValidationError.InvalidID("id"),
             ValidationError.InvalidJson("item"),
             ValidationError.Transactions.CommonAccounts("account-123"),
-            ValidationError.Accounts.NameIsBlank(),
-            ValidationError.Accounts.NameTooLong("name", max = 3)
+            ValidationError.Accounts.Name.Blank("  "),
+            ValidationError.Accounts.Name.TooLong("name")
         )
     )
 

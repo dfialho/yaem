@@ -1,5 +1,6 @@
 package dfialho.yaem.app.validators
 
+import dfialho.yaem.app.api.ACCOUNT_NAME_MAX_LENGTH
 import dfialho.yaem.app.api.Category
 import dfialho.yaem.app.api.ID
 import dfialho.yaem.app.api.SubCategory
@@ -37,6 +38,11 @@ open class ValidationError internal constructor(val code: String, val message: S
     abstract class Exists(code: String, resourceName: String, propertyName: String, propertyValue: String) : ValidationError(
         code,
         message = "$resourceName with $propertyName '$propertyValue' already exists"
+    )
+
+    abstract class InvalidName(code: String, resourceName: String, name: String, explanation: String) : ValidationError(
+        code,
+        message = "$resourceName name '$name' is invalid: $explanation"
     )
 
     object Transactions {
@@ -77,37 +83,38 @@ open class ValidationError internal constructor(val code: String, val message: S
             resourceID = accountID
         )
 
-        class NameIsBlank : ValidationError(
-            code = "$LABEL-03",
-            message = "Account name cannot be blank"
-        )
-
         class NameExists(name: String) : ValidationError.Exists(
-            code = "$LABEL-04",
+            code = "$LABEL-03",
             resourceName = NAME,
             propertyName = "name",
             propertyValue = name
         )
 
-        class NameTooLong(name: String, max: Int) : ValidationError(
-            code = "$LABEL-05",
-            message = "Account name is too long (max=$max): $name (size=${name.length})"
-        )
+        object Name {
+            class TooLong(name: String) : ValidationError.InvalidName(
+                code = "$LABEL-NAME-01",
+                resourceName = NAME,
+                name = name,
+                explanation = "it is too long (max=$ACCOUNT_NAME_MAX_LENGTH): $name (size=${name.length})"
+            )
+
+            class Blank(name: String) : ValidationError.InvalidName(
+                code = "$LABEL-NAME-02",
+                resourceName = NAME,
+                name = name,
+                explanation = "it cannot be blank"
+            )
+        }
     }
 
-    abstract class BaseNotFound(code: String, resourceName: String, resourceID: ID) : ValidationError(
-        code,
-        message = "$resourceName '$resourceID' was not found"
-    )
-
     object Categories {
-        private const val LABEL = "CATEGORY"
-        private const val NAME = "Category"
+        const val LABEL = "CATEGORY"
+        const val NAME = "Category"
 
         private fun subCategoryLabel(category: String, subCategory: String?) =
             if (subCategory == null) category else "$category:$subCategory"
 
-        class NotFound(category: String, subCategory: String? = null) : BaseNotFound(
+        class NotFound(category: String, subCategory: String? = null) : ValidationError.NotFound(
             code = "$LABEL-01",
             resourceName = NAME,
             resourceID = subCategoryLabel(category, subCategory)
@@ -115,41 +122,44 @@ open class ValidationError internal constructor(val code: String, val message: S
             constructor(subCategory: SubCategory) : this(subCategory.category, subCategory.name)
         }
 
-        class Exists(category: String, subCategory: String? = null) : ValidationError(
+        class Exists(category: String, subCategory: String? = null) : ValidationError.Exists(
             code = "$LABEL-02",
-            message = "Category '${subCategoryLabel(category, subCategory)}' already exists"
+            resourceName = NAME,
+            propertyName = "name",
+            propertyValue = subCategoryLabel(category, subCategory)
         ) {
             constructor(subCategory: SubCategory) : this(subCategory.category, subCategory.name)
         }
 
-        class References(name: String) : ValidationError(
+        class References(name: String) : ValidationError.References(
             code = "$LABEL-03",
-            message = "Category '$name' is still being referenced by at least one transaction"
+            resourceName = NAME,
+            resourceID = name
         )
 
-        sealed class InvalidName(code: String, name: String, explanation: String) : ValidationError(
+        sealed class Name(code: String, name: String, explanation: String) : ValidationError(
             code,
-            message = "Category name '$name' is invalid: $explanation"
+            message = "$NAME name '$name' is invalid: $explanation"
         ) {
-            class TooLong(name: String) : InvalidName(
+            class TooLong(name: String) : Name(
                 code = "$LABEL-NAME-01",
                 name = name,
                 explanation = "it cannot be longer than ${Category.NAME_MAX_LENGTH} characters"
             )
 
-            class StartingWhitespace(name: String) : InvalidName(
+            class StartingWhitespace(name: String) : Name(
                 code = "$LABEL-NAME-02",
                 name = name,
                 explanation = "it cannot start with whitespace"
             )
 
-            class EndingWhitespace(name: String) : InvalidName(
+            class EndingWhitespace(name: String) : Name(
                 code = "$LABEL-NAME-03",
                 name = name,
                 explanation = "it cannot end with whitespace"
             )
 
-            class Blank(name: String) : InvalidName(
+            class Blank(name: String) : Name(
                 code = "$LABEL-NAME-04",
                 name = name,
                 explanation = "it cannot be blank"

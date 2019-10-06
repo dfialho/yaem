@@ -102,7 +102,7 @@ class AccountControllerTest : AnnotationSpec() {
         assertThat {
             controller.create(account)
         }.thrownValidationError {
-            ValidationError.Accounts.NameTooLong(account.name, ACCOUNT_NAME_MAX_LENGTH)
+            ValidationError.Accounts.Name.TooLong(account.name)
         }
     }
 
@@ -122,7 +122,7 @@ class AccountControllerTest : AnnotationSpec() {
         assertThat {
             controller.create(account)
         }.thrownValidationError {
-            ValidationError.Accounts.NameIsBlank()
+            ValidationError.Accounts.Name.Blank(account.name)
         }
     }
 
@@ -265,7 +265,7 @@ class AccountControllerTest : AnnotationSpec() {
         assertThat {
             controller.update(accountToUpdate)
         }.thrownValidationError {
-            ValidationError.Accounts.NameTooLong(accountToUpdate.name, ACCOUNT_NAME_MAX_LENGTH)
+            ValidationError.Accounts.Name.TooLong(accountToUpdate.name)
         }
 
         assertThat(controller.get(accountToUpdate.id)).isEqualTo(originalAccount)
