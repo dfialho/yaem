@@ -14,12 +14,12 @@ import dfialho.yaem.app.testutils.isJsonEqualTo
 import dfialho.yaem.app.testutils.resources.*
 import dfialho.yaem.app.testutils.withTestResourceAPI
 import dfialho.yaem.app.validators.ValidationError
+import io.kotlintest.specs.AnnotationSpec
 import io.ktor.http.HttpStatusCode
-import org.junit.Test
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
-class AccountsAPITest {
+class AccountsAPITest : AnnotationSpec() {
 
     @Test
     fun `listing accounts before any was created should respond with an empty list`(): Unit =

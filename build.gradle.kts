@@ -1,5 +1,3 @@
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val kotlinVersion: String by project
@@ -7,6 +5,7 @@ val logbackVersion: String by project
 val loggingVersion: String by project
 val assertkVersion: String by project
 val mockkVersion: String by project
+val kotlintestVersion: String by project
 
 buildscript {
     val kotlinVersion: String by project
@@ -50,9 +49,14 @@ subprojects {
         "testImplementation"("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
         "testImplementation"("com.willowtreeapps.assertk:assertk-jvm:$assertkVersion")
         "testImplementation"("io.mockk:mockk:$mockkVersion")
+        "testImplementation"("io.kotlintest:kotlintest-runner-junit5:3.3.2")
     }
 
     tasks.withType<KotlinCompile> {
         kotlinOptions.jvmTarget = "1.8"
+    }
+
+    tasks.withType<Test> {
+        useJUnitPlatform { }
     }
 }

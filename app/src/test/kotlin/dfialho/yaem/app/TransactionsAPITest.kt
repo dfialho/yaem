@@ -8,10 +8,10 @@ import dfialho.yaem.app.testutils.isErrorListWith
 import dfialho.yaem.app.testutils.resources.*
 import dfialho.yaem.app.testutils.withTestResourceAPI
 import dfialho.yaem.app.validators.ValidationError
+import io.kotlintest.specs.AnnotationSpec
 import io.ktor.http.HttpStatusCode
-import org.junit.Test
 
-class TransactionsAPITest {
+class TransactionsAPITest : AnnotationSpec() {
 
     @Test
     fun `create transaction`() {

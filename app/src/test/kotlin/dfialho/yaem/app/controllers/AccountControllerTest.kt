@@ -13,11 +13,10 @@ import dfialho.yaem.app.testutils.uniqueRepositoryManager
 import dfialho.yaem.app.validators.AccountValidator
 import dfialho.yaem.app.validators.TransactionValidator
 import dfialho.yaem.app.validators.ValidationError
-import org.junit.Before
-import org.junit.Test
+import io.kotlintest.specs.AnnotationSpec
 import java.time.Instant
 
-class AccountControllerTest {
+class AccountControllerTest : AnnotationSpec() {
 
     lateinit var controller: AccountController
     lateinit var trxController: TransactionController

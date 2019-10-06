@@ -7,10 +7,10 @@ import assertk.assertions.isEmpty
 import dfialho.yaem.app.api.ACCOUNT_NAME_MAX_LENGTH
 import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.randomID
-import org.junit.Test
+import io.kotlintest.specs.AnnotationSpec
 import java.time.Instant
 
-class AccountValidatorTest {
+class AccountValidatorTest : AnnotationSpec() {
 
     @Test
     fun `when the account is valid it should return no errors`() {
