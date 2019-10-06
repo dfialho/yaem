@@ -60,7 +60,8 @@ class AccountValidatorTest : AnnotationSpec() {
 
         val validationErrors = validator.validate(account)
 
-        assertThat(validationErrors).containsOnly(ValidationError.NameTooLong(account.name, ACCOUNT_NAME_MAX_LENGTH))
+        assertThat(validationErrors)
+            .containsOnly(ValidationError.Accounts.NameTooLong(account.name, ACCOUNT_NAME_MAX_LENGTH))
     }
 
     @Test
@@ -78,7 +79,7 @@ class AccountValidatorTest : AnnotationSpec() {
         val validationErrors = validator.validate(account)
 
         assertThat(validationErrors).containsAll(
-            ValidationError.NameTooLong(tooLongName, ACCOUNT_NAME_MAX_LENGTH),
+            ValidationError.Accounts.NameTooLong(tooLongName, ACCOUNT_NAME_MAX_LENGTH),
             ValidationError.InvalidID(invalidID)
         )
     }

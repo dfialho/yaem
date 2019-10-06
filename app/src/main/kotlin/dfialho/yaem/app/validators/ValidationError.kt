@@ -16,40 +16,82 @@ open class ValidationError internal constructor(val code: String, val message: S
         message = "Failed to parse '$itemName' from json"
     )
 
-    class NameTooLong(name: String, max: Int) : ValidationError(
-        code = "BASE-03",
-        message = "Name is too long (max=$max): $name (${name.length})"
+    abstract class NotFound(code: String, resourceName: String, resourceID: ID) : ValidationError(
+        code,
+        message = "$resourceName with identifier '$resourceID' was not found"
     )
 
-    class NotFound(resourceName: String, resourceID: ID) : ValidationError(
-        code = "BASE-04",
-        message = "Resource '$resourceName' with ID '$resourceID' was not found"
+    abstract class MissingDependency(code: String, dependencyName: String, dependencyID: ID? = null) : ValidationError(
+        code,
+        message = "Missing required dependency: $dependencyName" +
+                if (dependencyID != null) "with identifier '$dependencyID'" else ""
     )
 
-    class NameIsBlank : ValidationError(
-        code = "BASE-05",
-        message = "Name cannot be blank"
+    abstract class References(code: String, resourceName: String, resourceID: ID) : ValidationError(
+        code,
+        message = "$resourceName '$resourceID' is still being referenced by another resource"
     )
 
-    class AccountReferences(accountID: ID) : ValidationError(
-        code = "ACCOUNT-01",
-        message = "Account '$accountID' is still being referenced by at least one transaction"
+    abstract class Exists(code: String, resourceName: String, propertyName: String, propertyValue: String) : ValidationError(
+        code,
+        message = "$resourceName with $propertyName '$propertyValue' already exists"
     )
 
-    class AccountNameExists(name: String) : ValidationError(
-        code = "ACCOUNT-02",
-        message = "Account with name '$name' already exists"
-    )
+    object Transactions {
+        const val LABEL = "TRANSACTION"
+        const val NAME = "Transaction"
 
-    class TransactionMissingAccount(accountID: ID? = null) : ValidationError(
-        code = "TRANSACTION-01",
-        message = "Transaction depends on account ${(if (accountID == null) "" else "with id '$accountID' ")}which does not exist"
-    )
+        class NotFound(id: ID) : ValidationError.NotFound(
+            code = "$LABEL-01",
+            resourceName = NAME,
+            resourceID = id
+        )
 
-    class TransactionCommonAccounts(accountID: ID) : ValidationError(
-        code = "TRANSACTION-02",
-        message = "Transaction's receiver and sender accounts cannot have the same id: $accountID"
-    )
+        class MissingAccount(accountID: ID? = null) : ValidationError.MissingDependency(
+            code = "$LABEL-02",
+            dependencyName = Accounts.NAME,
+            dependencyID = accountID
+        )
+
+        class CommonAccounts(commonID: ID) : ValidationError(
+            code = "$LABEL-03",
+            message = "Transaction's receiver and sender accounts cannot have the same id: $commonID"
+        )
+    }
+
+    object Accounts {
+        const val LABEL = "ACCOUNT"
+        const val NAME = "Account"
+
+        class NotFound(id: ID) : ValidationError.NotFound(
+            code = "$LABEL-01",
+            resourceName = NAME,
+            resourceID = id
+        )
+
+        class References(accountID: ID) : ValidationError.References(
+            code = "$LABEL-02",
+            resourceName = NAME,
+            resourceID = accountID
+        )
+
+        class NameIsBlank : ValidationError(
+            code = "$LABEL-03",
+            message = "Account name cannot be blank"
+        )
+
+        class NameExists(name: String) : ValidationError.Exists(
+            code = "$LABEL-04",
+            resourceName = NAME,
+            propertyName = "name",
+            propertyValue = name
+        )
+
+        class NameTooLong(name: String, max: Int) : ValidationError(
+            code = "$LABEL-05",
+            message = "Account name is too long (max=$max): $name (size=${name.length})"
+        )
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

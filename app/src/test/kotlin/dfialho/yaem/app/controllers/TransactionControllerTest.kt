@@ -63,7 +63,7 @@ class TransactionControllerTest : AnnotationSpec() {
         assertThat {
             controller.create(Transaction(receiver = nonExistingAccountID, amount = 10.5))
         }.thrownValidationError {
-            ValidationError.TransactionMissingAccount()
+            ValidationError.Transactions.MissingAccount()
         }
 
         assertThat(controller.list()).isEmpty()
@@ -77,7 +77,7 @@ class TransactionControllerTest : AnnotationSpec() {
         assertThat {
             controller.create(Transaction(receiver = account.id, sender = nonExistingAccountID, amount = 10.5))
         }.thrownValidationError {
-            ValidationError.TransactionMissingAccount()
+            ValidationError.Transactions.MissingAccount()
         }
     }
 
@@ -100,7 +100,7 @@ class TransactionControllerTest : AnnotationSpec() {
         assertThat {
             controller.get(transactionID)
         }.thrownValidationError {
-            ValidationError.NotFound("transaction", transactionID)
+            ValidationError.Transactions.NotFound(transactionID)
         }
     }
 
@@ -115,7 +115,7 @@ class TransactionControllerTest : AnnotationSpec() {
         assertThat {
             controller.get(nonExistingID)
         }.thrownValidationError {
-            ValidationError.NotFound("transaction", nonExistingID)
+            ValidationError.Transactions.NotFound(nonExistingID)
         }
     }
 
@@ -127,7 +127,7 @@ class TransactionControllerTest : AnnotationSpec() {
         assertThat {
             controller.delete(nonExistingID)
         }.thrownValidationError {
-            ValidationError.NotFound("transaction", nonExistingID)
+            ValidationError.Transactions.NotFound(nonExistingID)
         }
     }
 
@@ -202,7 +202,7 @@ class TransactionControllerTest : AnnotationSpec() {
         assertThat {
             controller.update(trxToUpdate)
         }.thrownValidationError {
-            ValidationError.NotFound("transaction", trxToUpdate.id)
+            ValidationError.Transactions.NotFound(trxToUpdate.id)
         }
 
         assertThat(controller.list()).containsOnly(*existingTransactions)
@@ -220,7 +220,7 @@ class TransactionControllerTest : AnnotationSpec() {
         assertThat {
             controller.update(trxToUpdate)
         }.thrownValidationError {
-            ValidationError.TransactionMissingAccount()
+            ValidationError.Transactions.MissingAccount()
         }
     }
 
@@ -236,7 +236,7 @@ class TransactionControllerTest : AnnotationSpec() {
         assertThat {
             controller.update(trxToUpdate)
         }.thrownValidationError {
-            ValidationError.TransactionMissingAccount()
+            ValidationError.Transactions.MissingAccount()
         }
     }
 
