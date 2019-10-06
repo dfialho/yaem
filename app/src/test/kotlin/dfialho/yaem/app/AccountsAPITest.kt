@@ -8,35 +8,28 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEqualTo
 import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.randomID
-import dfialho.yaem.app.repositories.DatabaseConfig
 import dfialho.yaem.app.testutils.ignoreId
 import dfialho.yaem.app.testutils.isErrorListWith
 import dfialho.yaem.app.testutils.isJsonEqualTo
 import dfialho.yaem.app.testutils.resources.*
+import dfialho.yaem.app.testutils.withTestResourceAPI
 import dfialho.yaem.app.validators.ValidationError
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.testing.withTestApplication
 import org.junit.Test
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import java.util.*
 
 class AccountsAPITest {
 
-    val dbConfig = DatabaseConfig(
-        url = "jdbc:h2:mem:${UUID.randomUUID()};MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
-        driver = "org.h2.Driver"
-    )
-
     @Test
     fun `listing accounts before any was created should respond with an empty list`(): Unit =
-        withTestApplication({ app(dbConfig) }) {
+        withTestResourceAPI {
             assertThat(list<Account>()).isEmpty()
         }
 
     @Test
     fun `obtaining an account before any was created should respond with Not Found`(): Unit =
-        withTestApplication({ app(dbConfig) }) {
+        withTestResourceAPI {
 
             val accountID = "c1929c11-3caa-400c-bee4-fdad5f023759"
             handleGetRequest<Account>(accountID).apply {
@@ -47,7 +40,7 @@ class AccountsAPITest {
 
     @Test
     fun `create first account`(): Unit =
-        withTestApplication({ app(dbConfig) }) {
+        withTestResourceAPI {
 
             val account = Account(
                 name = "My New Account",
@@ -69,7 +62,7 @@ class AccountsAPITest {
 
     @Test
     fun `getting account with an invalid ID should responds with Bad Request`(): Unit =
-        withTestApplication({ app(dbConfig) }) {
+        withTestResourceAPI {
 
             val accountID = "c1929c11"
             handleGetRequest<Account>(accountID).apply {
@@ -82,7 +75,7 @@ class AccountsAPITest {
 
     @Test
     fun `trying to create an account with an invalid ID should succeed because the ID is ignored`(): Unit =
-        withTestApplication({ app(dbConfig) }) {
+        withTestResourceAPI {
 
             val accountID = "c1929c11"
             val account = Account(
@@ -106,7 +99,7 @@ class AccountsAPITest {
 
     @Test
     fun `trying to create an account with invalid json should respond with Bad Request`(): Unit =
-        withTestApplication({ app(dbConfig) }) {
+        withTestResourceAPI {
             handleCreateRequest<Account> { "{ invalid json }" }.apply {
                 assertAll {
                     assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
@@ -117,7 +110,7 @@ class AccountsAPITest {
 
     @Test
     fun `trying to create an account missing a required field should respond with Bad Request`(): Unit =
-        withTestApplication({ app(dbConfig) }) {
+        withTestResourceAPI {
             handleCreateRequest<Account> {
                 // Body is missing the 'name'
                 """
@@ -137,7 +130,7 @@ class AccountsAPITest {
 
     @Test
     fun `after creating multiple accounts they are all listed`(): Unit =
-        withTestApplication({ app(dbConfig) }) {
+        withTestResourceAPI {
             val createdAccounts = (1..5)
                 .map { Account("Acc-$it") }
                 .map { create(it) }
@@ -148,7 +141,7 @@ class AccountsAPITest {
 
     @Test
     fun `after deleting an existing account that account is no longer listed`() {
-        withTestApplication({ app(dbConfig) }) {
+        withTestResourceAPI {
 
             val deletedAccount = create(Account("Expense"))
             val others = (1..3)
@@ -164,7 +157,7 @@ class AccountsAPITest {
 
     @Test
     fun `deleting a non-existing account does not affect other accounts`() {
-        withTestApplication({ app(dbConfig) }) {
+        withTestResourceAPI {
 
             val nonExistingID = randomID()
             val existingAccounts = (1..3)
@@ -182,7 +175,7 @@ class AccountsAPITest {
 
     @Test
     fun `trying to create an account with an existing name should respond with Conflict`() {
-        withTestApplication({ app(dbConfig) }) {
+        withTestResourceAPI {
             val existingAccount = create(anyAccount())
             val account = Account(name = existingAccount.name)
 
@@ -195,7 +188,7 @@ class AccountsAPITest {
 
     @Test
     fun `update an account`() {
-        withTestApplication({ app(dbConfig) }) {
+        withTestResourceAPI {
             val account = create(
                 Account(
                     name = "My Account",
@@ -222,7 +215,7 @@ class AccountsAPITest {
 
     @Test
     fun `trying to update an account that does not exist responds with Not Found`() {
-        withTestApplication({ app(dbConfig) }) {
+        withTestResourceAPI {
             val account = create(
                 Account(
                     name = "My Account",
@@ -248,7 +241,7 @@ class AccountsAPITest {
 
     @Test
     fun `trying to delete an account referenced by a transaction should respond with conflict`() {
-        withTestApplication({ app(dbConfig) }) {
+        withTestResourceAPI {
             val account = create(anyAccount())
             create(anyTransaction(account.id))
 
