@@ -2,11 +2,11 @@ package dfialho.yaem.app
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
-import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.Transaction
 import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.repositories.DatabaseConfig
-import dfialho.yaem.app.testutils.*
+import dfialho.yaem.app.testutils.isErrorListWith
+import dfialho.yaem.app.testutils.resources.*
 import dfialho.yaem.app.validators.ValidationError
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.withTestApplication
@@ -23,18 +23,18 @@ class TransactionsAPITest {
     @Test
     fun `create transaction`() {
         withTestApplication({ app(dbConfig) }) {
-            val account = createAccount(anyAccount())
-            createTransaction(anyTransaction(account.id))
+            val account = create(anyAccount())
+            create(anyTransaction(account.id))
         }
     }
 
     @Test
     fun `delete a transaction`() {
         withTestApplication({ app(dbConfig) }) {
-            val account = createAccount(anyAccount())
-            val transaction = createTransaction(anyTransaction(account.id))
+            val account = create(anyAccount())
+            val transaction = create(anyTransaction(account.id))
 
-            deleteTransaction(transaction.id)
+            delete<Transaction>(transaction.id)
         }
     }
 
@@ -43,7 +43,7 @@ class TransactionsAPITest {
         withTestApplication({ app(dbConfig) }) {
             val transactionID = randomID()
 
-            handleDeleteTransactionRequest(transactionID).run {
+            handleDeleteRequest<Transaction>(transactionID).run {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.NotFound)
                 assertThat(response.content).isErrorListWith(ValidationError.NotFound("transaction", transactionID))
             }
@@ -55,7 +55,7 @@ class TransactionsAPITest {
         withTestApplication({ app(dbConfig) }) {
             val transaction = anyTransaction(randomID())
 
-            handleCreateTransactionRequest(transaction).run {
+            handleCreateRequest(transaction).run {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.NotFound)
                 assertThat(response.content).isErrorListWith(ValidationError.TransactionMissingAccount())
             }

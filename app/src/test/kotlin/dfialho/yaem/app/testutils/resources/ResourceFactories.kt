@@ -1,4 +1,4 @@
-package dfialho.yaem.app.testutils
+package dfialho.yaem.app.testutils.resources
 
 import dfialho.yaem.app.api.*
 import java.time.Instant

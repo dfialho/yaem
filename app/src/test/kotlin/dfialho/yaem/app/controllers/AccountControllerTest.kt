@@ -6,8 +6,8 @@ import assertk.assertions.*
 import dfialho.yaem.app.api.ACCOUNT_NAME_MAX_LENGTH
 import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.randomID
-import dfialho.yaem.app.testutils.anyAccount
-import dfialho.yaem.app.testutils.anyTransaction
+import dfialho.yaem.app.testutils.resources.anyAccount
+import dfialho.yaem.app.testutils.resources.anyTransaction
 import dfialho.yaem.app.testutils.thrownValidationError
 import dfialho.yaem.app.testutils.uniqueRepositoryManager
 import dfialho.yaem.app.validators.AccountValidator
@@ -218,7 +218,12 @@ class AccountControllerTest {
     fun `deleting an account that is the sender of a transaction should throw an error`() {
         val mainAccount = controller.create(anyAccount())
         val account = controller.create(anyAccount())
-        val transaction = trxController.create(anyTransaction(account = mainAccount.id, sender = account.id))
+        val transaction = trxController.create(
+            anyTransaction(
+                account = mainAccount.id,
+                sender = account.id
+            )
+        )
 
         assertThat {
             controller.delete(account.id)
