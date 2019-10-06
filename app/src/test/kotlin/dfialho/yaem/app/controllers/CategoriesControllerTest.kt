@@ -4,6 +4,7 @@ import assertk.assertAll
 import assertk.assertThat
 import assertk.assertions.*
 import dfialho.yaem.app.api.Category
+import dfialho.yaem.app.api.SubCategory
 import dfialho.yaem.app.testutils.thrownValidationError
 import dfialho.yaem.app.testutils.uniqueRepositoryManager
 import dfialho.yaem.app.validators.AccountValidator
@@ -75,27 +76,27 @@ class CategoriesControllerTest {
     @Test
     fun `create sub-category`() {
         val category = controller.create(Category("bills"))
-        val subCategory = "electricity"
+        val subCategory = SubCategory(category.name, "electricity")
 
-        val createdSubCategory = controller.create(category.name, subCategory)
+        val createdSubCategory = controller.create(subCategory)
 
         assertAll {
             assertThat(createdSubCategory)
                 .isEqualTo(subCategory)
             assertThat(controller.get(category.name).subCategories)
-                .containsOnly(subCategory)
+                .containsOnly(subCategory.name)
         }
     }
 
     @Test
     fun `create existing sub-category inside category should throw error`() {
         val category = controller.create(Category("bills"))
-        val subCategory = controller.create(category.name, "electricity")
+        val subCategory = controller.create(SubCategory(category.name, "electricity"))
 
         assertThat {
-            controller.create(category.name, subCategory)
+            controller.create(subCategory)
         }.thrownValidationError {
-            ValidationError.Categories.Exists(category.name, subCategory)
+            ValidationError.Categories.Exists(subCategory)
         }
     }
 
@@ -103,12 +104,12 @@ class CategoriesControllerTest {
     fun `create existing sub-category in other category should succeed`() {
         val bills = controller.create(Category("bills"))
         val groceries = controller.create(Category("groceries"))
-        val subCategory = controller.create(bills.name, "electricity")
+        val electricity = controller.create(SubCategory(bills.name, "electricity"))
 
-        controller.create(groceries.name, subCategory)
+        controller.create(SubCategory(groceries.name, electricity.name))
 
         assertThat(controller.get(groceries.name).subCategories)
-            .containsOnly(subCategory)
+            .containsOnly(electricity.name)
     }
 
     @Test
@@ -116,7 +117,7 @@ class CategoriesControllerTest {
         val category = "bills"
 
         assertThat {
-            controller.create(category, "electricity")
+            controller.create(SubCategory(category, "electricity"))
         }.thrownValidationError {
             ValidationError.Categories.NotFound(category)
         }
@@ -125,10 +126,9 @@ class CategoriesControllerTest {
     @Test
     fun `create invalid sub-category should throw error`() {
         val category = controller.create(Category("bills"))
-        val subCategory = "  "
 
         assertThat {
-            controller.create(category.name, subCategory)
+            controller.create(SubCategory(category.name, "  "))
         }.thrownValidationError()
     }
 
@@ -196,7 +196,7 @@ class CategoriesControllerTest {
         controller.create(bills)
         controller.create(Category("groceries", listOf("apples", "bananas")))
         bills.subCategories.forEach {
-            controller.create(bills.name, it)
+            controller.create(SubCategory(bills.name, it))
         }
 
         controller.delete(bills.name)
@@ -209,9 +209,9 @@ class CategoriesControllerTest {
     fun `delete sub-category`() {
         val bills = Category("bills", listOf("electricity", "water"))
         controller.create(bills)
-        bills.subCategories.forEach { controller.create(bills.name, it) }
+        bills.subCategories.forEach { controller.create(SubCategory(bills.name, it)) }
 
-        controller.delete(bills.name, "water")
+        controller.delete(SubCategory(bills.name, "water"))
 
         assertThat(controller.get(bills.name).subCategories)
             .containsOnly("electricity")
@@ -221,13 +221,13 @@ class CategoriesControllerTest {
     fun `delete non-existing sub-category should throw error`() {
         val bills = Category("bills", listOf("electricity", "water"))
         controller.create(bills)
-        bills.subCategories.forEach { controller.create(bills.name, it) }
-        val nonExisting = "non-existing"
+        bills.subCategories.forEach { controller.create(SubCategory(bills.name, it)) }
+        val nonExisting = SubCategory(bills.name, "non-existing")
 
         assertThat {
-            controller.delete(bills.name, nonExisting)
+            controller.delete(nonExisting)
         }.thrownValidationError {
-            ValidationError.Categories.NotFound(bills.name, nonExisting)
+            ValidationError.Categories.NotFound(nonExisting)
         }
     }
 
@@ -237,7 +237,7 @@ class CategoriesControllerTest {
         val bills = Category("bills", listOf("electricity", "water"))
         val utilities = Category("utilities", bills.subCategories)
         controller.create(bills)
-        bills.subCategories.forEach { controller.create(bills.name, it) }
+        bills.subCategories.forEach { controller.create(SubCategory(bills.name, it)) }
 
         controller.rename(bills.name, utilities.name)
 

@@ -1,9 +1,10 @@
 package dfialho.yaem.app.repositories.database
 
 import dfialho.yaem.app.api.Category
+import dfialho.yaem.app.api.SubCategory
 import dfialho.yaem.app.repositories.CategoryRepository
 import dfialho.yaem.app.repositories.NotFoundException
-import dfialho.yaem.app.repositories.utils.*
+import dfialho.yaem.app.repositories.utils.transaction
 import org.jetbrains.exposed.sql.*
 
 class DatabaseCategoryRepository(private val translator: SQLExceptionTranslator) : CategoryRepository,
@@ -23,11 +24,11 @@ class DatabaseCategoryRepository(private val translator: SQLExceptionTranslator)
         }
     }
 
-    override fun create(category: String, subCategory: String) {
+    override fun create(subCategory: SubCategory) {
         transaction(translator) {
             SubCategories.insert {
-                it[this.category] = category
-                it[name] = subCategory
+                it[category] = subCategory.category
+                it[name] = subCategory.name
             }
         }
     }
@@ -76,14 +77,15 @@ class DatabaseCategoryRepository(private val translator: SQLExceptionTranslator)
         }
     }
 
-    override fun delete(category: String, subCategory: String) {
+    override fun delete(subCategory: SubCategory) {
         transaction(translator) {
             val deleteCount = SubCategories.deleteWhere {
-                (SubCategories.category eq category) and (SubCategories.name eq subCategory)
+                (SubCategories.category eq subCategory.category)
+                    .and(SubCategories.name eq subCategory.name)
             }
 
             if (deleteCount == 0) {
-                throwNotFound(category)
+                throwNotFound(subCategory.label)
             }
         }
     }
@@ -97,4 +99,6 @@ class DatabaseCategoryRepository(private val translator: SQLExceptionTranslator)
     private fun throwNotFound(category: String): Nothing {
         throw NotFoundException("No category found named '$category'")
     }
+
+    private val SubCategory.label get() = "$category:$name"
 }

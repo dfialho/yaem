@@ -2,6 +2,7 @@ package dfialho.yaem.app.validators
 
 import dfialho.yaem.app.api.Category
 import dfialho.yaem.app.api.ID
+import dfialho.yaem.app.api.SubCategory
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -110,12 +111,16 @@ open class ValidationError internal constructor(val code: String, val message: S
             code = "$LABEL-01",
             resourceName = NAME,
             resourceID = subCategoryLabel(category, subCategory)
-        )
+        ) {
+            constructor(subCategory: SubCategory) : this(subCategory.category, subCategory.name)
+        }
 
         class Exists(category: String, subCategory: String? = null) : ValidationError(
             code = "$LABEL-02",
             message = "Category '${subCategoryLabel(category, subCategory)}' already exists"
-        )
+        ) {
+            constructor(subCategory: SubCategory) : this(subCategory.category, subCategory.name)
+        }
 
         class References(name: String) : ValidationError(
             code = "$LABEL-03",

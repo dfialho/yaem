@@ -1,7 +1,11 @@
 package dfialho.yaem.app.controllers
 
 import dfialho.yaem.app.api.Category
-import dfialho.yaem.app.repositories.*
+import dfialho.yaem.app.api.SubCategory
+import dfialho.yaem.app.repositories.CategoryRepository
+import dfialho.yaem.app.repositories.DuplicateKeyException
+import dfialho.yaem.app.repositories.NotFoundException
+import dfialho.yaem.app.repositories.ParentMissingException
 import dfialho.yaem.app.validators.CategoryValidator
 import dfialho.yaem.app.validators.ValidationError
 import dfialho.yaem.app.validators.throwError
@@ -24,15 +28,15 @@ class CategoryController(
         return category
     }
 
-    fun create(category: String, subCategory: String): String {
-        throwIfValidationError(validator.validate(Category(subCategory)))
+    fun create(subCategory: SubCategory): SubCategory {
+        throwIfValidationError(validator.validate(Category(subCategory.name)))
 
         try {
-            repository.create(category, subCategory)
+            repository.create(subCategory)
         } catch (e: DuplicateKeyException) {
-            throwError { ValidationError.Categories.Exists(category, subCategory) }
+            throwError { ValidationError.Categories.Exists(subCategory.category, subCategory.name) }
         } catch (e: ParentMissingException) {
-            throwError { ValidationError.Categories.NotFound(category) }
+            throwError { ValidationError.Categories.NotFound(subCategory.category) }
         }
 
         return subCategory
@@ -74,12 +78,12 @@ class CategoryController(
         }
     }
 
-    fun delete(category: String, subCategory: String) {
+    fun delete(subCategory: SubCategory) {
 
         try {
-            repository.delete(category, subCategory)
+            repository.delete(subCategory)
         } catch (e: NotFoundException) {
-            throwError { ValidationError.Categories.NotFound(category, subCategory) }
+            throwError { ValidationError.Categories.NotFound(subCategory) }
         }
     }
 }
