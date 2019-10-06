@@ -8,7 +8,7 @@ class TransactionValidator : Validator<Transaction> {
         val errors = validateID(item.id).toMutableList()
 
         if (item.receiver == item.sender) {
-            errors += ValidationError.TransactionCommonAccounts(item.receiver)
+            errors += ValidationError.Transactions.CommonAccounts(item.receiver)
         }
 
         return errors

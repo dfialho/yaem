@@ -13,10 +13,6 @@ class AccountController(
     private val repository: AccountRepository,
     private val validator: AccountValidator
 ) {
-    companion object {
-        const val RESOURCE_NAME = "account"
-    }
-
     fun create(account: Account): Account {
         // Generate the ID for the account internally to ensure
         // the IDs are controlled internally
@@ -27,7 +23,7 @@ class AccountController(
         try {
             repository.create(uniqueAccount)
         } catch (e: DuplicateKeyException) {
-            throwError { ValidationError.AccountNameExists(account.name) }
+            throwError { ValidationError.Accounts.NameExists(account.name) }
         }
 
         return uniqueAccount
@@ -39,7 +35,7 @@ class AccountController(
         try {
             return repository.get(accountID)
         } catch (e: NotFoundException) {
-            throwError { ValidationError.NotFound(RESOURCE_NAME, accountID) }
+            throwError { ValidationError.Accounts.NotFound(accountID) }
         }
     }
 
@@ -59,9 +55,9 @@ class AccountController(
             repository.update(account)
             return account
         } catch (e: NotFoundException) {
-            throwError { ValidationError.NotFound(RESOURCE_NAME, account.id) }
+            throwError { ValidationError.Accounts.NotFound(account.id) }
         } catch (e: DuplicateKeyException) {
-            throwError { ValidationError.AccountNameExists(account.name) }
+            throwError { ValidationError.Accounts.NameExists(account.name) }
         }
     }
 
@@ -71,9 +67,9 @@ class AccountController(
         try {
             repository.delete(accountID)
         } catch (e: NotFoundException) {
-            throwError { ValidationError.NotFound(RESOURCE_NAME, accountID) }
+            throwError { ValidationError.Accounts.NotFound(accountID) }
         } catch (e: ChildExistsException) {
-            throwError { ValidationError.AccountReferences(accountID) }
+            throwError { ValidationError.Accounts.References(accountID) }
         }
     }
 }

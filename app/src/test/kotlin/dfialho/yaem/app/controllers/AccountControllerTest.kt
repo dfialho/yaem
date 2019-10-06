@@ -88,7 +88,7 @@ class AccountControllerTest : AnnotationSpec() {
         assertThat {
             controller.create(Account(existingAccount.name, id = randomID()))
         }.thrownValidationError {
-            ValidationError.AccountNameExists(existingAccount.name)
+            ValidationError.Accounts.NameExists(existingAccount.name)
         }
 
         assertThat(controller.list()).containsOnly(*existingAccounts)
@@ -102,7 +102,7 @@ class AccountControllerTest : AnnotationSpec() {
         assertThat {
             controller.create(account)
         }.thrownValidationError {
-            ValidationError.NameTooLong(account.name, ACCOUNT_NAME_MAX_LENGTH)
+            ValidationError.Accounts.Name.TooLong(account.name)
         }
     }
 
@@ -122,7 +122,7 @@ class AccountControllerTest : AnnotationSpec() {
         assertThat {
             controller.create(account)
         }.thrownValidationError {
-            ValidationError.NameIsBlank()
+            ValidationError.Accounts.Name.Blank(account.name)
         }
     }
 
@@ -137,7 +137,7 @@ class AccountControllerTest : AnnotationSpec() {
         assertThat {
             controller.get(nonExistingID)
         }.thrownValidationError {
-            ValidationError.NotFound("account", nonExistingID)
+            ValidationError.Accounts.NotFound(nonExistingID)
         }
     }
 
@@ -192,7 +192,7 @@ class AccountControllerTest : AnnotationSpec() {
         assertThat {
             controller.delete(nonExistingID)
         }.thrownValidationError {
-            ValidationError.NotFound("account", nonExistingID)
+            ValidationError.Accounts.NotFound(nonExistingID)
         }
 
         assertThat(controller.list()).containsOnly(*existingAccounts)
@@ -206,7 +206,7 @@ class AccountControllerTest : AnnotationSpec() {
         assertThat {
             controller.delete(account.id)
         }.thrownValidationError {
-            ValidationError.AccountReferences(account.id)
+            ValidationError.Accounts.References(account.id)
         }
 
         assertThat(controller.get(account.id)).isEqualTo(account)
@@ -227,7 +227,7 @@ class AccountControllerTest : AnnotationSpec() {
         assertThat {
             controller.delete(account.id)
         }.thrownValidationError {
-            ValidationError.AccountReferences(account.id)
+            ValidationError.Accounts.References(account.id)
         }
 
         assertThat(controller.get(account.id)).isEqualTo(account)
@@ -265,7 +265,7 @@ class AccountControllerTest : AnnotationSpec() {
         assertThat {
             controller.update(accountToUpdate)
         }.thrownValidationError {
-            ValidationError.NameTooLong(accountToUpdate.name, ACCOUNT_NAME_MAX_LENGTH)
+            ValidationError.Accounts.Name.TooLong(accountToUpdate.name)
         }
 
         assertThat(controller.get(accountToUpdate.id)).isEqualTo(originalAccount)
@@ -282,7 +282,7 @@ class AccountControllerTest : AnnotationSpec() {
         assertThat {
             controller.update(accountToUpdate)
         }.thrownValidationError {
-            ValidationError.NotFound("account", accountToUpdate.id)
+            ValidationError.Accounts.NotFound(accountToUpdate.id)
         }
 
         assertThat(controller.list()).containsOnly(*existingAccounts)
@@ -303,7 +303,7 @@ class AccountControllerTest : AnnotationSpec() {
         assertThat {
             controller.update(updatedAccount)
         }.thrownValidationError {
-            ValidationError.AccountNameExists(updatedAccount.name)
+            ValidationError.Accounts.NameExists(updatedAccount.name)
         }
     }
 

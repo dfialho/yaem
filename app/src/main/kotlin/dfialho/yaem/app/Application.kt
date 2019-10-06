@@ -50,6 +50,8 @@ fun Application.app(dbConfig: DatabaseConfig) {
     val transactionRepository: TransactionRepository = repositoryManager.getTransactionRepository()
     val transactionController = TransactionController(transactionRepository, TransactionValidator())
 
+    val httpStatusTranslator = HttpStatusTranslator()
+
     install(DefaultHeaders)
     install(ContentNegotiation) {
         serialization(json = json)
@@ -61,15 +63,8 @@ fun Application.app(dbConfig: DatabaseConfig) {
     install(StatusPages) {
         exception<ValidationErrorException> { cause ->
             val errors = cause.errors
-
             val statusCode = when {
-                errors.size == 1 -> when (errors[0]) {
-                    is ValidationError.NotFound -> HttpStatusCode.NotFound
-                    is ValidationError.AccountReferences -> HttpStatusCode.Conflict
-                    is ValidationError.AccountNameExists -> HttpStatusCode.Conflict
-                    is ValidationError.TransactionMissingAccount -> HttpStatusCode.NotFound
-                    else -> HttpStatusCode.BadRequest
-                }
+                errors.size == 1 -> httpStatusTranslator.translate(errors[0])
                 else -> HttpStatusCode.BadRequest
             }
 

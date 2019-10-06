@@ -1,5 +1,6 @@
 package dfialho.yaem.app.validators
 
+import dfialho.yaem.app.api.ACCOUNT_NAME_MAX_LENGTH
 import dfialho.yaem.app.api.ID
 import kotlinx.serialization.Serializable
 
@@ -16,40 +17,93 @@ open class ValidationError internal constructor(val code: String, val message: S
         message = "Failed to parse '$itemName' from json"
     )
 
-    class NameTooLong(name: String, max: Int) : ValidationError(
-        code = "BASE-03",
-        message = "Name is too long (max=$max): $name (${name.length})"
+    abstract class NotFound(code: String, resourceName: String, resourceID: ID) : ValidationError(
+        code,
+        message = "$resourceName with identifier '$resourceID' was not found"
     )
 
-    class NotFound(resourceName: String, resourceID: ID) : ValidationError(
-        code = "BASE-04",
-        message = "Resource '$resourceName' with ID '$resourceID' was not found"
+    abstract class MissingDependency(code: String, dependencyName: String, dependencyID: ID? = null) : ValidationError(
+        code,
+        message = "Missing required dependency: $dependencyName" +
+                if (dependencyID != null) "with identifier '$dependencyID'" else ""
     )
 
-    class NameIsBlank : ValidationError(
-        code = "BASE-05",
-        message = "Name cannot be blank"
+    abstract class References(code: String, resourceName: String, resourceID: ID) : ValidationError(
+        code,
+        message = "$resourceName '$resourceID' is still being referenced by another resource"
     )
 
-    class AccountReferences(accountID: ID) : ValidationError(
-        code = "ACCOUNT-01",
-        message = "Account '$accountID' is still being referenced by at least one transaction"
+    abstract class Exists(code: String, resourceName: String, propertyName: String, propertyValue: String) : ValidationError(
+        code,
+        message = "$resourceName with $propertyName '$propertyValue' already exists"
     )
 
-    class AccountNameExists(name: String) : ValidationError(
-        code = "ACCOUNT-02",
-        message = "Account with name '$name' already exists"
+    abstract class InvalidName(code: String, resourceName: String, name: String, explanation: String) : ValidationError(
+        code,
+        message = "$resourceName name '$name' is invalid: $explanation"
     )
 
-    class TransactionMissingAccount(accountID: ID? = null) : ValidationError(
-        code = "TRANSACTION-01",
-        message = "Transaction depends on account ${(if (accountID == null) "" else "with id '$accountID' ")}which does not exist"
-    )
+    object Transactions {
+        const val LABEL = "TRANSACTION"
+        const val NAME = "Transaction"
 
-    class TransactionCommonAccounts(accountID: ID) : ValidationError(
-        code = "TRANSACTION-02",
-        message = "Transaction's receiver and sender accounts cannot have the same id: $accountID"
-    )
+        class NotFound(id: ID) : ValidationError.NotFound(
+            code = "$LABEL-01",
+            resourceName = NAME,
+            resourceID = id
+        )
+
+        class MissingAccount(accountID: ID? = null) : ValidationError.MissingDependency(
+            code = "$LABEL-02",
+            dependencyName = Accounts.NAME,
+            dependencyID = accountID
+        )
+
+        class CommonAccounts(commonID: ID) : ValidationError(
+            code = "$LABEL-03",
+            message = "Transaction's receiver and sender accounts cannot have the same id: $commonID"
+        )
+    }
+
+    object Accounts {
+        const val LABEL = "ACCOUNT"
+        const val NAME = "Account"
+
+        class NotFound(id: ID) : ValidationError.NotFound(
+            code = "$LABEL-01",
+            resourceName = NAME,
+            resourceID = id
+        )
+
+        class References(accountID: ID) : ValidationError.References(
+            code = "$LABEL-02",
+            resourceName = NAME,
+            resourceID = accountID
+        )
+
+        class NameExists(name: String) : ValidationError.Exists(
+            code = "$LABEL-03",
+            resourceName = NAME,
+            propertyName = "name",
+            propertyValue = name
+        )
+
+        object Name {
+            class TooLong(name: String) : ValidationError.InvalidName(
+                code = "$LABEL-NAME-01",
+                resourceName = NAME,
+                name = name,
+                explanation = "it is too long (max=$ACCOUNT_NAME_MAX_LENGTH): $name (size=${name.length})"
+            )
+
+            class Blank(name: String) : ValidationError.InvalidName(
+                code = "$LABEL-NAME-02",
+                resourceName = NAME,
+                name = name,
+                explanation = "it cannot be blank"
+            )
+        }
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

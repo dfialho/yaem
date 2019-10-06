@@ -2,27 +2,22 @@ package dfialho.yaem.app.controllers
 
 import dfialho.yaem.app.api.ID
 import dfialho.yaem.app.api.Transaction
-import dfialho.yaem.app.repositories.TransactionRepository
 import dfialho.yaem.app.repositories.NotFoundException
 import dfialho.yaem.app.repositories.ParentMissingException
+import dfialho.yaem.app.repositories.TransactionRepository
 import dfialho.yaem.app.validators.*
 
 class TransactionController(
     private val repository: TransactionRepository,
     private val validator: TransactionValidator
 ) {
-
-    companion object {
-        const val RESOURCE_NAME = "transaction"
-    }
-
     fun create(transaction: Transaction): Transaction {
         throwIfValidationError(validator.validate(transaction))
 
         try {
             repository.create(transaction)
         } catch (e: ParentMissingException) {
-            throwError { ValidationError.TransactionMissingAccount() }
+            throwError { ValidationError.Transactions.MissingAccount() }
         }
 
         return transaction
@@ -34,7 +29,7 @@ class TransactionController(
         try {
             return repository.get(transactionID)
         } catch (e: NotFoundException) {
-            throwError { ValidationError.NotFound(RESOURCE_NAME, transactionID) }
+            throwError { ValidationError.Transactions.NotFound(transactionID) }
         }
     }
 
@@ -52,9 +47,9 @@ class TransactionController(
         try {
             repository.update(trx)
         } catch (e: NotFoundException) {
-            throwError { ValidationError.NotFound(RESOURCE_NAME, trx.id) }
+            throwError { ValidationError.Transactions.NotFound(trx.id) }
         } catch (e: ParentMissingException) {
-            throwError { ValidationError.TransactionMissingAccount() }
+            throwError { ValidationError.Transactions.MissingAccount() }
         }
 
         return trx
@@ -66,7 +61,7 @@ class TransactionController(
         try {
             repository.delete(transactionID)
         } catch (e: NotFoundException) {
-            throwError { ValidationError.NotFound(RESOURCE_NAME, transactionID) }
+            throwError { ValidationError.Transactions.NotFound(transactionID) }
         }
     }
 }

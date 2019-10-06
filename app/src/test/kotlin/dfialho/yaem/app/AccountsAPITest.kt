@@ -34,7 +34,7 @@ class AccountsAPITest : AnnotationSpec() {
             val accountID = "c1929c11-3caa-400c-bee4-fdad5f023759"
             handleGetRequest<Account>(accountID).apply {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.NotFound)
-                assertThat(response.content).isErrorListWith(ValidationError.NotFound("account", accountID))
+                assertThat(response.content).isErrorListWith(ValidationError.Accounts.NotFound(accountID))
             }
         }
 
@@ -181,7 +181,7 @@ class AccountsAPITest : AnnotationSpec() {
 
             handleCreateRequest(account).apply {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.Conflict)
-                assertThat(response.content).isErrorListWith(ValidationError.AccountNameExists(account.name))
+                assertThat(response.content).isErrorListWith(ValidationError.Accounts.NameExists(account.name))
             }
         }
     }
@@ -246,8 +246,10 @@ class AccountsAPITest : AnnotationSpec() {
             create(anyTransaction(account.id))
 
             handleDeleteRequest<Account>(account.id).apply {
-                assertThat(response.status()).isEqualTo(HttpStatusCode.Conflict)
-                assertThat(response.content).isErrorListWith(ValidationError.AccountReferences(account.id))
+                assertThat(response.status())
+                    .isEqualTo(HttpStatusCode.Conflict)
+                assertThat(response.content)
+                    .isErrorListWith(ValidationError.Accounts.References(account.id))
             }
         }
     }
