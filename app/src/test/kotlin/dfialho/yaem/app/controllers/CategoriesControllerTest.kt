@@ -11,10 +11,9 @@ import dfialho.yaem.app.validators.AccountValidator
 import dfialho.yaem.app.validators.CategoryValidator
 import dfialho.yaem.app.validators.TransactionValidator
 import dfialho.yaem.app.validators.ValidationError
-import org.junit.Before
-import org.junit.Test
+import io.kotlintest.specs.AnnotationSpec
 
-class CategoriesControllerTest {
+class CategoriesControllerTest : AnnotationSpec() {
 
     lateinit var controller: CategoryController
     lateinit var accountController: AccountController

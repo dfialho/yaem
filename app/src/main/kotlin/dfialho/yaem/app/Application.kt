@@ -1,17 +1,12 @@
 package dfialho.yaem.app
 
 import dfialho.yaem.app.controllers.AccountController
+import dfialho.yaem.app.controllers.CategoryController
 import dfialho.yaem.app.controllers.TransactionController
-import dfialho.yaem.app.repositories.AccountRepository
-import dfialho.yaem.app.repositories.DatabaseConfig
-import dfialho.yaem.app.repositories.DuplicateKeyException
-import dfialho.yaem.app.repositories.TransactionRepository
+import dfialho.yaem.app.repositories.*
 import dfialho.yaem.app.repositories.database.DatabaseRepositoryManager
 import dfialho.yaem.app.repositories.database.H2SQLExceptionTranslator
-import dfialho.yaem.app.validators.AccountValidator
-import dfialho.yaem.app.validators.TransactionValidator
-import dfialho.yaem.app.validators.ValidationError
-import dfialho.yaem.app.validators.ValidationErrorException
+import dfialho.yaem.app.validators.*
 import dfialho.yaem.json.lib.json
 import io.ktor.application.Application
 import io.ktor.application.call
@@ -49,6 +44,8 @@ fun Application.app(dbConfig: DatabaseConfig) {
     val accountController = AccountController(accountRepository, AccountValidator())
     val transactionRepository: TransactionRepository = repositoryManager.getTransactionRepository()
     val transactionController = TransactionController(transactionRepository, TransactionValidator())
+    val categoryRepository: CategoryRepository = repositoryManager.getCategoryRepository()
+    val categoryController = CategoryController(categoryRepository, CategoryValidator())
 
     val httpStatusTranslator = HttpStatusTranslator()
 
@@ -85,6 +82,7 @@ fun Application.app(dbConfig: DatabaseConfig) {
         route("api") {
             accounts(accountController)
             transactions(transactionController)
+            categories(categoryController)
         }
     }
 }

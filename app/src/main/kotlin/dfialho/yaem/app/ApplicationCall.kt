@@ -12,3 +12,7 @@ suspend inline fun <reified T : Any> ApplicationCall.validatedReceive(): T {
         throwError(e) { ValidationError.InvalidJson(T::class.simpleName.orEmpty()) }
     }
 }
+
+fun ApplicationCall.parameters(name: String): String {
+    return parameters[name] ?: throw IllegalArgumentException("Parameter '$name' is required")
+}

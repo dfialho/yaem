@@ -1,13 +1,17 @@
 package dfialho.yaem.app.testutils.resources
 
 import dfialho.yaem.app.api.Account
+import dfialho.yaem.app.api.Category
+import dfialho.yaem.app.api.SubCategory
 import dfialho.yaem.app.api.Transaction
 import kotlinx.serialization.KSerializer
 import kotlin.reflect.KClass
 
 val serializers = mapOf<KClass<*>, KSerializer<*>>(
     Account::class to Account.serializer(),
-    Transaction::class to Transaction.serializer()
+    Transaction::class to Transaction.serializer(),
+    Category::class to Category.serializer(),
+    SubCategory::class to SubCategory.serializer()
 )
 
 fun <T : Any> T.serializer(): KSerializer<T> {
