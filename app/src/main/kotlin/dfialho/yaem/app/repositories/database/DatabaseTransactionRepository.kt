@@ -7,12 +7,15 @@ import dfialho.yaem.app.repositories.TransactionRepository
 import dfialho.yaem.app.repositories.utils.*
 import org.jetbrains.exposed.sql.*
 
-class DatabaseTransactionRepository(private val translator: SQLExceptionTranslator)
-    : TransactionRepository, DatabaseRepository {
+class DatabaseTransactionRepository(
+    private val accountsRepository: DatabaseAccountRepository,
+    private val translator: SQLExceptionTranslator
+) : TransactionRepository, DatabaseRepository {
 
     override fun createTablesIfMissing() {
         transaction(translator) {
             SchemaUtils.create(Transactions)
+            accountsRepository.createTablesIfMissing()
         }
     }
 
