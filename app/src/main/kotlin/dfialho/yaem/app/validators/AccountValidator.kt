@@ -1,6 +1,8 @@
 package dfialho.yaem.app.validators
 
 import dfialho.yaem.app.api.Account
+import dfialho.yaem.app.validators.errors.AccountsValidationErrors
+import dfialho.yaem.app.validators.errors.ValidationError
 
 class AccountValidator : Validator<Account> {
 
@@ -8,11 +10,11 @@ class AccountValidator : Validator<Account> {
         val errors = validateID(item.id).toMutableList()
 
         if (item.name.length > Account.NAME_MAX_LENGTH) {
-            errors += ValidationError.Accounts.Name.TooLong(item.name)
+            errors += AccountsValidationErrors.Name.TooLong(item.name)
         }
 
         if (item.name.isBlank()) {
-            errors += ValidationError.Accounts.Name.Blank(item.name)
+            errors += AccountsValidationErrors.Name.Blank(item.name)
         }
 
         return errors

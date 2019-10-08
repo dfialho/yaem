@@ -3,17 +3,14 @@ package dfialho.yaem.app.controllers
 import assertk.assertThat
 import assertk.assertions.containsOnly
 import assertk.assertions.isEqualTo
-import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.CategoryGroup
 import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.testutils.resources.anyCategoryGroup
 import dfialho.yaem.app.testutils.thrownValidationError
 import dfialho.yaem.app.testutils.uniqueRepositoryManager
-import dfialho.yaem.app.validators.AccountValidator
 import dfialho.yaem.app.validators.CategoryGroupValidator
-import dfialho.yaem.app.validators.ValidationError
+import dfialho.yaem.app.validators.errors.CategoriesValidationErrors
 import io.kotlintest.specs.StringSpec
-import java.time.Instant
 
 class CategoryGroupControllerTest : StringSpec({
 
@@ -25,7 +22,7 @@ class CategoryGroupControllerTest : StringSpec({
         invalidResource = { CategoryGroup("   ") }
         copy = { id -> copy(id = id) }
         update = { copy(name = "$name-updated") }
-        notFoundError = ValidationError.Categories::NotFound
+        validationErrors = CategoriesValidationErrors
     }
 
     "creating a CategoryGroup with an existing name throws an error" {
@@ -40,7 +37,7 @@ class CategoryGroupControllerTest : StringSpec({
         assertThat {
             controller.create(CategoryGroup(existingCategoryGroup.name, id = randomID()))
         }.thrownValidationError {
-            ValidationError.Categories.NameExists(existingCategoryGroup.name)
+            CategoriesValidationErrors.NameExists(existingCategoryGroup.name)
         }
 
         assertThat(controller.list())
@@ -61,7 +58,7 @@ class CategoryGroupControllerTest : StringSpec({
         assertThat {
             controller.update(updatedCategoryGroup)
         }.thrownValidationError {
-            ValidationError.Categories.NameExists(updatedCategoryGroup.name)
+            CategoriesValidationErrors.NameExists(updatedCategoryGroup.name)
         }
 
         assertThat(controller.get(updatedCategoryGroup.id))

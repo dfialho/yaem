@@ -6,6 +6,8 @@ import assertk.assertions.containsOnly
 import assertk.assertions.isEmpty
 import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.randomID
+import dfialho.yaem.app.validators.errors.AccountsValidationErrors
+import dfialho.yaem.app.validators.errors.ValidationError
 import io.kotlintest.specs.AnnotationSpec
 import java.time.Instant
 
@@ -60,7 +62,7 @@ class AccountValidatorTest : AnnotationSpec() {
         val validationErrors = validator.validate(account)
 
         assertThat(validationErrors)
-            .containsOnly(ValidationError.Accounts.Name.TooLong(account.name))
+            .containsOnly(AccountsValidationErrors.Name.TooLong(account.name))
     }
 
     @Test
@@ -78,7 +80,7 @@ class AccountValidatorTest : AnnotationSpec() {
         val validationErrors = validator.validate(account)
 
         assertThat(validationErrors).containsAll(
-            ValidationError.Accounts.Name.TooLong(tooLongName),
+            AccountsValidationErrors.Name.TooLong(tooLongName),
             ValidationError.InvalidID(invalidID)
         )
     }

@@ -13,7 +13,8 @@ import dfialho.yaem.app.testutils.isErrorListWith
 import dfialho.yaem.app.testutils.isJsonEqualTo
 import dfialho.yaem.app.testutils.resources.*
 import dfialho.yaem.app.testutils.withTestResourceAPI
-import dfialho.yaem.app.validators.ValidationError
+import dfialho.yaem.app.validators.errors.AccountsValidationErrors
+import dfialho.yaem.app.validators.errors.ValidationError
 import io.kotlintest.specs.AnnotationSpec
 import io.ktor.http.HttpStatusCode
 import java.time.Instant
@@ -34,7 +35,7 @@ class AccountsAPITest : AnnotationSpec() {
             val accountID = "c1929c11-3caa-400c-bee4-fdad5f023759"
             handleGetRequest<Account>(accountID).apply {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.NotFound)
-                assertThat(response.content).isErrorListWith(ValidationError.Accounts.NotFound(accountID))
+                assertThat(response.content).isErrorListWith(AccountsValidationErrors.NotFound(accountID))
             }
         }
 
@@ -181,7 +182,7 @@ class AccountsAPITest : AnnotationSpec() {
 
             handleCreateRequest(account).apply {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.Conflict)
-                assertThat(response.content).isErrorListWith(ValidationError.Accounts.NameExists(account.name))
+                assertThat(response.content).isErrorListWith(AccountsValidationErrors.NameExists(account.name))
             }
         }
     }
@@ -249,7 +250,7 @@ class AccountsAPITest : AnnotationSpec() {
                 assertThat(response.status())
                     .isEqualTo(HttpStatusCode.Conflict)
                 assertThat(response.content)
-                    .isErrorListWith(ValidationError.Accounts.References(account.id))
+                    .isErrorListWith(AccountsValidationErrors.References(account.id))
             }
         }
     }

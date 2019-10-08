@@ -5,26 +5,22 @@ import dfialho.yaem.app.api.ID
 import dfialho.yaem.app.repositories.CategoryGroupRepository
 import dfialho.yaem.app.repositories.ChildExistsException
 import dfialho.yaem.app.repositories.DuplicateKeyException
-import dfialho.yaem.app.repositories.ResourceRepository
 import dfialho.yaem.app.validators.CategoryGroupValidator
-import dfialho.yaem.app.validators.ValidationError
+import dfialho.yaem.app.validators.errors.CategoriesValidationErrors
 import dfialho.yaem.app.validators.throwError
 
 class CategoryGroupController(
     repository: CategoryGroupRepository,
     validator: CategoryGroupValidator
-) : AbstractResourceController<CategoryGroup>(
-    repository,
-    validator,
-    notFoundError = ValidationError.Categories::NotFound
-) {
+) : AbstractResourceController<CategoryGroup>(repository, validator, CategoriesValidationErrors) {
+
     override fun copyWithID(resource: CategoryGroup, newID: ID): CategoryGroup = resource.copy(id = newID)
 
     override fun create(resource: CategoryGroup): CategoryGroup {
         return try {
             super.create(resource)
         } catch (e: DuplicateKeyException) {
-            throwError { ValidationError.Categories.NameExists(resource.name) }
+            throwError { CategoriesValidationErrors.NameExists(resource.name) }
         }
     }
 
@@ -32,7 +28,7 @@ class CategoryGroupController(
         return try {
             super.update(resource)
         } catch (e: DuplicateKeyException) {
-            throwError { ValidationError.Categories.NameExists(resource.name) }
+            throwError { CategoriesValidationErrors.NameExists(resource.name) }
         }
     }
 
@@ -40,7 +36,7 @@ class CategoryGroupController(
         try {
             super.delete(id)
         } catch (e: ChildExistsException) {
-            throwError { ValidationError.Categories.References(id) }
+            throwError { CategoriesValidationErrors.References(id) }
         }
     }
 }

@@ -9,7 +9,7 @@ import dfialho.yaem.app.testutils.resources.anyAccount
 import dfialho.yaem.app.testutils.thrownValidationError
 import dfialho.yaem.app.testutils.uniqueRepositoryManager
 import dfialho.yaem.app.validators.AccountValidator
-import dfialho.yaem.app.validators.ValidationError
+import dfialho.yaem.app.validators.errors.AccountsValidationErrors
 import io.kotlintest.specs.StringSpec
 import java.time.Instant
 
@@ -23,7 +23,7 @@ class AccountControllerTest : StringSpec({
         invalidResource = { Account("   ") }
         copy = { id -> copy(id = id) }
         update = { copy(name = "$name-updated", initialBalance = Math.random()) }
-        notFoundError = ValidationError.Accounts::NotFound
+        validationErrors = AccountsValidationErrors
     }
 
     "creating an account with an existing name throws an error" {
@@ -38,7 +38,7 @@ class AccountControllerTest : StringSpec({
         assertThat {
             controller.create(Account(existingAccount.name, id = randomID()))
         }.thrownValidationError {
-            ValidationError.Accounts.NameExists(existingAccount.name)
+            AccountsValidationErrors.NameExists(existingAccount.name)
         }
 
         assertThat(controller.list())
@@ -61,7 +61,7 @@ class AccountControllerTest : StringSpec({
         assertThat {
             controller.update(updatedAccount)
         }.thrownValidationError {
-            ValidationError.Accounts.NameExists(updatedAccount.name)
+            AccountsValidationErrors.NameExists(updatedAccount.name)
         }
 
         assertThat(controller.get(updatedAccount.id))

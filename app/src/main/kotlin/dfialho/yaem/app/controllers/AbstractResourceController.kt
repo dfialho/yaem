@@ -5,12 +5,16 @@ import dfialho.yaem.app.api.Resource
 import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.repositories.NotFoundException
 import dfialho.yaem.app.repositories.ResourceRepository
-import dfialho.yaem.app.validators.*
+import dfialho.yaem.app.validators.Validator
+import dfialho.yaem.app.validators.errors.ResourceValidationErrors
+import dfialho.yaem.app.validators.throwError
+import dfialho.yaem.app.validators.throwIfValidationError
+import dfialho.yaem.app.validators.validateID
 
 abstract class AbstractResourceController<R : Resource>(
     protected val repository: ResourceRepository<R>,
     protected val validator: Validator<R>,
-    private val notFoundError: (id: String) -> ValidationError.NotFound
+    private val validationErrors: ResourceValidationErrors
 ) : ResourceController<R> {
 
     abstract fun copyWithID(resource: R, newID: ID): R
@@ -32,7 +36,7 @@ abstract class AbstractResourceController<R : Resource>(
         try {
             return repository.get(id)
         } catch (e: NotFoundException) {
-            throwError { notFoundError(id) }
+            throwError { validationErrors.NotFound(id) }
         }
     }
 
@@ -46,7 +50,7 @@ abstract class AbstractResourceController<R : Resource>(
         try {
             repository.update(resource)
         } catch (e: NotFoundException) {
-            throwError { notFoundError(resource.id) }
+            throwError { validationErrors.NotFound(resource.id) }
         }
 
         return resource
@@ -58,7 +62,7 @@ abstract class AbstractResourceController<R : Resource>(
         try {
             repository.delete(id)
         } catch (e: NotFoundException) {
-            throwError { notFoundError(id) }
+            throwError { validationErrors.NotFound(id) }
         }
     }
 }

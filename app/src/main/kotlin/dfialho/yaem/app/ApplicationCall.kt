@@ -1,6 +1,6 @@
 package dfialho.yaem.app
 
-import dfialho.yaem.app.validators.ValidationError
+import dfialho.yaem.app.validators.errors.ValidationError
 import dfialho.yaem.app.validators.throwError
 import io.ktor.application.ApplicationCall
 import io.ktor.request.receive

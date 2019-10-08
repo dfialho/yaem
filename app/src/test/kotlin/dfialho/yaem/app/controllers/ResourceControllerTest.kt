@@ -3,11 +3,10 @@ package dfialho.yaem.app.controllers
 import assertk.assertAll
 import assertk.assertThat
 import assertk.assertions.*
-import dfialho.yaem.app.api.ID
 import dfialho.yaem.app.api.Resource
 import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.testutils.thrownValidationError
-import dfialho.yaem.app.validators.ValidationError
+import dfialho.yaem.app.validators.errors.ResourceValidationErrors
 import io.kotlintest.specs.AbstractStringSpec
 
 class ResourceControllerTestSetup<R : Resource> {
@@ -16,7 +15,7 @@ class ResourceControllerTestSetup<R : Resource> {
     lateinit var invalidResource: () -> R
     lateinit var copy: R.(id: String) -> R
     lateinit var update: R.() -> R
-    lateinit var notFoundError: (id: ID) -> ValidationError.NotFound
+    lateinit var validationErrors: ResourceValidationErrors
 }
 
 inline fun <reified R : Resource> AbstractStringSpec.resourceControllerTests(
@@ -105,7 +104,7 @@ inline fun <reified R : Resource> AbstractStringSpec.resourceControllerTests(
         assertThat {
             controller.get(nonExistingID)
         }.thrownValidationError {
-            test.notFoundError(nonExistingID)
+            test.validationErrors.NotFound(nonExistingID)
         }
     }
 
@@ -156,7 +155,7 @@ inline fun <reified R : Resource> AbstractStringSpec.resourceControllerTests(
         assertThat {
             controller.delete(nonExistingID)
         }.thrownValidationError {
-            test.notFoundError(nonExistingID)
+            test.validationErrors.NotFound(nonExistingID)
         }
     }
 
@@ -196,7 +195,7 @@ inline fun <reified R : Resource> AbstractStringSpec.resourceControllerTests(
         assertThat {
             controller.update(nonExisting)
         }.thrownValidationError {
-            test.notFoundError(nonExisting.id)
+            test.validationErrors.NotFound(nonExisting.id)
         }
     }
 

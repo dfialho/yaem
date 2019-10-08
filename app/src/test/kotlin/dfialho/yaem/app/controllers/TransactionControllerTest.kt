@@ -11,7 +11,8 @@ import dfialho.yaem.app.testutils.resources.anyTransaction
 import dfialho.yaem.app.testutils.uniqueRepositoryManager
 import dfialho.yaem.app.validators.AccountValidator
 import dfialho.yaem.app.validators.TransactionValidator
-import dfialho.yaem.app.validators.ValidationError
+import dfialho.yaem.app.validators.errors.AccountsValidationErrors
+import dfialho.yaem.app.validators.errors.TransactionsValidationErrors
 import io.kotlintest.specs.StringSpec
 import java.time.Instant
 
@@ -27,7 +28,7 @@ class TransactionControllerTest : StringSpec({
         invalidResource = { Transaction(10.0, receiver = account.id, sender = account.id) }
         copy = { id -> copy(id = id) }
         update = { copy(amount = 150.0, receiver = account.id, timestamp = Instant.now()) }
-        notFoundError = ValidationError.Transactions::NotFound
+        validationErrors = TransactionsValidationErrors
     }
 
     subResourceControllerTests<Transaction, Account>(parentName = "Receiver Account") {
@@ -38,8 +39,8 @@ class TransactionControllerTest : StringSpec({
         anyParent = { anyAccount() }
         anyResource = { accountId -> anyTransaction(accountId) }
         update = { accountId -> copy(amount = 150.0, receiver = accountId, timestamp = Instant.now()) }
-        parentMissingError = { ValidationError.Transactions.MissingDependency() }
-        referencesError = ValidationError.Accounts::References
+        parentValidationErrors = AccountsValidationErrors
+        validationErrors = TransactionsValidationErrors
     }
 
     subResourceControllerTests<Transaction, Account>(parentName = "Sender Account") {
@@ -52,8 +53,8 @@ class TransactionControllerTest : StringSpec({
         anyParent = { anyAccount() }
         anyResource = { accountId -> anyTransaction(receiverAccount.id, accountId) }
         update = { accountId -> copy(amount = 150.0, sender = accountId, timestamp = Instant.now()) }
-        parentMissingError = { ValidationError.Transactions.MissingDependency() }
-        referencesError = ValidationError.Accounts::References
+        parentValidationErrors = AccountsValidationErrors
+        validationErrors = TransactionsValidationErrors
     }
 
     "create a transfer $Transaction" {

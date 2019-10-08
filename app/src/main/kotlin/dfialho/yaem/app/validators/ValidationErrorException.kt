@@ -1,8 +1,9 @@
 package dfialho.yaem.app.validators
 
+import dfialho.yaem.app.validators.errors.ValidationError
+
 class ValidationErrorException(val errors: List<ValidationError>, cause: Throwable? = null)
-    : Exception("Some validation error(s) occurred: $errors", cause) {
-}
+    : Exception("Some validation error(s) occurred: $errors", cause)
 
 fun throwError(error: () -> ValidationError): Nothing {
     throw ValidationErrorException(listOf(error()))

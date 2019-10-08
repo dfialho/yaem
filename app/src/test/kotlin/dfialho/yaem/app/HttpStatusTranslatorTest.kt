@@ -2,7 +2,9 @@ package dfialho.yaem.app
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
-import dfialho.yaem.app.validators.ValidationError
+import dfialho.yaem.app.validators.errors.AccountsValidationErrors
+import dfialho.yaem.app.validators.errors.TransactionsValidationErrors
+import dfialho.yaem.app.validators.errors.ValidationError
 import io.kotlintest.specs.StringSpec
 import io.ktor.http.HttpStatusCode
 
@@ -24,25 +26,25 @@ class HttpStatusTranslatorTest : StringSpec({
         errors = listOf(
             ValidationError.InvalidID("id"),
             ValidationError.InvalidJson("item"),
-            ValidationError.Transactions.CommonAccounts("account-123"),
-            ValidationError.Accounts.Name.Blank("  "),
-            ValidationError.Accounts.Name.TooLong("name-too-long")
+            TransactionsValidationErrors.CommonAccounts("account-123"),
+            AccountsValidationErrors.Name.Blank("  "),
+            AccountsValidationErrors.Name.TooLong("name-too-long")
         )
     )
 
     statusTests(
         code = HttpStatusCode.NotFound,
         errors = listOf(
-            ValidationError.Transactions.NotFound("trx-id"),
-            ValidationError.Transactions.MissingDependency("account-123")
+            TransactionsValidationErrors.NotFound("trx-id"),
+            TransactionsValidationErrors.MissingDependency("account-123")
         )
     )
 
     statusTests(
         code = HttpStatusCode.Conflict,
         errors = listOf(
-            ValidationError.Accounts.NameExists("name"),
-            ValidationError.Accounts.References("account-123")
+            AccountsValidationErrors.NameExists("name"),
+            AccountsValidationErrors.References("account-123")
         )
     )
 })

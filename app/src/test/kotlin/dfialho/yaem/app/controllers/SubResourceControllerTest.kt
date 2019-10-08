@@ -3,11 +3,11 @@ package dfialho.yaem.app.controllers
 import assertk.assertAll
 import assertk.assertThat
 import assertk.assertions.*
-import dfialho.yaem.app.api.ID
 import dfialho.yaem.app.api.Resource
 import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.testutils.thrownValidationError
-import dfialho.yaem.app.validators.ValidationError
+import dfialho.yaem.app.validators.errors.ParentResourceValidationErrors
+import dfialho.yaem.app.validators.errors.SubResourceValidationErrors
 import io.kotlintest.specs.AbstractStringSpec
 
 class SubResourceControllerTestSetup<R : Resource, P : Resource> {
@@ -16,8 +16,8 @@ class SubResourceControllerTestSetup<R : Resource, P : Resource> {
     lateinit var anyParent: () -> P
     lateinit var anyResource: (parentId: String) -> R
     lateinit var update: R.(parentId: String) -> R
-    lateinit var parentMissingError: (id: ID) -> ValidationError.MissingDependency
-    lateinit var referencesError: (id: ID) -> ValidationError.References
+    lateinit var parentValidationErrors: ParentResourceValidationErrors
+    lateinit var validationErrors: SubResourceValidationErrors
 }
 
 inline fun <reified R : Resource, reified P : Resource> AbstractStringSpec.subResourceControllerTests(
@@ -37,7 +37,7 @@ inline fun <reified R : Resource, reified P : Resource> AbstractStringSpec.subRe
         assertThat {
             controller.create(test.anyResource(nonExistingParentID))
         }.thrownValidationError {
-            test.parentMissingError(nonExistingParentID)
+            test.validationErrors.MissingDependency()
         }
 
         assertThat(controller.list())
@@ -61,7 +61,7 @@ inline fun <reified R : Resource, reified P : Resource> AbstractStringSpec.subRe
         assertThat {
             controller.update(resourceToUpdate)
         }.thrownValidationError {
-            test.parentMissingError(nonExistingParentID)
+            test.validationErrors.MissingDependency()
         }
 
         assertAll {
@@ -89,7 +89,7 @@ inline fun <reified R : Resource, reified P : Resource> AbstractStringSpec.subRe
         assertThat {
             parentController.delete(parent.id)
         }.thrownValidationError {
-            test.referencesError(parent.id)
+            test.parentValidationErrors.References(parent.id)
         }
 
         assertAll {

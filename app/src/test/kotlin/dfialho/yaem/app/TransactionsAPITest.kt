@@ -7,7 +7,7 @@ import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.testutils.isErrorListWith
 import dfialho.yaem.app.testutils.resources.*
 import dfialho.yaem.app.testutils.withTestResourceAPI
-import dfialho.yaem.app.validators.ValidationError
+import dfialho.yaem.app.validators.errors.TransactionsValidationErrors
 import io.kotlintest.specs.AnnotationSpec
 import io.ktor.http.HttpStatusCode
 
@@ -38,7 +38,7 @@ class TransactionsAPITest : AnnotationSpec() {
 
             handleDeleteRequest<Transaction>(transactionID).run {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.NotFound)
-                assertThat(response.content).isErrorListWith(ValidationError.Transactions.notFound(transactionID))
+                assertThat(response.content).isErrorListWith(TransactionsValidationErrors.NotFound(transactionID))
             }
         }
     }
@@ -50,7 +50,7 @@ class TransactionsAPITest : AnnotationSpec() {
 
             handleCreateRequest(transaction).run {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.NotFound)
-                assertThat(response.content).isErrorListWith(ValidationError.Transactions.MissingDependency())
+                assertThat(response.content).isErrorListWith(TransactionsValidationErrors.MissingDependency())
             }
         }
     }

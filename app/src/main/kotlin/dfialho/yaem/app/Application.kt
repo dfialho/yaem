@@ -4,14 +4,13 @@ import dfialho.yaem.app.controllers.AccountController
 import dfialho.yaem.app.controllers.TransactionController
 import dfialho.yaem.app.repositories.AccountRepository
 import dfialho.yaem.app.repositories.DatabaseConfig
-import dfialho.yaem.app.repositories.DuplicateKeyException
 import dfialho.yaem.app.repositories.TransactionRepository
 import dfialho.yaem.app.repositories.database.DatabaseRepositoryManager
 import dfialho.yaem.app.repositories.database.H2SQLExceptionTranslator
 import dfialho.yaem.app.validators.AccountValidator
 import dfialho.yaem.app.validators.TransactionValidator
-import dfialho.yaem.app.validators.ValidationError
 import dfialho.yaem.app.validators.ValidationErrorException
+import dfialho.yaem.app.validators.errors.ValidationError
 import dfialho.yaem.json.lib.json
 import io.ktor.application.Application
 import io.ktor.application.call
@@ -23,7 +22,6 @@ import io.ktor.features.StatusPages
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.path
-import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.routing.route
 import io.ktor.routing.routing
@@ -71,10 +69,6 @@ fun Application.app(dbConfig: DatabaseConfig) {
             call.respondText(ContentType.Application.Json, statusCode) {
                 json.stringify(ValidationError.serializer().list, errors)
             }
-        }
-
-        exception<DuplicateKeyException> { cause ->
-            call.respond(HttpStatusCode.Conflict, cause.message.orEmpty())
         }
     }
     // Must be installed after StatusPages

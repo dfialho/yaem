@@ -1,10 +1,10 @@
 package dfialho.yaem.app.testutils
 
 import assertk.Assert
-import assertk.assertions.*
+import assertk.assertions.containsAll
+import assertk.assertions.isEqualTo
 import assertk.assertions.support.fail
-import dfialho.yaem.app.validators.ValidationError
-import dfialho.yaem.app.validators.toBaseError
+import dfialho.yaem.app.validators.errors.ValidationError
 import dfialho.yaem.json.lib.json
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.list
@@ -28,4 +28,8 @@ inline fun <reified T> Assert<String?>.isJsonEqualTo(serializer: KSerializer<T>,
 fun Assert<String?>.isErrorListWith(vararg errors: ValidationError) {
     val normalizedErrors = errors.map { it.toBaseError() }.toTypedArray()
     jsonListContainsAll(ValidationError.serializer(), *normalizedErrors)
+}
+
+private fun ValidationError.toBaseError(): ValidationError {
+    return ValidationError(this.code, this.message)
 }

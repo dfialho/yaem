@@ -8,6 +8,8 @@ import assertk.assertions.isEmpty
 import dfialho.yaem.app.api.Category
 import dfialho.yaem.app.api.CategoryGroup
 import dfialho.yaem.app.testutils.resources.anyCategoryGroup
+import dfialho.yaem.app.validators.errors.CategoriesValidationErrors
+import dfialho.yaem.app.validators.errors.ValidationError
 import io.kotlintest.specs.BehaviorSpec
 
 class CategoryGroupValidatorTest : BehaviorSpec({
@@ -63,7 +65,7 @@ class CategoryGroupValidatorTest : BehaviorSpec({
 
             Then("it should return an error") {
                 assertThat(validationErrors)
-                    .containsOnly(ValidationError.Accounts.Name.TooLong(group.name))
+                    .containsOnly(CategoriesValidationErrors.Name.TooLong(group.name))
             }
         }
     }
@@ -81,7 +83,7 @@ class CategoryGroupValidatorTest : BehaviorSpec({
             Then("it should return an error") {
                 assertThat(validationErrors)
                     .containsAll(
-                        ValidationError.Accounts.Name.TooLong(group.name),
+                        CategoriesValidationErrors.Name.TooLong(group.name),
                         ValidationError.InvalidID(group.id)
                     )
             }
