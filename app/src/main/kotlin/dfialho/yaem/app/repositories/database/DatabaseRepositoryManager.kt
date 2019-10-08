@@ -15,8 +15,14 @@ class DatabaseRepositoryManager(dbConfig: DatabaseConfig, translator: SQLExcepti
         }
     }
 
+    private val categoryGroups: DatabaseCategoryGroupRepository by lazy {
+        DatabaseCategoryGroupRepository(translator).apply {
+            createTablesIfMissing()
+        }
+    }
+
     private val transactions: DatabaseTransactionRepository by lazy {
-        DatabaseTransactionRepository(accounts, translator).apply {
+        DatabaseTransactionRepository(accounts, categoryGroups, translator).apply {
             createTablesIfMissing()
         }
     }
@@ -27,5 +33,9 @@ class DatabaseRepositoryManager(dbConfig: DatabaseConfig, translator: SQLExcepti
 
     fun getTransactionRepository(): DatabaseTransactionRepository {
         return transactions
+    }
+
+    fun getCategoryGroupRepository(): DatabaseCategoryGroupRepository {
+        return categoryGroups
     }
 }

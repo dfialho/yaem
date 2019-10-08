@@ -106,6 +106,46 @@ open class ValidationError internal constructor(val code: String, val message: S
         }
     }
 
+    object Categories {
+        const val LABEL = "CATEGORY"
+        const val NAME = "Category"
+
+        class NotFound(id: ID) : ValidationError.NotFound(
+            code = "$LABEL-01",
+            resourceName = NAME,
+            resourceID = id
+        )
+
+        class References(accountID: ID) : ValidationError.References(
+            code = "$LABEL-02",
+            resourceName = NAME,
+            resourceID = accountID
+        )
+
+        class NameExists(name: String) : ValidationError.Exists(
+            code = "$LABEL-03",
+            resourceName = NAME,
+            propertyName = "name",
+            propertyValue = name
+        )
+
+        object Name {
+            class TooLong(name: String) : ValidationError.InvalidName(
+                code = "$LABEL-NAME-01",
+                resourceName = NAME,
+                name = name,
+                explanation = "it is too long (max=${Account.NAME_MAX_LENGTH}): $name (size=${name.length})"
+            )
+
+            class Blank(name: String) : ValidationError.InvalidName(
+                code = "$LABEL-NAME-02",
+                resourceName = NAME,
+                name = name,
+                explanation = "it cannot be blank"
+            )
+        }
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

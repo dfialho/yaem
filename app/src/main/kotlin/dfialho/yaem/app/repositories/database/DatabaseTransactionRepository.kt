@@ -9,6 +9,7 @@ import org.jetbrains.exposed.sql.*
 
 class DatabaseTransactionRepository(
     private val accountsRepository: DatabaseAccountRepository,
+    private val categoryGroupsRepository: DatabaseCategoryGroupRepository,
     private val translator: SQLExceptionTranslator
 ) : TransactionRepository, DatabaseRepository {
 
@@ -16,6 +17,7 @@ class DatabaseTransactionRepository(
         transaction(translator) {
             SchemaUtils.create(Transactions)
             accountsRepository.createTablesIfMissing()
+            categoryGroupsRepository.createTablesIfMissing()
         }
     }
 

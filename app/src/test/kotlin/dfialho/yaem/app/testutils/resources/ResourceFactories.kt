@@ -11,6 +11,10 @@ fun anyAccount(): Account {
     )
 }
 
+fun anyCategoryGroup(): CategoryGroup {
+    return CategoryGroup(name = "Group-${UUID.randomUUID().toString().substring(0, 5)}")
+}
+
 fun anyTransaction(account: ID, sender: ID? = null): Transaction = Transaction(
     amount = Math.random(),
     receiver = account,

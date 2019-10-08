@@ -1,6 +1,7 @@
 package dfialho.yaem.app.repositories.database
 
 import dfialho.yaem.app.api.Account
+import dfialho.yaem.app.api.Category
 import org.jetbrains.exposed.sql.Table
 
 internal object Accounts : Table() {
@@ -17,4 +18,9 @@ internal object Transactions : Table() {
     val description = text("DESCRIPTION")
     val receiverAccount = uuid("RECEIVER_ACCOUNT") references Accounts.id
     val senderAccount = (uuid("SENDER_ACCOUNT") references Accounts.id).nullable()
+}
+
+internal object CategoryGroups : Table() {
+    val id = uuid("ID").primaryKey()
+    val name = varchar("NAME", length = Category.NAME_MAX_LENGTH).uniqueIndex("CATEGORY_GROUP_NAME_INDEX")
 }
