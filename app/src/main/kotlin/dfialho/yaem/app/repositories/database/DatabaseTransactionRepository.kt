@@ -16,21 +16,21 @@ class DatabaseTransactionRepository(private val translator: SQLExceptionTranslat
         }
     }
 
-    override fun create(transaction: Transaction): Unit =
+    override fun create(resource: Transaction): Unit =
         transaction(translator) {
 
             Transactions.insert {
-                it[id] = transaction.id.toUUID()
-                it[timestamp] = transaction.timestamp.toDateTime()
-                it[amount] = transaction.amount
-                it[description] = transaction.description
-                it[receiverAccount] = transaction.receiver.toUUID()
-                it[senderAccount] = transaction.sender?.toUUID()
+                it[id] = resource.id.toUUID()
+                it[timestamp] = resource.timestamp.toDateTime()
+                it[amount] = resource.amount
+                it[description] = resource.description
+                it[receiverAccount] = resource.receiver.toUUID()
+                it[senderAccount] = resource.sender?.toUUID()
             }
         }
 
-    override fun get(transactionID: ID): Transaction {
-        return findTransaction(transactionID) ?: throw NotFoundException("No transaction found with ID $transactionID")
+    override fun get(resourceID: ID): Transaction {
+        return findTransaction(resourceID) ?: throw NotFoundException("No transaction found with ID $resourceID")
     }
 
     override fun list(): List<Transaction> =
@@ -38,34 +38,29 @@ class DatabaseTransactionRepository(private val translator: SQLExceptionTranslat
             return@transaction Transactions.selectAll().mapToTransaction()
         }
 
-    override fun exists(transactionID: ID): Boolean =
-        transaction(translator) {
-            return@transaction findTransaction(transactionID) != null
-        }
-
-    override fun update(trx: Transaction): Unit =
+    override fun update(resource: Transaction): Unit =
         transaction(translator) {
 
-            val updatedCount = Transactions.update({ Transactions.id eq trx.id.toUUID() }) {
-                it[timestamp] = trx.timestamp.toDateTime()
-                it[amount] = trx.amount
-                it[description] = trx.description
-                it[receiverAccount] = trx.receiver.toUUID()
-                it[senderAccount] = trx.sender?.toUUID()
+            val updatedCount = Transactions.update({ Transactions.id eq resource.id.toUUID() }) {
+                it[timestamp] = resource.timestamp.toDateTime()
+                it[amount] = resource.amount
+                it[description] = resource.description
+                it[receiverAccount] = resource.receiver.toUUID()
+                it[senderAccount] = resource.sender?.toUUID()
             }
 
             if (updatedCount == 0) {
-                throw NotFoundException("Transaction with ID '${trx.id}' was not found")
+                throw NotFoundException("Transaction with ID '${resource.id}' was not found")
             }
         }
 
-    override fun delete(transactionID: String): Unit =
+    override fun delete(resourceID: String): Unit =
         transaction(translator) {
-            val transactionUUID = transactionID.toUUID()
+            val transactionUUID = resourceID.toUUID()
             val deleteCount = Transactions.deleteWhere { Transactions.id eq transactionUUID }
 
             if (deleteCount == 0) {
-                throw NotFoundException("Transaction with ID '$transactionID' was not found")
+                throw NotFoundException("Transaction with ID '$resourceID' was not found")
             }
         }
 

@@ -16,18 +16,18 @@ class DatabaseAccountRepository(private val translator: SQLExceptionTranslator)
         }
     }
 
-    override fun create(account: Account): Unit =
+    override fun create(resource: Account): Unit =
         transaction(translator) {
             Accounts.insert {
-                it[id] = account.id.toUUID()
-                it[name] = account.name
-                it[initialBalance] = account.initialBalance
-                it[startTimestamp] = account.startTimestamp.toDateTime()
+                it[id] = resource.id.toUUID()
+                it[name] = resource.name
+                it[initialBalance] = resource.initialBalance
+                it[startTimestamp] = resource.startTimestamp.toDateTime()
             }
         }
 
-    override fun get(accountID: ID): Account {
-        return findAccount(accountID) ?: throw NotFoundException("No account found with ID $accountID")
+    override fun get(resourceID: ID): Account {
+        return findAccount(resourceID) ?: throw NotFoundException("No account found with ID $resourceID")
     }
 
     override fun list(): List<Account> =
@@ -35,32 +35,27 @@ class DatabaseAccountRepository(private val translator: SQLExceptionTranslator)
             return@transaction Accounts.selectAll().mapToAccount()
         }
 
-    override fun exists(accountID: ID): Boolean =
-        transaction(translator) {
-            return@transaction findAccount(accountID) != null
-        }
-
-    override fun update(account: Account): Unit =
+    override fun update(resource: Account): Unit =
         transaction(translator) {
 
-            val updatedCount = Accounts.update({ Accounts.id eq account.id.toUUID() }) {
-                it[name] = account.name
-                it[initialBalance] = account.initialBalance
-                it[startTimestamp] = account.startTimestamp.toDateTime()
+            val updatedCount = Accounts.update({ Accounts.id eq resource.id.toUUID() }) {
+                it[name] = resource.name
+                it[initialBalance] = resource.initialBalance
+                it[startTimestamp] = resource.startTimestamp.toDateTime()
             }
 
             if (updatedCount == 0) {
-                throw NotFoundException("Account with ID '${account.id}' was not found")
+                throw NotFoundException("Account with ID '${resource.id}' was not found")
             }
         }
 
-    override fun delete(accountID: String): Unit =
+    override fun delete(resourceID: String): Unit =
         transaction(translator) {
-            val accountUUID = accountID.toUUID()
+            val accountUUID = resourceID.toUUID()
             val deleteCount = Accounts.deleteWhere { Accounts.id eq accountUUID }
 
             if (deleteCount == 0) {
-                throw NotFoundException("Account with ID '$accountID' was not found")
+                throw NotFoundException("Account with ID '$resourceID' was not found")
             }
         }
 
