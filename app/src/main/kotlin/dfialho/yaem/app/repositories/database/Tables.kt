@@ -1,11 +1,11 @@
 package dfialho.yaem.app.repositories.database
 
-import dfialho.yaem.app.api.ACCOUNT_NAME_MAX_LENGTH
+import dfialho.yaem.app.api.Account
 import org.jetbrains.exposed.sql.Table
 
 internal object Accounts : Table() {
     val id = uuid("ID").primaryKey()
-    val name = varchar("NAME", length = ACCOUNT_NAME_MAX_LENGTH).uniqueIndex("NAME_INDEX")
+    val name = varchar("NAME", length = Account.NAME_MAX_LENGTH).uniqueIndex("NAME_INDEX")
     val initialBalance = double("INITIAL_BALANCE")
     val startTimestamp = datetime("START_TIMESTAMP")
 }

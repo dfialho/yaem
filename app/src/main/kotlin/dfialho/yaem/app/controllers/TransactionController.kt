@@ -2,6 +2,7 @@ package dfialho.yaem.app.controllers
 
 import dfialho.yaem.app.api.ID
 import dfialho.yaem.app.api.Transaction
+import dfialho.yaem.app.api.randomID
 import dfialho.yaem.app.repositories.NotFoundException
 import dfialho.yaem.app.repositories.ParentMissingException
 import dfialho.yaem.app.repositories.TransactionRepository
@@ -10,8 +11,12 @@ import dfialho.yaem.app.validators.*
 class TransactionController(
     private val repository: TransactionRepository,
     private val validator: TransactionValidator
-) {
-    fun create(transaction: Transaction): Transaction {
+) : ResourceController<Transaction> {
+
+    override fun create(resource: Transaction): Transaction {
+        // Generate the ID for the transaction internally to ensure
+        // the IDs are controlled internally
+        val transaction = resource.copy(id = randomID())
         throwIfValidationError(validator.validate(transaction))
 
         try {
@@ -23,17 +28,17 @@ class TransactionController(
         return transaction
     }
 
-    fun get(transactionID: ID): Transaction {
-        throwIfValidationError(validateID(transactionID))
+    override fun get(id: ID): Transaction {
+        throwIfValidationError(validateID(id))
 
         try {
-            return repository.get(transactionID)
+            return repository.get(id)
         } catch (e: NotFoundException) {
-            throwError { ValidationError.Transactions.NotFound(transactionID) }
+            throwError { ValidationError.Transactions.NotFound(id) }
         }
     }
 
-    fun list(): List<Transaction> {
+    override fun list(): List<Transaction> {
         return repository.list()
     }
 
@@ -41,27 +46,27 @@ class TransactionController(
         return repository.exists(transactionID)
     }
 
-    fun update(trx: Transaction): Transaction {
-        throwIfValidationError(validator.validate(trx))
+    override fun update(resource: Transaction): Transaction {
+        throwIfValidationError(validator.validate(resource))
 
         try {
-            repository.update(trx)
+            repository.update(resource)
         } catch (e: NotFoundException) {
-            throwError { ValidationError.Transactions.NotFound(trx.id) }
+            throwError { ValidationError.Transactions.NotFound(resource.id) }
         } catch (e: ParentMissingException) {
             throwError { ValidationError.Transactions.MissingAccount() }
         }
 
-        return trx
+        return resource
     }
 
-    fun delete(transactionID: String) {
-        throwIfValidationError(validateID(transactionID))
+    override fun delete(id: String) {
+        throwIfValidationError(validateID(id))
 
         try {
-            repository.delete(transactionID)
+            repository.delete(id)
         } catch (e: NotFoundException) {
-            throwError { ValidationError.Transactions.NotFound(transactionID) }
+            throwError { ValidationError.Transactions.NotFound(id) }
         }
     }
 }

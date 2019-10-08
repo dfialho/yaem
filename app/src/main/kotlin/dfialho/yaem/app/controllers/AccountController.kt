@@ -12,34 +12,34 @@ import dfialho.yaem.app.validators.*
 class AccountController(
     private val repository: AccountRepository,
     private val validator: AccountValidator
-) {
-    fun create(account: Account): Account {
+) : ResourceController<Account> {
+
+    override fun create(resource: Account): Account {
         // Generate the ID for the account internally to ensure
         // the IDs are controlled internally
-        val uniqueAccount = account.copy(id = randomID())
-
+        val uniqueAccount = resource.copy(id = randomID())
         throwIfValidationError(validator.validate(uniqueAccount))
 
         try {
             repository.create(uniqueAccount)
         } catch (e: DuplicateKeyException) {
-            throwError { ValidationError.Accounts.NameExists(account.name) }
+            throwError { ValidationError.Accounts.NameExists(resource.name) }
         }
 
         return uniqueAccount
     }
 
-    fun get(accountID: ID): Account {
-        throwIfValidationError(validateID(accountID))
+    override fun get(id: ID): Account {
+        throwIfValidationError(validateID(id))
 
         try {
-            return repository.get(accountID)
+            return repository.get(id)
         } catch (e: NotFoundException) {
-            throwError { ValidationError.Accounts.NotFound(accountID) }
+            throwError { ValidationError.Accounts.NotFound(id) }
         }
     }
 
-    fun list(): List<Account> {
+    override fun list(): List<Account> {
         return repository.list()
     }
 
@@ -48,28 +48,28 @@ class AccountController(
         return repository.exists(accountID)
     }
 
-    fun update(account: Account): Account {
-        throwIfValidationError(validator.validate(account))
+    override fun update(resource: Account): Account {
+        throwIfValidationError(validator.validate(resource))
 
         try {
-            repository.update(account)
-            return account
+            repository.update(resource)
+            return resource
         } catch (e: NotFoundException) {
-            throwError { ValidationError.Accounts.NotFound(account.id) }
+            throwError { ValidationError.Accounts.NotFound(resource.id) }
         } catch (e: DuplicateKeyException) {
-            throwError { ValidationError.Accounts.NameExists(account.name) }
+            throwError { ValidationError.Accounts.NameExists(resource.name) }
         }
     }
 
-    fun delete(accountID: String) {
-        throwIfValidationError(validateID(accountID))
+    override fun delete(id: String) {
+        throwIfValidationError(validateID(id))
 
         try {
-            repository.delete(accountID)
+            repository.delete(id)
         } catch (e: NotFoundException) {
-            throwError { ValidationError.Accounts.NotFound(accountID) }
+            throwError { ValidationError.Accounts.NotFound(id) }
         } catch (e: ChildExistsException) {
-            throwError { ValidationError.Accounts.References(accountID) }
+            throwError { ValidationError.Accounts.References(id) }
         }
     }
 }

@@ -11,5 +11,5 @@ data class Transaction(
     val sender: ID? = null,
     val description: String = "",
     @Serializable(with = InstantSerializer::class) val timestamp: Instant = Instant.now(),
-    val id: ID = randomID()
-)
+    override val id: ID = randomID()
+) : Resource

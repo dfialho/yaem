@@ -1,6 +1,6 @@
 package dfialho.yaem.app.validators
 
-import dfialho.yaem.app.api.ACCOUNT_NAME_MAX_LENGTH
+import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.ID
 import kotlinx.serialization.Serializable
 
@@ -25,7 +25,7 @@ open class ValidationError internal constructor(val code: String, val message: S
     abstract class MissingDependency(code: String, dependencyName: String, dependencyID: ID? = null) : ValidationError(
         code,
         message = "Missing required dependency: $dependencyName" +
-                if (dependencyID != null) "with identifier '$dependencyID'" else ""
+                if (dependencyID != null) " with identifier '$dependencyID'" else ""
     )
 
     abstract class References(code: String, resourceName: String, resourceID: ID) : ValidationError(
@@ -33,10 +33,11 @@ open class ValidationError internal constructor(val code: String, val message: S
         message = "$resourceName '$resourceID' is still being referenced by another resource"
     )
 
-    abstract class Exists(code: String, resourceName: String, propertyName: String, propertyValue: String) : ValidationError(
-        code,
-        message = "$resourceName with $propertyName '$propertyValue' already exists"
-    )
+    abstract class Exists(code: String, resourceName: String, propertyName: String, propertyValue: String) :
+        ValidationError(
+            code,
+            message = "$resourceName with $propertyName '$propertyValue' already exists"
+        )
 
     abstract class InvalidName(code: String, resourceName: String, name: String, explanation: String) : ValidationError(
         code,
@@ -61,7 +62,7 @@ open class ValidationError internal constructor(val code: String, val message: S
 
         class CommonAccounts(commonID: ID) : ValidationError(
             code = "$LABEL-03",
-            message = "Transaction's receiver and sender accounts cannot have the same id: $commonID"
+            message = "$NAME's receiver and sender accounts cannot have the same id: $commonID"
         )
     }
 
@@ -93,7 +94,7 @@ open class ValidationError internal constructor(val code: String, val message: S
                 code = "$LABEL-NAME-01",
                 resourceName = NAME,
                 name = name,
-                explanation = "it is too long (max=$ACCOUNT_NAME_MAX_LENGTH): $name (size=${name.length})"
+                explanation = "it is too long (max=${Account.NAME_MAX_LENGTH}): $name (size=${name.length})"
             )
 
             class Blank(name: String) : ValidationError.InvalidName(

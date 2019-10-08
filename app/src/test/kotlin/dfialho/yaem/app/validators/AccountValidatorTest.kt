@@ -4,7 +4,6 @@ import assertk.assertThat
 import assertk.assertions.containsAll
 import assertk.assertions.containsOnly
 import assertk.assertions.isEmpty
-import dfialho.yaem.app.api.ACCOUNT_NAME_MAX_LENGTH
 import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.randomID
 import io.kotlintest.specs.AnnotationSpec
@@ -46,7 +45,7 @@ class AccountValidatorTest : AnnotationSpec() {
     @Test
     fun `when the account name has max length size it should validate with no errors`() {
         val validator = AccountValidator()
-        val account = Account(name = "A".repeat(ACCOUNT_NAME_MAX_LENGTH))
+        val account = Account(name = "A".repeat(Account.NAME_MAX_LENGTH))
 
         val validationErrors = validator.validate(account)
 
@@ -56,7 +55,7 @@ class AccountValidatorTest : AnnotationSpec() {
     @Test
     fun `when the account name is over the max length it should return error`() {
         val validator = AccountValidator()
-        val account = Account(name = "A".repeat(ACCOUNT_NAME_MAX_LENGTH + 1))
+        val account = Account(name = "A".repeat(Account.NAME_MAX_LENGTH + 1))
 
         val validationErrors = validator.validate(account)
 
@@ -68,7 +67,7 @@ class AccountValidatorTest : AnnotationSpec() {
     fun `when the account's name and id are invalid it should return both errors`() {
         val validator = AccountValidator()
         val invalidID = "invalid id"
-        val tooLongName = "A".repeat(ACCOUNT_NAME_MAX_LENGTH + 1)
+        val tooLongName = "A".repeat(Account.NAME_MAX_LENGTH + 1)
         val account = Account(
             name = tooLongName,
             initialBalance = 10.0,
