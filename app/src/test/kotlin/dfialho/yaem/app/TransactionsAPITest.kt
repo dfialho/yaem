@@ -38,7 +38,7 @@ class TransactionsAPITest : AnnotationSpec() {
 
             handleDeleteRequest<Transaction>(transactionID).run {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.NotFound)
-                assertThat(response.content).isErrorListWith(ValidationError.Transactions.NotFound(transactionID))
+                assertThat(response.content).isErrorListWith(ValidationError.Transactions.notFound(transactionID))
             }
         }
     }
@@ -50,7 +50,7 @@ class TransactionsAPITest : AnnotationSpec() {
 
             handleCreateRequest(transaction).run {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.NotFound)
-                assertThat(response.content).isErrorListWith(ValidationError.Transactions.MissingAccount())
+                assertThat(response.content).isErrorListWith(ValidationError.Transactions.MissingDependency())
             }
         }
     }

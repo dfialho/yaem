@@ -38,7 +38,7 @@ class TransactionControllerTest : StringSpec({
         anyParent = { anyAccount() }
         anyResource = { accountId -> anyTransaction(accountId) }
         update = { accountId -> copy(amount = 150.0, receiver = accountId, timestamp = Instant.now()) }
-        parentMissingError = { ValidationError.Transactions.MissingAccount() }
+        parentMissingError = { ValidationError.Transactions.MissingDependency() }
         referencesError = ValidationError.Accounts::References
     }
 
@@ -52,7 +52,7 @@ class TransactionControllerTest : StringSpec({
         anyParent = { anyAccount() }
         anyResource = { accountId -> anyTransaction(receiverAccount.id, accountId) }
         update = { accountId -> copy(amount = 150.0, sender = accountId, timestamp = Instant.now()) }
-        parentMissingError = { ValidationError.Transactions.MissingAccount() }
+        parentMissingError = { ValidationError.Transactions.MissingDependency() }
         referencesError = ValidationError.Accounts::References
     }
 

@@ -4,6 +4,7 @@ import dfialho.yaem.app.api.Account
 import dfialho.yaem.app.api.ID
 import kotlinx.serialization.Serializable
 
+@Suppress("FunctionName")
 @Serializable
 open class ValidationError internal constructor(val code: String, val message: String) {
 
@@ -17,18 +18,18 @@ open class ValidationError internal constructor(val code: String, val message: S
         message = "Failed to parse '$itemName' from json"
     )
 
-    abstract class NotFound(code: String, resourceName: String, resourceID: ID) : ValidationError(
+    class NotFound(code: String, resourceName: String, resourceID: ID) : ValidationError(
         code,
         message = "$resourceName with identifier '$resourceID' was not found"
     )
 
-    abstract class MissingDependency(code: String, dependencyName: String, dependencyID: ID? = null) : ValidationError(
+    class MissingDependency(code: String, dependencyName: String, dependencyID: ID? = null) : ValidationError(
         code,
         message = "Missing required dependency: $dependencyName" +
                 if (dependencyID != null) " with identifier '$dependencyID'" else ""
     )
 
-    abstract class References(code: String, resourceName: String, resourceID: ID) : ValidationError(
+    class References(code: String, resourceName: String, resourceID: ID) : ValidationError(
         code,
         message = "$resourceName '$resourceID' is still being referenced by another resource"
     )
@@ -39,25 +40,52 @@ open class ValidationError internal constructor(val code: String, val message: S
             message = "$resourceName with $propertyName '$propertyValue' already exists"
         )
 
-    abstract class InvalidName(code: String, resourceName: String, name: String, explanation: String) : ValidationError(
+    sealed class InvalidName(code: String, resourceName: String, name: String, explanation: String) : ValidationError(
         code,
         message = "$resourceName name '$name' is invalid: $explanation"
-    )
+    ) {
+        class TooLong(code: String, resourceName: String, name: String, maxLength: Int) : InvalidName(
+            code, resourceName, name,
+            explanation = "it is too long (max=${Account.NAME_MAX_LENGTH}): $name (size=${name.length})"
+        )
 
-    object Transactions {
+        class Blank(code: String, resourceName: String, name: String) : InvalidName(
+            code, resourceName, name,
+            explanation = "it cannot be blank"
+        )
+    }
+
+    interface Resource {
+        fun NotFound(id: ID): NotFound
+    }
+
+    interface SubResource {
+        fun MissingDependency(dependencyID: ID? = null): MissingDependency
+    }
+
+    interface ParentResource {
+        fun References(id: ID): References
+    }
+
+    interface Name {
+        fun TooLong(name: String): InvalidName
+        fun Blank(name: String): InvalidName
+    }
+
+    object Transactions : Resource, SubResource {
         const val LABEL = "TRANSACTION"
         const val NAME = "Transaction"
 
-        class NotFound(id: ID) : ValidationError.NotFound(
+        override fun NotFound(id: ID) = NotFound(
             code = "$LABEL-01",
             resourceName = NAME,
             resourceID = id
         )
 
-        class MissingAccount(accountID: ID? = null) : ValidationError.MissingDependency(
+        override fun MissingDependency(dependencyID: ID?) = MissingDependency(
             code = "$LABEL-02",
             dependencyName = Accounts.NAME,
-            dependencyID = accountID
+            dependencyID = dependencyID
         )
 
         class CommonAccounts(commonID: ID) : ValidationError(
@@ -66,20 +94,20 @@ open class ValidationError internal constructor(val code: String, val message: S
         )
     }
 
-    object Accounts {
+    object Accounts : Resource, ParentResource {
         const val LABEL = "ACCOUNT"
         const val NAME = "Account"
 
-        class NotFound(id: ID) : ValidationError.NotFound(
-            code = "$LABEL-01",
+        override fun NotFound(id: ID) = NotFound(
+            code = "${LABEL}-01",
             resourceName = NAME,
             resourceID = id
         )
 
-        class References(accountID: ID) : ValidationError.References(
+        override fun References(id: ID) = References(
             code = "$LABEL-02",
             resourceName = NAME,
-            resourceID = accountID
+            resourceID = id
         )
 
         class NameExists(name: String) : ValidationError.Exists(
@@ -89,37 +117,36 @@ open class ValidationError internal constructor(val code: String, val message: S
             propertyValue = name
         )
 
-        object Name {
-            class TooLong(name: String) : ValidationError.InvalidName(
+        object Name : ValidationError.Name {
+            override fun TooLong(name: String) = InvalidName.TooLong(
                 code = "$LABEL-NAME-01",
                 resourceName = NAME,
                 name = name,
-                explanation = "it is too long (max=${Account.NAME_MAX_LENGTH}): $name (size=${name.length})"
+                maxLength = Account.NAME_MAX_LENGTH
             )
 
-            class Blank(name: String) : ValidationError.InvalidName(
+            override fun Blank(name: String) = InvalidName.Blank(
                 code = "$LABEL-NAME-02",
                 resourceName = NAME,
-                name = name,
-                explanation = "it cannot be blank"
+                name = name
             )
         }
     }
 
-    object Categories {
+    object Categories : Resource, ParentResource {
         const val LABEL = "CATEGORY"
         const val NAME = "Category"
 
-        class NotFound(id: ID) : ValidationError.NotFound(
+        override fun NotFound(id: ID) = NotFound(
             code = "$LABEL-01",
             resourceName = NAME,
             resourceID = id
         )
 
-        class References(accountID: ID) : ValidationError.References(
+        override fun References(id: ID) = References(
             code = "$LABEL-02",
             resourceName = NAME,
-            resourceID = accountID
+            resourceID = id
         )
 
         class NameExists(name: String) : ValidationError.Exists(
@@ -129,19 +156,18 @@ open class ValidationError internal constructor(val code: String, val message: S
             propertyValue = name
         )
 
-        object Name {
-            class TooLong(name: String) : ValidationError.InvalidName(
+        object Name : ValidationError.Name {
+            override fun TooLong(name: String) = InvalidName.TooLong(
                 code = "$LABEL-NAME-01",
                 resourceName = NAME,
                 name = name,
-                explanation = "it is too long (max=${Account.NAME_MAX_LENGTH}): $name (size=${name.length})"
+                maxLength = Account.NAME_MAX_LENGTH
             )
 
-            class Blank(name: String) : ValidationError.InvalidName(
+            override fun Blank(name: String) = InvalidName.Blank(
                 code = "$LABEL-NAME-02",
                 resourceName = NAME,
-                name = name,
-                explanation = "it cannot be blank"
+                name = name
             )
         }
     }

@@ -34,7 +34,7 @@ class HttpStatusTranslatorTest : StringSpec({
         code = HttpStatusCode.NotFound,
         errors = listOf(
             ValidationError.Transactions.NotFound("trx-id"),
-            ValidationError.Transactions.MissingAccount("account-123")
+            ValidationError.Transactions.MissingDependency("account-123")
         )
     )
 
